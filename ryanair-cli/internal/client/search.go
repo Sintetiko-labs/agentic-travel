@@ -44,7 +44,7 @@ func paginateFlights(res *FlightSearchResult, page, pageSize int) *FlightSearchR
 	total := len(res.Flights)
 	start := (page - 1) * pageSize
 	if start >= total {
-		res.Flights = nil
+		res.Flights = []FlightHit{}
 	} else {
 		end := start + pageSize
 		if end > total {

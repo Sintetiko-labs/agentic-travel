@@ -147,7 +147,7 @@ func buildFarfndResult(raw *farfndResponse, baseURL, origin, dest, depart string
 	}
 	total := len(all)
 	start := (page - 1) * pageSize
-	var pageHits []FlightHit
+	pageHits := []FlightHit{}
 	if start < total {
 		end := start + pageSize
 		if end > total {
