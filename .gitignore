@@ -26,3 +26,7 @@ mcp/node_modules/
 
 # Verification output
 scripts/verify-results.txt
+
+# Wave search benchmark output
+wave-result.json
+wave-result-*.json
