@@ -1,8 +1,23 @@
 package client
 
-import "fmt"
+import (
+	"github.com/fbelchi/travelkit/hotel"
+)
 
-// Read returns hotel detail (stub).
 func (c *Client) Read(idOrURL string) (*HotelView, error) {
-	return nil, fmt.Errorf("read not yet implemented for Princess Hotels (id=%q)", idOrURL)
+	brand := c.Brand
+	if brand == "" {
+		brand = "Princess Hotels"
+	}
+	r := &hotel.LDReader{
+		BaseURL: c.BaseURL, Brand: brand, FetchHTML: c.FetchHTML,
+		Lookup: func(id string) (*HotelHit, error) { return hotel.LookupFromSearch(c.Search, id) },
+		URLForID: func(id string) string {
+			if hit, err := hotel.LookupFromSearch(c.Search, id); err == nil && hit.HotelURL != "" {
+				return hit.HotelURL
+			}
+			return c.BaseURL + "/es/hoteles"
+		},
+	}
+	return r.Read(idOrURL)
 }
