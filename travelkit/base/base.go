@@ -2,6 +2,8 @@
 package base
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,7 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fbelchi/travelkit/chrome"
 	"github.com/fbelchi/travelkit/cookies"
+	"github.com/fbelchi/travelkit/network"
 	"github.com/fbelchi/travelkit/ratelimit"
 	"github.com/fbelchi/travelkit/session"
 	"github.com/fbelchi/travelkit/transport"
@@ -32,12 +36,13 @@ type Client struct {
 
 // New builds a client with Chrome-like TLS and optional env-based rate limiting.
 func New(baseURL, envPrefix string) *Client {
+	network.EnsureResidential()
 	jar := cookies.NewJar()
 	prefix := strings.ToUpper(strings.ReplaceAll(envPrefix, "-", "_"))
 	if prefix == "" {
 		prefix = "TRAVEL"
 	}
-	stdlib := &http.Client{Timeout: 30 * time.Second, Jar: jar}
+	stdlib := &http.Client{Timeout: 30 * time.Second, Jar: jar, Transport: network.DirectTransport()}
 	hc := stdlib
 	if os.Getenv(prefix+"_STD_HTTP") != "1" {
 		if tr, err := transport.NewChromeTransport(); err == nil {
@@ -231,6 +236,97 @@ func (c *Client) fetchHTMLWith(hc *http.Client, url string) (string, error) {
 		return "", &HTTPError{Status: resp.StatusCode, Body: Truncate(text, 300)}
 	}
 	return text, nil
+}
+
+// ChromePort returns the CDP debugging port for this client.
+func (c *Client) ChromePort() int {
+	port := chrome.CDPPortFromEnv()
+	if p := strings.TrimSpace(os.Getenv(c.EnvPrefix + "_CHROME_PORT")); p != "" {
+		if n, err := parsePort(p); err == nil {
+			port = n
+		}
+	}
+	return port
+}
+
+func parsePort(s string) (int, error) {
+	var n int
+	_, err := fmt.Sscanf(s, "%d", &n)
+	if err != nil || n <= 0 {
+		return 0, fmt.Errorf("invalid port %q", s)
+	}
+	return n, nil
+}
+
+// ChromeFetchEnabled reports whether CDP fetch fallback can run.
+func (c *Client) ChromeFetchEnabled() bool {
+	if c.Cookie == "" {
+		return false
+	}
+	return chrome.CDPAvailable(c.ChromePort())
+}
+
+// FetchViaChrome executes fetch() in headed Chrome with saved cookies.
+func (c *Client) FetchViaChrome(url, method string, body []byte) ([]byte, int, error) {
+	req, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		return nil, 0, err
+	}
+	if len(body) > 0 {
+		req.Body = io.NopCloser(bytes.NewReader(body))
+		req.ContentLength = int64(len(body))
+	}
+	c.SetAPIHeaders(req)
+	if len(body) > 0 {
+		req.Header.Set("content-type", "application/json")
+	}
+	if c.BaseURL != "" {
+		req.Header.Set("origin", c.BaseURL)
+	}
+	return c.FetchViaChromeReq(req)
+}
+
+// FetchViaChromeReq runs fetch() in Chrome using headers and body from req.
+func (c *Client) FetchViaChromeReq(req *http.Request) ([]byte, int, error) {
+	if !c.ChromeFetchEnabled() {
+		return nil, 0, fmt.Errorf("chrome fetch unavailable — start Chrome with --remote-debugging-port=%d", c.ChromePort())
+	}
+	c.ApplyCookie(req)
+
+	var bodyArg string
+	if req.Body != nil {
+		b, err := io.ReadAll(req.Body)
+		if err != nil {
+			return nil, 0, err
+		}
+		req.Body = io.NopCloser(bytes.NewReader(b))
+		bodyArg = string(b)
+	}
+
+	headerMap := map[string]string{}
+	for k, vals := range req.Header {
+		if len(vals) == 0 {
+			continue
+		}
+		lower := strings.ToLower(k)
+		if lower == "cookie" || lower == "host" || lower == "content-length" {
+			continue
+		}
+		headerMap[k] = vals[0]
+	}
+
+	result, err := chrome.Fetch(context.Background(), chrome.FetchOpts{
+		Port:    c.ChromePort(),
+		URL:     req.URL.String(),
+		Method:  req.Method,
+		Body:    bodyArg,
+		Headers: headerMap,
+		Cookie:  c.Cookie,
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	return []byte(result.Body), result.Status, nil
 }
 
 // HTTPError is a non-2xx response.
