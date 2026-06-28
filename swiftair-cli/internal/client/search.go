@@ -2,14 +2,7 @@ package client
 
 import "fmt"
 
-// Search runs flight search (TODO: implement for Swiftair).
 func (c *Client) Search(origin, dest, depart, ret string, page, pageSize int) (*FlightSearchResult, error) {
-	if page < 1 {
-		page = 1
-	}
-	if pageSize < 1 {
-		pageSize = 24
-	}
 	_ = c
-	return nil, fmt.Errorf("search not yet implemented for Swiftair — see README and internal/client/search.go TODO")
+	return nil, fmt.Errorf("swiftair has no public scheduled passenger search API (cargo/ACMI only)")
 }
