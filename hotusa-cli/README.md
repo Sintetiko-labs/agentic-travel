@@ -37,4 +37,4 @@ Use `--brand` to select a sub-brand when searching.
 
 Category: **hotel**
 
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+Search: **partial** — custom TLS (cert `booking-channel.com`) + HTML links; may need `hotusa session chrome --wait`

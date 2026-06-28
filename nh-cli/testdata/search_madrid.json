@@ -1,0 +1,29 @@
+{
+  "total": 2,
+  "data": [
+    {
+      "id": "519",
+      "name": "NH Collection Madrid Suecia",
+      "brand": "NH Collection",
+      "city": "Madrid",
+      "country": "España",
+      "stars": 4,
+      "price": 210.5,
+      "currency": "EUR",
+      "slug": "nh-collection-madrid-suecia",
+      "image": "/images/hotel.jpg"
+    },
+    {
+      "id": "102",
+      "name": "NH Madrid Príncipe de Vergara",
+      "brand": "NH Hotels",
+      "city": "Madrid",
+      "country": "España",
+      "stars": 4,
+      "price": 165,
+      "currency": "EUR",
+      "slug": "nh-madrid-principe-de-vergara",
+      "image": "/images/hotel2.jpg"
+    }
+  ]
+}

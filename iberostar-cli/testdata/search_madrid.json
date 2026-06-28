@@ -1,0 +1,34 @@
+{
+  "data": {
+    "searchHotels": {
+      "total": 2,
+      "hasNext": false,
+      "hotels": [
+        {
+          "id": "mad-001",
+          "name": "Iberostar Las Letras Gran Vía",
+          "brand": "Iberostar Selection",
+          "city": "Madrid",
+          "country": "España",
+          "stars": 5,
+          "minPrice": 245.5,
+          "currency": "EUR",
+          "url": "/es/hoteles/madrid/iberostar-las-letras-gran-via",
+          "image": "/media/hotel.jpg"
+        },
+        {
+          "id": "mad-002",
+          "name": "Iberostar Ciudad de Málaga",
+          "brand": "Iberostar",
+          "city": "Málaga",
+          "country": "España",
+          "stars": 4,
+          "minPrice": 120,
+          "currency": "EUR",
+          "url": "/es/hoteles/malaga/iberostar-ciudad-de-malaga",
+          "image": "/media/hotel2.jpg"
+        }
+      ]
+    }
+  }
+}

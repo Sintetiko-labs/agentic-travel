@@ -28,4 +28,4 @@ vincci brands
 
 Category: **hotel**
 
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+Search: **live** — homepage hotel links (`internal/client/search.go`, source: `html-links`)

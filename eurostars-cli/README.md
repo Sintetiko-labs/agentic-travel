@@ -41,4 +41,4 @@ Use `--brand` to select a sub-brand when searching.
 
 Category: **hotel**
 
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+Search: **live** — homepage embedded JSON (`internal/client/search.go`, source: `embedded-json`)

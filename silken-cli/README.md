@@ -28,4 +28,4 @@ silken brands
 
 Category: **hotel**
 
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+Search: **partial** — listing page data attributes (`html-cards`); no Madrid properties (try Barcelona/Bilbao)

@@ -23,7 +23,7 @@ func (c *Client) Read(idOrURL string) (*HotelView, error) {
 			} `json:"hotel"`
 		} `json:"data"`
 	}
-	if err := c.PostJSON(c.BaseURL+"/api/graphql", payload, &resp); err != nil {
+	if err := c.postGraphQL(payload, &resp); err != nil {
 		return nil, fmt.Errorf("read %q: %w — try IBEROSTAR_COOKIE", idOrURL, err)
 	}
 	h := resp.Data.Hotel

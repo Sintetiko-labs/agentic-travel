@@ -6,10 +6,16 @@ import (
 	"strings"
 
 	"github.com/fbelchi/travelkit/akamai"
+	"github.com/fbelchi/travelkit/parse"
 	tkbase "github.com/fbelchi/travelkit/base"
 )
 
-// Search queries Meliá hotel search BFF (requires Akamai session cookie for live calls).
+const (
+	meliaSearchBFF  = "/services/search/hotels/v2/search"
+	meliaHotelsPath = "/es/hoteles"
+)
+
+// Search queries Meliá hotel search BFF, falling back to the hotel directory page.
 func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, error) {
 	if page < 1 {
 		page = 1
@@ -18,6 +24,23 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		pageSize = 24
 	}
 	query = strings.TrimSpace(query)
+	if res, err := c.searchBFF(query, page, pageSize); err == nil {
+		return res, nil
+	} else if !shouldFallbackSearch(err) {
+		return nil, err
+	}
+	return c.searchDirectory(query, page, pageSize)
+}
+
+func shouldFallbackSearch(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "http 404") || strings.Contains(msg, "decode json")
+}
+
+func (c *Client) searchBFF(query string, page, pageSize int) (*HotelSearchResult, error) {
 	payload := map[string]any{
 		"text":     query,
 		"language": "es",
@@ -25,7 +48,7 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		"page":     page,
 		"size":     pageSize,
 	}
-	body, status, err := c.PostRaw(c.BaseURL+"/services/search/hotels/v2/search", payload)
+	body, status, err := c.postMelia(meliaSearchBFF, payload)
 	if err != nil {
 		return nil, err
 	}
@@ -42,19 +65,58 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 	return resp.toResult(query, page, pageSize, c.Brand, c.BaseURL), nil
 }
 
-func (c *Client) PostRaw(url string, payload any) ([]byte, int, error) {
+func (c *Client) searchDirectory(query string, page, pageSize int) (*HotelSearchResult, error) {
+	html, err := c.FetchHTML(c.BaseURL + meliaHotelsPath)
+	if err != nil {
+		if he, ok := err.(*tkbase.HTTPError); ok && akamai.IsDenied(he.Status, he.Body) {
+			return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("melia"))
+		}
+		return nil, fmt.Errorf("search %q: %w", query, err)
+	}
+	rows := parse.HotelsFromMeliaDirectory(html, c.BaseURL, query)
+	total := len(rows)
+	start := (page - 1) * pageSize
+	if start > total {
+		start = total
+	}
+	end := start + pageSize
+	if end > total {
+		end = total
+	}
+	hits := make([]HotelHit, 0, end-start)
+	for _, h := range rows[start:end] {
+		b := c.Brand
+		if b == "" {
+			b = "Meliá"
+		}
+		hits = append(hits, HotelHit{
+			ID: h.ID, Name: h.Name, Brand: b, City: query,
+			Stars: h.Stars, HotelURL: h.URL, ImageURL: h.ImageURL,
+		})
+	}
+	return &HotelSearchResult{
+		Query: query, Total: total, Page: page, PageSize: pageSize,
+		HasNext: total > page*pageSize, Hotels: hits, Brand: c.Brand, Source: "directory",
+	}, nil
+}
+
+func (c *Client) postMelia(path string, payload any) ([]byte, int, error) {
 	c.Throttle()
 	b, err := json.Marshal(payload)
 	if err != nil {
 		return nil, 0, err
 	}
-	req, err := httpNewPost(url, b)
+	req, err := httpNewPost(c.BaseURL+path, b)
 	if err != nil {
 		return nil, 0, err
 	}
 	c.SetAPIHeaders(req)
 	req.Header.Set("content-type", "application/json")
 	req.Header.Set("origin", c.BaseURL)
+	req.Header.Set("referer", c.BaseURL+"/es/")
+	req.Header.Set("melia-language", "es")
+	req.Header.Set("melia-market", "ES")
+	req.Header.Set("channel", "web")
 	c.ApplyCookie(req)
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
@@ -65,23 +127,28 @@ func (c *Client) PostRaw(url string, payload any) ([]byte, int, error) {
 	return body, resp.StatusCode, nil
 }
 
+func (c *Client) PostRaw(url string, payload any) ([]byte, int, error) {
+	path := strings.TrimPrefix(url, c.BaseURL)
+	return c.postMelia(path, payload)
+}
+
 type meliaHotelRow struct {
-	Code        string  `json:"code"`
-	Name        string  `json:"name"`
-	Brand       string  `json:"brand"`
-	City        string  `json:"city"`
-	Country     string  `json:"country"`
-	Category    float64 `json:"category"`
-	MinPrice    float64 `json:"minPrice"`
-	Currency    string  `json:"currency"`
-	URL         string  `json:"url"`
-	Image       string  `json:"image"`
+	Code     string  `json:"code"`
+	Name     string  `json:"name"`
+	Brand    string  `json:"brand"`
+	City     string  `json:"city"`
+	Country  string  `json:"country"`
+	Category float64 `json:"category"`
+	MinPrice float64 `json:"minPrice"`
+	Currency string  `json:"currency"`
+	URL      string  `json:"url"`
+	Image    string  `json:"image"`
 }
 
 type meliaSearchResponse struct {
-	Total   int `json:"total"`
+	Total   int             `json:"total"`
 	Hotels  []meliaHotelRow `json:"hotels"`
-	HasNext bool `json:"hasNext"`
+	HasNext bool            `json:"hasNext"`
 }
 
 func decodeMeliaSearch(body []byte) (*meliaSearchResponse, error) {
@@ -94,7 +161,7 @@ func decodeMeliaSearch(body []byte) (*meliaSearchResponse, error) {
 	}
 	var alt struct {
 		Total   int             `json:"totalCount"`
-		Hotels  []meliaHotelRow   `json:"results"`
+		Hotels  []meliaHotelRow `json:"results"`
 		HasNext bool            `json:"hasNext"`
 	}
 	if err := json.Unmarshal(body, &alt); err == nil && len(alt.Hotels) > 0 {

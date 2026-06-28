@@ -28,4 +28,4 @@ sercotel brands
 
 Category: **hotel**
 
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+Search: **live** — Magnolia data in Next.js RSC HTML (`internal/client/search.go`, source: `rsc-json`)
