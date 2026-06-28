@@ -19,16 +19,19 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		pageSize = 24
 	}
 	query = strings.TrimSpace(query)
+	if query == "" {
+		return nil, fmt.Errorf("destination required")
+	}
 	path := marriottSearchURL(query)
-	html, err := c.FetchHTML(c.BaseURL + path)
+	html, err := c.fetchSearchHTML(path)
 	if err != nil {
 		if he, ok := err.(*tkbase.HTTPError); ok && akamai.IsDenied(he.Status, he.Body) {
-			return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("marriott"))
+			return nil, marriottBlockedErr(c.Cookie)
 		}
 		return nil, fmt.Errorf("search %q: %w", query, err)
 	}
 	if akamai.IsDenied(403, html) {
-		return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("marriott"))
+		return nil, marriottBlockedErr(c.Cookie)
 	}
 	rows := parse.HotelsFromMarriottSearch(html, c.BaseURL)
 	if len(rows) == 0 {
@@ -39,11 +42,16 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 }
 
 func marriottSearchURL(query string) string {
-	city := strings.TrimSpace(query)
-	from := time.Now().AddDate(0, 0, 14).Format("01/02/2006")
-	to := time.Now().AddDate(0, 0, 15).Format("01/02/2006")
-	return fmt.Sprintf("/search/findHotels.mi?destinationAddress.city=%s&destinationAddress.country=GB&roomCount=1&numAdultsPerRoom=2&lengthOfStay=1&fromDate=%s&toDate=%s&deviceType=desktop-web&view=list",
-		strings.ReplaceAll(city, " ", "+"), from, to)
+	from := time.Now().AddDate(0, 0, 14)
+	to := from.AddDate(0, 0, 1)
+	return marriottSearchURLWithDates(query, from, to)
+}
+
+func marriottBlockedErr(cookie string) error {
+	if akamai.SessionReady(cookie) {
+		return fmt.Errorf("akamai blocked — saved cookies may be stale or not valid for CLI requests; re-run: marriott session chrome --wait --timeout 3m")
+	}
+	return fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("marriott"))
 }
 
 func filterByBrand(rows []parse.HotelLD, brand string) []parse.HotelLD {
