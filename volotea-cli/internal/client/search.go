@@ -51,6 +51,10 @@ func (c *Client) Search(origin, dest, depart, ret string, page, pageSize int) (*
 	if end > total {
 		end = total
 	}
+	pageFlights := flights[start:end]
+	if pageFlights == nil {
+		pageFlights = []FlightHit{}
+	}
 
 	return &FlightSearchResult{
 		Query:    fmt.Sprintf("%s-%s %s", origin, dest, depart),
@@ -62,7 +66,7 @@ func (c *Client) Search(origin, dest, depart, ret string, page, pageSize int) (*
 		Page:     page,
 		PageSize: pageSize,
 		HasNext:  total > page*pageSize,
-		Flights:  flights[start:end],
+		Flights:  pageFlights,
 		Brand:    c.Brand,
 		Source:   "flights/search",
 	}, nil
@@ -192,13 +196,13 @@ type voloteaJourney struct {
 func parseVoloteaSearch(raw []byte, origin, dest, depart, ret string) []FlightHit {
 	var resp voloteaSearchResponse
 	if err := jsonUnmarshal(raw, &resp); err != nil {
-		return nil
+		return []FlightHit{}
 	}
 	return filterVoloteaJourneys(resp, origin, dest, depart, ret)
 }
 
 func filterVoloteaJourneys(resp voloteaSearchResponse, origin, dest, depart, ret string) []FlightHit {
-	var out []FlightHit
+	var out = make([]FlightHit, 0)
 	for _, trip := range resp.Data.Trips {
 		for _, j := range trip.JourneysAvailable {
 			if !j.HasFlights || len(j.Segments) == 0 || len(j.Fares) == 0 {
