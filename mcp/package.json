@@ -1,0 +1,11 @@
+{
+  "name": "@agentic-travel/mcp-client",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  }
+}

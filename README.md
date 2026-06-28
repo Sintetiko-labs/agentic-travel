@@ -297,16 +297,30 @@ go build -o melia ./cmd/melia
 ./scripts/verify-clis.sh
 ```
 
+## MCP (official travel API)
+
+Aggregated flight/hotel search via [Duffel MCP](https://github.com/bokangsibolla/duffel-mcp) — complements reverse-engineered CLIs with multi-carrier offers (no Akamai).
+
+```bash
+./mcp/install.sh
+export DUFFEL_ACCESS_TOKEN=duffel_test_xxx
+./scripts/mcp-travel-search.sh   # MAD → STN default
+```
+
+Setup: [docs/MCP_SETUP.md](docs/MCP_SETUP.md) · Cursor config: [.cursor/mcp.json.example](.cursor/mcp.json.example) · vs ryanair-cli: [docs/MCP_RELIABILITY.md](docs/MCP_RELIABILITY.md)
+
 ## Estructura
 
 ```
 agentic-travel/
 ├── travelkit/          # tipos, transport uTLS, cookies, rate limit
+├── mcp/                # Duffel MCP vendored install + call-search-flights client
 ├── melia-cli/
 ├── ryanair-cli/
 ├── scripts/
 │   ├── scaffold-clis.py
-│   └── verify-clis.sh
+│   ├── verify-clis.sh
+│   └── mcp-travel-search.sh
 └── …
 ```
 

@@ -10,6 +10,11 @@
 .env
 *.pem
 config.toml
+.cursor/mcp.json
+
+# MCP vendored server + node deps
+mcp/vendor/
+mcp/node_modules/
 
 # IDE
 .idea/
