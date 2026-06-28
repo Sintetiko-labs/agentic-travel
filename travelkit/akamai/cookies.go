@@ -58,3 +58,24 @@ func NeedsAkamaiWAF(slug string) bool {
 		return false
 	}
 }
+
+// SiteSessionReady reports whether brand-specific site cookies are present (not Akamai).
+func SiteSessionReady(slug, cookie string) bool {
+	if !HasSessionMaterial(cookie) {
+		return false
+	}
+	lower := strings.ToLower(cookie)
+	switch strings.ToLower(slug) {
+	case "melia":
+		return strings.Contains(lower, "optanonconsent=") ||
+			strings.Contains(lower, "didomi_token=") ||
+			strings.Contains(lower, "dtcookie=") ||
+			strings.Contains(lower, "rxvisitor=")
+	case "iberostar":
+		return strings.Contains(lower, "_session_id=") ||
+			strings.Contains(lower, "sessionid=") ||
+			strings.Contains(lower, "iberostar=")
+	default:
+		return HasSessionMaterial(cookie)
+	}
+}

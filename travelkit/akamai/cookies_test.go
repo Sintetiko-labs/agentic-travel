@@ -26,3 +26,15 @@ func TestNeedsAkamaiWAF(t *testing.T) {
 		t.Fatal("melia should not require akamai pair")
 	}
 }
+
+func TestSiteSessionReady(t *testing.T) {
+	if !SiteSessionReady("melia", "OptanonConsent=1; dtCookie=abc") {
+		t.Fatal("melia site cookies should be ready")
+	}
+	if SiteSessionReady("melia", "foo=bar") {
+		t.Fatal("generic cookie should not satisfy melia site check")
+	}
+	if !SiteSessionReady("iberostar", "_session_id=abc; foo=bar") {
+		t.Fatal("iberostar session id should be ready")
+	}
+}

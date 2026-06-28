@@ -101,11 +101,17 @@ func runSessionDoctor(args []string) error {
 		EnvPrefix:        cl.EnvPrefix,
 		BaseURL:          client.BaseURL,
 		Cookie:           cl.Cookie,
+		SessionOptional:  true,
 		ProbeURL:         "https://www.iberostar.com/api/graphql",
 		ProbeMethod:      "POST",
 		ProbeBody:        `{"query":"query { searchHotels(query:\"Madrid\", page:1, size:1) { total } }"}`,
 		ProbeContentType: "application/json",
-		ProbeReferer:     client.BaseURL + "/es/",
+		ProbeOrigin:      client.BaseURL,
+		ProbeReferer:     client.BaseURL + "/es/hoteles",
+		ProbeHeaders: map[string]string{
+			"x-market":   "ES",
+			"x-language": "es",
+		},
 	})
 	if cf.jsonOut {
 		return emitJSON(res)
