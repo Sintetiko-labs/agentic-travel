@@ -18,8 +18,11 @@ func cmdSearch(args []string) error {
 	if fs.NArg() == 0 {
 		return fmt.Errorf("usage: marriott search [flags] <destination...>")
 	}
+	query := strings.TrimSpace(strings.Join(fs.Args(), " "))
+	if query == "" {
+		return fmt.Errorf("destination required (non-empty)")
+	}
 	cl := client.New(*brand)
-	query := strings.Join(fs.Args(), " ")
 	res, err := cl.Search(query, *page, *limit)
 	if err != nil {
 		return err
