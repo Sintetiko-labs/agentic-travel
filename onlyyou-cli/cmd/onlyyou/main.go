@@ -4,11 +4,14 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/fbelchi/travelkit/network"
 )
 
 var version = "dev"
 
 func main() {
+	os.Args = network.PreprocessArgs(os.Args)
 	if len(os.Args) < 2 {
 		usage()
 		os.Exit(2)
@@ -23,6 +26,8 @@ func main() {
 		err = cmdAvailability(os.Args[2:])
 	case "session":
 		err = cmdSession(os.Args[2:])
+	case "network":
+		err = cmdNetwork(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -51,6 +56,7 @@ USAGE:
   onlyyou session sync
   onlyyou session doctor [--json]
   onlyyou brands
+  onlyyou network doctor [--json]
   onlyyou version | help
 `)
 }

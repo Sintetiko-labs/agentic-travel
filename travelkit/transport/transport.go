@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/url"
 	"time"
 
 	utls "github.com/refraction-networking/utls"
+
+	"github.com/fbelchi/travelkit/network"
 )
 
 // NewChromeTransport returns an http.Transport that mimics Chrome TLS (HTTP/1.1).
@@ -50,16 +51,15 @@ func NewChromeTransport() (*http.Transport, error) {
 		}
 		return u, nil
 	}
-	return &http.Transport{
-		// CLIs must use the Mac's local network (residential IP). Do not route via
-		// HTTP_PROXY / HTTPS_PROXY / ALL_PROXY — datacenter egress breaks Akamai WAF.
-		Proxy: func(*http.Request) (*url.URL, error) { return nil, nil },
+	tr := &http.Transport{
 		DialTLSContext:        dial,
 		MaxIdleConns:          100,
 		IdleConnTimeout:       90 * time.Second,
 		TLSHandshakeTimeout:   15 * time.Second,
 		ExpectContinueTimeout: time.Second,
-	}, nil
+	}
+	network.DisableProxy(tr)
+	return tr, nil
 }
 
 func chromeSpecHTTP1() (utls.ClientHelloSpec, error) {
