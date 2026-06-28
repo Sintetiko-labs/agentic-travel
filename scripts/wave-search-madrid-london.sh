@@ -1,65 +1,96 @@
 #!/usr/bin/env bash
+# Parallel Madrid → London wave: Duffel MCP + Kiwi + Gondola + airline/hotel CLIs.
 set -euo pipefail
+
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+BIN_DIR="${AGENTIC_TRAVEL_BINS:-$HOME/.cache/agentic-travel/bin}"
 BUILD="$ROOT/scripts/mac-build-cli.sh"
 MERGE="$ROOT/scripts/wave-merge.py"
-TMP="${WAVE_TMP:-$(mktemp -d "${TMPDIR:-/tmp}/wave-search.XXXXXX")}"
-trap 'rm -rf "$TMP"' EXIT
+HTTP_MCP="$ROOT/mcp/call-http-mcp-tool.mjs"
+
 FROM="${WAVE_FROM:-MAD}"
+TO="${WAVE_TO:-STN}"
 DEPART="${WAVE_DEPART:-2026-07-15}"
 CHECK_IN="${WAVE_CHECK_IN:-2026-07-15}"
 CHECK_OUT="${WAVE_CHECK_OUT:-2026-07-18}"
+CITY="${WAVE_CITY:-London}"
+GUESTS="${WAVE_GUESTS:-2}"
+PER_SOURCE_TIMEOUT="${WAVE_SOURCE_TIMEOUT:-14}"
+
 OUT="${WAVE_OUT:-$ROOT/wave-result.json}"
-ms_now() { python3 -c 'import time; print(int(time.time()*1000))'; }
-run_timed() {
-  local name="$1"; shift
-  local out="$TMP/${name}.json" err="$TMP/${name}.err"
-  local t0 t1 ms ok=1
-  t0="$(ms_now)"
-  if "$@" >"$out" 2>"$err"; then ok=1; else ok=0; fi
-  t1="$(ms_now)"; ms=$((t1 - t0))
-  printf '%s:%s:%s:%s\n' "$name" "$out" "$ms" "$ok" >>"$TMP/specs.txt"
+TMP="${WAVE_TMP:-$(mktemp -d "${TMPDIR:-/tmp}/wave-search.XXXXXX")}"
+trap 'rm -rf "$TMP"' EXIT
+mkdir -p "$BIN_DIR"
+export AGENTIC_TRAVEL_BINS="$BIN_DIR"
+
+cli() {
+  local slug="$1"
+  local cached="$BIN_DIR/$slug"
+  if [[ -x "$cached" ]]; then echo "$cached"; else echo "__BUILD__$slug"; fi
 }
-run_vueling() {
-  local direct_out="$TMP/vueling_direct.json" err="$TMP/vueling.err"
-  local t0 t1 ms
-  t0="$(ms_now)"
-  if "$BUILD" vueling search --json --from "$FROM" --to LGW --depart "$DEPART" >"$direct_out" 2>"$err"; then
-    if python3 -c "import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get('total',0)>0 else 1)" "$direct_out" 2>/dev/null; then
-      t1="$(ms_now)"; ms=$((t1 - t0))
-      printf 'vueling:%s:%s:1\n' "$direct_out" "$ms" >>"$TMP/specs.txt"
-      return 0
-    fi
+
+now_ms() { python3 -c 'import time; print(int(time.time()*1000))'; }
+
+run_job() {
+  local id="$1"; shift
+  local start end ms rc=0
+  start="$(now_ms)"
+  if command -v gtimeout >/dev/null 2>&1; then
+    gtimeout "$PER_SOURCE_TIMEOUT" "$@" >"$TMP/$id.json" 2>"$TMP/$id.err" || rc=$?
+  elif command -v timeout >/dev/null 2>&1; then
+    timeout "$PER_SOURCE_TIMEOUT" "$@" >"$TMP/$id.json" 2>"$TMP/$id.err" || rc=$?
+  else
+    "$@" >"$TMP/$id.json" 2>"$TMP/$id.err" || rc=$?
   fi
-  local leg1="$TMP/vueling_leg1.json" leg2="$TMP/vueling_leg2.json"
-  local t_leg0 t_leg1 ms1
-  t_leg0="$(ms_now)"
-  "$BUILD" vueling search --json --from "$FROM" --to BCN --depart "$DEPART" >"$leg1" 2>>"$err" &
-  p1=$!
-  "$BUILD" vueling search --json --from BCN --to LGW --depart "$DEPART" >"$leg2" 2>>"$err" &
-  p2=$!
-  wait "$p1" "$p2"
-  t_leg1="$(ms_now)"; ms1=$((t_leg1 - t_leg0))
-  printf 'vueling_leg1:%s:%s:1\n' "$leg1" "$ms1" >>"$TMP/specs.txt"
-  printf 'vueling_leg2:%s:%s:0\n' "$leg2" "$ms1" >>"$TMP/specs.txt"
+  end="$(now_ms)"; ms=$((end - start))
+  local ok=false; [[ $rc -eq 0 ]] && ok=true
+  python3 -c "import json; print(json.dumps({'id':'$id','ok':$ok,'ms':$ms,'exit_code':$rc,'skipped':False}))"
 }
-wall_t0="$(ms_now)"
-: >"$TMP/specs.txt"
-if [ -n "${DUFFEL_ACCESS_TOKEN:-}" ]; then
-  run_timed duffel node "$ROOT/mcp/call-search-flights.mjs" --from "$FROM" --to STN --depart "$DEPART" &
-  pid_duffel=$!
-else pid_duffel=""; fi
-run_timed ryanair "$BUILD" ryanair search --json --from "$FROM" --to STN --depart "$DEPART" &
-pid_ryanair=$!
-run_vueling & pid_vueling=$!
-run_timed travelodge "$BUILD" travelodge search --json London &
-pid_travelodge=$!
-run_timed hilton "$BUILD" hilton search --json London &
-pid_hilton=$!
-[ -n "$pid_duffel" ] && wait "$pid_duffel" || true
-wait "$pid_ryanair" "$pid_vueling" "$pid_travelodge" "$pid_hilton"
-wall_ms=$(($(ms_now) - wall_t0))
-META=$(python3 -c "import json; print(json.dumps({'route':'${FROM}->London','ryanair_route':'${FROM}->STN','vueling_target':'${FROM}->LGW','depart':'${DEPART}','check_in':'${CHECK_IN}','check_out':'${CHECK_OUT}'}))")
-SPECS=()
-while IFS= read -r line; do SPECS+=("$line"); done < "$TMP/specs.txt"
-python3 "$MERGE" --out "$OUT" --wall-ms "$wall_ms" --meta "$META" "${SPECS[@]}"
+
+mark_skip() {
+  local id="$1" reason="$2"
+  python3 -c "import json; o={'skipped':True,'reason':$reason}; print(json.dumps(o))" >"$TMP/$id.json"
+  python3 -c "import json; print(json.dumps({'id':'$id','ok':False,'ms':0,'skipped':True,'error':$reason}))"
+}
+
+run_cli_job() {
+  local id="$1" slug="$2"; shift 2
+  local spec; spec="$(cli "$slug")"
+  if [[ "$spec" == __BUILD__* ]]; then
+    slug="${spec#__BUILD__}"
+    run_job "$id" "$BUILD" "$slug" "$@"
+  else
+    run_job "$id" "$spec" "$@"
+  fi
+}
+
+wall_start="$(now_ms)"
+pids=()
+
+if [[ -n "${DUFFEL_ACCESS_TOKEN:-}" ]]; then
+  ( meta=$(run_job duffel node "$ROOT/mcp/call-search-flights.mjs" --from "$FROM" --to "$TO" --depart "$DEPART"); echo "$meta" >"$TMP/duffel.meta.json" ) & pids+=($!)
+else
+  echo "$(mark_skip duffel "$(python3 -c 'import json;print(json.dumps("DUFFEL_ACCESS_TOKEN unset"))')")" >"$TMP/duffel.meta.json"
+fi
+
+if [[ -d "$ROOT/mcp/node_modules/@modelcontextprotocol/sdk" ]]; then
+  kiwi_args=$(python3 -c "import json;print(json.dumps({'origin':'$FROM','destination':'$TO','departureDate':'$DEPART','adults':1,'cabin':'economy'}))")
+  ( meta=$(run_job kiwi node "$HTTP_MCP" --url https://mcp.kiwi.com --tool search-flight --args "$kiwi_args"); echo "$meta" >"$TMP/kiwi.meta.json" ) & pids+=($!)
+  gondola_args=$(python3 -c "import json;print(json.dumps({'location':'$CITY','check_in':'$CHECK_IN','check_out':'$CHECK_OUT','guests':int('$GUESTS')}))")
+  ( meta=$(run_job gondola node "$HTTP_MCP" --url https://mcp.gondola.ai/mcp --tool search_hotels --args "$gondola_args"); echo "$meta" >"$TMP/gondola.meta.json" ) & pids+=($!)
+else
+  for id in kiwi gondola; do
+    echo "$(mark_skip "$id" "$(python3 -c 'import json;print(json.dumps("(cd mcp && npm ci)"))')")" >"$TMP/${id}.meta.json"
+  done
+fi
+
+( meta=$(run_cli_job ryanair ryanair search --json --from "$FROM" --to "$TO" --depart "$DEPART"); echo "$meta" >"$TMP/ryanair.meta.json" ) & pids+=($!)
+( meta=$(run_cli_job vueling vueling search --json --from "$FROM" --to "$TO" --depart "$DEPART"); echo "$meta" >"$TMP/vueling.meta.json" ) & pids+=($!)
+( meta=$(run_cli_job travelodge travelodge search --json "$CITY"); echo "$meta" >"$TMP/travelodge.meta.json" ) & pids+=($!)
+( meta=$(run_cli_job hilton hilton search --json "$CITY"); echo "$meta" >"$TMP/hilton.meta.json" ) & pids+=($!)
+
+for pid in "${pids[@]}"; do wait "$pid" || true; done
+wall_ms=$(( $(now_ms) - wall_start ))
+query=$(python3 -c "import json;print(json.dumps({'from':'$FROM','to':'$TO','depart':'$DEPART','city':'$CITY','check_in':'$CHECK_IN','check_out':'$CHECK_OUT'}))")
+"$MERGE" --meta-dir "$TMP" --out "$OUT" --wall-ms "$wall_ms" --query "$query" >&2
+cat "$OUT"
