@@ -92,6 +92,10 @@ func (c *Client) Search(origin, dest, depart, ret string, page, pageSize int) (*
 	if end > total {
 		end = total
 	}
+	pageFlights := flights[start:end]
+	if pageFlights == nil {
+		pageFlights = []FlightHit{}
+	}
 
 	return &FlightSearchResult{
 		Query:    fmt.Sprintf("%s-%s %s", origin, dest, depart),
@@ -103,7 +107,7 @@ func (c *Client) Search(origin, dest, depart, ret string, page, pageSize int) (*
 		Page:     page,
 		PageSize: pageSize,
 		HasNext:  total > page*pageSize,
-		Flights:  flights[start:end],
+		Flights:  pageFlights,
 		Brand:    c.Brand,
 		Source:   "booking_search",
 	}, nil
@@ -227,7 +231,7 @@ type binterFare struct {
 func parseBinterSearch(raw []byte, origin, dest, depart string) ([]FlightHit, string) {
 	var resp binterSearchResponse
 	if err := jsonUnmarshal(raw, &resp); err != nil {
-		return nil, err.Error()
+		return []FlightHit{}, err.Error()
 	}
 	errMsg := ""
 	if len(resp.Errors) > 0 {
@@ -237,7 +241,7 @@ func parseBinterSearch(raw []byte, origin, dest, depart string) ([]FlightHit, st
 }
 
 func filterBinterFlights(resp binterSearchResponse, origin, dest, depart string) []FlightHit {
-	var out []FlightHit
+	out := make([]FlightHit, 0)
 	for _, avail := range resp.Data.BookingSearch.Availability {
 		for _, f := range avail.Flights {
 			if len(f.FlightSegments) == 0 {
