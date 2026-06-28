@@ -18,7 +18,13 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		pageSize = 24
 	}
 	query = strings.TrimSpace(query)
+	if query == "" {
+		return nil, fmt.Errorf("destination required")
+	}
 	path := hiltonLocationPath(query)
+	if path == "" {
+		return nil, fmt.Errorf("destination required")
+	}
 	html, err := c.FetchHTML(c.BaseURL + path)
 	if err != nil {
 		if he, ok := err.(*tkbase.HTTPError); ok && akamai.IsDenied(he.Status, he.Body) {
@@ -38,6 +44,10 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 
 func hiltonLocationPath(query string) string {
 	slug := strings.ToLower(strings.TrimSpace(query))
+	if slug == "" {
+		return ""
+	}
+	slug = strings.NewReplacer("'", "", ".", "", ",", "").Replace(slug)
 	slug = strings.ReplaceAll(slug, " ", "-")
 	switch slug {
 	case "uk", "united-kingdom", "england":
