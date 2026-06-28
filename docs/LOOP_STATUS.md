@@ -27,6 +27,11 @@ No `loop-6/qa-*` branches were present at integration time. QA agents are **in f
 3. Run `./scripts/verify-clis.sh`
 4. If verify passes, merge `loop-6/qa-fixes` → `main` and push
 
+
+### Baseline verify (main @ integration)
+
+- `./scripts/verify-clis.sh`: **194 passed, 0 failed** (no QA merges applied)
+
 ## Main reference
 
 - **main SHA at last check:** `b7d3e1a1778e450bca08d21895a6e8eaecaed2aa`
