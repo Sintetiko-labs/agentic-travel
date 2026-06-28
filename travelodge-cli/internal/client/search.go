@@ -49,18 +49,73 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 	}
 	query = strings.TrimSpace(query)
 	if query == "" {
+<<<<<<< HEAD
 		return nil, fmt.Errorf("destination query required")
 	}
 
 	checkIn, checkOut := defaultStayDates()
 	rows, err := c.fetchAllHotels(query, checkIn, checkOut)
+=======
+		return nil, fmt.Errorf("destination required")
+	}
+	body, status, err := c.GetRaw(travelodgeSitemapURL)
+>>>>>>> 0194d43 (fix(travelodge): reject empty queries and split compound destinations)
 	if err != nil {
 		return nil, err
 	}
 	if len(rows) == 0 {
 		return nil, fmt.Errorf("search %q: no hotels found", query)
 	}
+<<<<<<< HEAD
 
+=======
+	rows := travelodgeRowsForQuery(string(body), query)
+	return hotelsLDToResult(rows, query, page, pageSize, brandFor(c.Brand), c.BaseURL, "sitemap"), nil
+}
+
+func travelodgeRowsForQuery(xml, query string) []parse.HotelLD {
+	terms := splitDestinationTerms(query)
+	if len(terms) <= 1 {
+		return parse.HotelsFromTravelodgeSitemap(xml, query)
+	}
+	seen := map[string]bool{}
+	var rows []parse.HotelLD
+	for _, term := range terms {
+		for _, h := range parse.HotelsFromTravelodgeSitemap(xml, term) {
+			key := h.URL
+			if key == "" {
+				key = h.ID
+			}
+			if seen[key] {
+				continue
+			}
+			seen[key] = true
+			rows = append(rows, h)
+		}
+	}
+	return rows
+}
+
+func splitDestinationTerms(query string) []string {
+	for _, sep := range []string{"&", "|"} {
+		if !strings.Contains(query, sep) {
+			continue
+		}
+		var terms []string
+		for _, part := range strings.Split(query, sep) {
+			if t := strings.TrimSpace(part); t != "" {
+				terms = append(terms, t)
+			}
+		}
+		if len(terms) > 1 {
+			return terms
+		}
+	}
+	return []string{query}
+}
+
+func hotelsLDToResult(rows []parse.HotelLD, query string, page, pageSize int, brand, base, source string) *HotelSearchResult {
+>>>>>>> 0194d43 (fix(travelodge): reject empty queries and split compound destinations)
 	total := len(rows)
 	start := (page - 1) * pageSize
 	if start > total {
