@@ -50,8 +50,10 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		} `json:"errors"`
 	}
 	if err := c.postGraphQL(payload, &resp); err != nil {
-		if he, ok := err.(*tkbase.HTTPError); ok && akamai.IsDenied(he.Status, he.Body) {
-			return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("iberostar"))
+		if he, ok := err.(*tkbase.HTTPError); ok {
+			if akamai.IsDenied(he.Status, he.Body) || akamai.IsAppNotFoundWithoutSession(he.Status, he.Body) {
+				return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("iberostar"))
+			}
 		}
 		return nil, fmt.Errorf("search %q: %w", query, err)
 	}

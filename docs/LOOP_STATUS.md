@@ -6,8 +6,8 @@ Last updated: 2026-06-28 (Worker F — integration)
 
 | Field | Value |
 |-------|-------|
-| **SHA** | `4e603670c41b0632553d8c9b765f7b46feb278f5` |
-| **Tip** | Merge branch `loop-6/airlines-partial` into main |
+| **SHA** | `c7b10977df035767ddecbf36d560e1e8d5e9a80e` |
+| **Tip** | docs integration on local main (7 commits ahead of `origin/main`) |
 | **Remote** | `Sintetiko-labs/agentic-travel` |
 
 ## Merge status
@@ -19,7 +19,7 @@ Last updated: 2026-06-28 (Worker F — integration)
 | `loop-6/hotel-batch-es` | **done** | eurostars, hotusa, vincci, silken, sercotel live search |
 | `loop-6/hotels-akamai` | **done** | melia, nh, iberostar unblock (partial / Akamai) |
 | `loop-6/airlines-partial` | **done** | easyjet, aireuropa, iberiaexpress partial unblock |
-| `loop-6/volotea-binter` | **pending** | 2 commits ahead of main (`6bfd652` live volotea/binter) — **do not merge until worker finishes QA** |
+| `loop-6/volotea-binter` | **merged locally** | on main `c7b1097` ancestry; `origin/main` still at `4e60367` until push |
 | `loop-6/qa-*` | **pending** | QA fix branches (ryanair, volotea, travelodge, riu, marriott, hilton, binter, fixes, inventory) — integration only |
 
 ## Loop 6 worker lanes (prep — not merged)
@@ -40,9 +40,9 @@ Counts reflect **documented priority** CLIs in root README (not all 194 scaffold
 
 | Status | Count | Slugs |
 |--------|------:|-------|
-| **live** | 16 | ryanair, vueling, barcelo, riu, catalonia, h10, palladium, lopesan, princess, eurostars, hotusa, vincci, silken, sercotel, travelodge, hilton |
+| **live** | 18 | ryanair, vueling, volotea, binter, barcelo, riu, catalonia, h10, palladium, lopesan, princess, eurostars, hotusa, vincci, silken, sercotel, travelodge, hilton |
 | **partial** | 7 | melia, nh, iberostar, marriott, easyjet, aireuropa, iberiaexpress |
-| **stub** (priority-adjacent) | 2 | volotea, binter on main until `loop-6/volotea-binter` merges |
+| **stub** (priority-adjacent) | 0 | — |
 
 **All CLIs (scaffold):** 194 hotel + airline modules — most non-priority slugs remain **stub** (`search not yet implemented`).
 

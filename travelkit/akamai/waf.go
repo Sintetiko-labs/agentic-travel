@@ -61,3 +61,16 @@ func ProbeOK(status int, body string) bool {
 	}
 	return !strings.Contains(strings.ToLower(trim), "<html")
 }
+
+// IsAppNotFoundWithoutSession reports 404 responses that usually mean the edge was
+// bypassed without a valid session cookie (Next.js shell, empty body, Go 404 text).
+func IsAppNotFoundWithoutSession(status int, body string) bool {
+	if status != 404 {
+		return false
+	}
+	trimmed := strings.TrimSpace(body)
+	if trimmed == "" || trimmed == "404 page not found" {
+		return true
+	}
+	return strings.Contains(body, "__next_error__")
+}

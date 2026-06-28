@@ -3,6 +3,7 @@ package client
 import (
 	"strings"
 
+	"github.com/fbelchi/travelkit/destination"
 	"github.com/fbelchi/travelkit/parse"
 	tkbase "github.com/fbelchi/travelkit/base"
 )
@@ -23,12 +24,30 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		return nil, err
 	}
 	rows := parse.HotelsFromCataloniaLinks(html, c.BaseURL)
-	q := strings.ToLower(query)
 	filtered := make([]parse.HotelLD, 0, len(rows))
 	for _, h := range rows {
-		if q == "" || strings.Contains(strings.ToLower(h.Name), q) ||
-			strings.Contains(strings.ToLower(h.ID), q) {
+		if destination.MatchQuery(query, h.Name, h.URL, h.Address, h.ID) {
 			filtered = append(filtered, h)
+		}
+	}
+	if len(filtered) == 0 {
+		for _, alias := range destination.Expand(query) {
+			path := "/es/hotel/catalonia-" + strings.ToLower(strings.ReplaceAll(alias, " ", "-"))
+			html, err := c.FetchHTML(c.BaseURL + path)
+			if err != nil {
+				continue
+			}
+			ld := parse.HotelsFromJSONLD(html, c.BaseURL)
+			if len(ld) == 0 {
+				continue
+			}
+			h := ld[0]
+			slug := strings.TrimPrefix(path, "/es/hotel/")
+			filtered = append(filtered, parse.HotelLD{
+				ID: slug, Name: h.Name, URL: tkbase.Absolutize(c.BaseURL, path),
+				Address: h.Address, Stars: h.Stars,
+			})
+			break
 		}
 	}
 	return hotelsLDToResult(filtered, query, page, pageSize, c.Brand, c.BaseURL, "html-links"), nil

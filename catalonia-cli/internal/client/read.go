@@ -1,8 +1,28 @@
 package client
 
-import "fmt"
+import (
+	"strings"
 
-// Read returns hotel detail (stub).
+	tkbase "github.com/fbelchi/travelkit/base"
+	"github.com/fbelchi/travelkit/hotel"
+)
+
+// Read returns hotel detail by id or URL.
 func (c *Client) Read(idOrURL string) (*HotelView, error) {
-	return nil, fmt.Errorf("read not yet implemented for Catalonia Hotels (id=%q)", idOrURL)
+	brand := c.Brand
+	if brand == "" {
+		brand = "Catalonia Hotels & Resorts"
+	}
+	r := &hotel.LDReader{
+		BaseURL:   c.BaseURL,
+		Brand:     brand,
+		FetchHTML: c.FetchHTML,
+		URLForID: func(id string) string {
+			return tkbase.Absolutize(c.BaseURL, "/es/hotel/"+strings.TrimPrefix(id, "/"))
+		},
+		Lookup: func(id string) (*HotelHit, error) {
+			return hotel.LookupFromSearch(c.Search, id)
+		},
+	}
+	return r.Read(idOrURL)
 }

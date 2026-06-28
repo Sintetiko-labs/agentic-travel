@@ -16,6 +16,8 @@ Monorepo de **CLIs agent-friendly** para hoteles y aerolíneas (cadenas español
 |-----|------|--------|---------|----------------|
 | `ryanair` | airline | **live** | chrome+sync+doctor | `farfnd` + booking API |
 | `vueling` | airline | **live** | chrome+sync+doctor | `apiwww.vueling.com/api/FlightPrice/GetAllFlights` (session optional) |
+| `volotea` | airline | **live** | none | Volotea SPA `api.volotea.com` |
+| `binter` | airline | **live** | none | Binter availability API |
 | `barcelo` | hotel | **live** | chrome+sync+doctor | JSON-LD listing |
 | `riu` | hotel | **live** | chrome+sync+doctor | ng-state destination pages |
 | `catalonia` | hotel | **live** | chrome+sync+doctor | homepage hotel links |

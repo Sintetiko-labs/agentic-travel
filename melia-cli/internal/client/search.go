@@ -53,7 +53,7 @@ func (c *Client) searchBFF(query string, page, pageSize int) (*HotelSearchResult
 		return nil, err
 	}
 	if status < 200 || status >= 300 {
-		if akamai.IsDenied(status, string(body)) {
+		if akamai.IsDenied(status, string(body)) || akamai.IsAppNotFoundWithoutSession(status, string(body)) {
 			return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("melia"))
 		}
 		return nil, fmt.Errorf("search %q: HTTP %d: %s", query, status, tkbase.Truncate(string(body), 200))

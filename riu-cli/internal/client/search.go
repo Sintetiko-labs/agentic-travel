@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/fbelchi/travelkit/akamai"
+	"github.com/fbelchi/travelkit/destination"
 	"github.com/fbelchi/travelkit/parse"
 	tkbase "github.com/fbelchi/travelkit/base"
 )
@@ -29,7 +30,7 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		}
 	}
 
-	if res, err := c.searchBFF(query, page, pageSize); err == nil && len(res.Hotels) > 0 {
+	if res, err := c.searchBFFAll(query, page, pageSize); err == nil && len(res.Hotels) > 0 {
 		if c.Brand != "" {
 			res.Brand = c.Brand
 		}
@@ -144,12 +145,60 @@ func (c *Client) searchBFF(query string, page, pageSize int) (*HotelSearchResult
 	}, nil
 }
 
+func (c *Client) searchBFFAll(query string, page, pageSize int) (*HotelSearchResult, error) {
+	const batch = 100
+	var all []HotelHit
+	for pg := 1; pg <= 5; pg++ {
+		res, err := c.searchBFF("", pg, batch)
+		if err != nil || len(res.Hotels) == 0 {
+			break
+		}
+		all = append(all, res.Hotels...)
+		if len(res.Hotels) < batch {
+			break
+		}
+	}
+	if len(all) == 0 {
+		return nil, fmt.Errorf("bff empty")
+	}
+	q := strings.ToLower(strings.TrimSpace(query))
+	filtered := all
+	if q != "" {
+		filtered = make([]HotelHit, 0, len(all))
+		for _, h := range all {
+			if destination.MatchQuery(query, h.Name, h.HotelURL, h.City, h.ID) {
+				filtered = append(filtered, h)
+			}
+		}
+	}
+	if len(filtered) == 0 {
+		return nil, fmt.Errorf("bff no match for %q", query)
+	}
+	total := len(filtered)
+	start := (page - 1) * pageSize
+	if start > total {
+		start = total
+	}
+	end := start + pageSize
+	if end > total {
+		end = total
+	}
+	return &HotelSearchResult{
+		Query: query, Total: total, Page: page, PageSize: pageSize,
+		HasNext: total > page*pageSize, Hotels: filtered[start:end],
+		Brand: c.Brand, Source: "bff",
+	}, nil
+}
+
 func (c *Client) fetchDestinationHTML(query string) (string, error) {
-	slug := strings.ToLower(strings.ReplaceAll(query, " ", "-"))
-	paths := []string{
-		"/es/hotels/europa/espana/" + slug,
-		"/es/hotels/europa/" + slug,
-		"/es/hotels/" + slug,
+	var paths []string
+	for _, term := range destination.Expand(query) {
+		slug := strings.ToLower(strings.ReplaceAll(term, " ", "-"))
+		paths = append(paths,
+			"/es/hotels/europa/espana/"+slug,
+			"/es/hotels/europa/"+slug,
+			"/es/hotels/"+slug,
+		)
 	}
 	var lastErr error
 	for _, p := range paths {

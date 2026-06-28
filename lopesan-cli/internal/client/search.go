@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/fbelchi/travelkit/destination"
 	"github.com/fbelchi/travelkit/parse"
 )
 
@@ -42,8 +43,7 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 	q := strings.ToLower(query)
 	filtered := make([]parse.HotelLD, 0, len(rows))
 	for _, h := range rows {
-		if q == "" || strings.Contains(strings.ToLower(h.Name), q) ||
-			strings.Contains(strings.ToLower(h.URL), q) {
+		if q == "" || destination.MatchQuery(query, h.Name, h.URL, "", h.ID) {
 			filtered = append(filtered, h)
 		}
 	}

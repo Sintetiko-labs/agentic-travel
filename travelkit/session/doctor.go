@@ -105,8 +105,12 @@ func Doctor(opts DoctorOptions) DoctorResult {
 	if method == "" {
 		method = http.MethodGet
 	}
+	probeCookie := ""
+	if cookieOK {
+		probeCookie = cookie
+	}
 	status, probeBody, err := probeHTTP(probeRequest{
-		method: method, url: opts.ProbeURL, cookie: cookie,
+		method: method, url: opts.ProbeURL, cookie: probeCookie,
 		body: opts.ProbeBody, contentType: opts.ProbeContentType,
 		origin: opts.ProbeOrigin, referer: opts.ProbeReferer, baseURL: opts.BaseURL,
 	})
@@ -148,8 +152,18 @@ func Doctor(opts DoctorOptions) DoctorResult {
 		}
 		res.NextStep = slug + " session chrome --wait --timeout 3m"
 	case status == 404 || status == 405:
-		res.Status = DoctorAPIError
-		res.Message = fmt.Sprintf("probe endpoint not found (HTTP %d) — check API path in client", status)
+		if !cookieOK || akamai.IsAppNotFoundWithoutSession(status, probeBody) {
+			res.Status = DoctorBlocked
+			if cookieOK {
+				res.Message = fmt.Sprintf("API probe blocked (HTTP %d) — cookies may be stale", status)
+			} else {
+				res.Message = fmt.Sprintf("API probe blocked (HTTP %d) — need headed Chrome session", status)
+			}
+			res.NextStep = slug + " session chrome --wait --timeout 3m"
+		} else {
+			res.Status = DoctorAPIError
+			res.Message = fmt.Sprintf("probe endpoint not found (HTTP %d) — check API path in client", status)
+		}
 	default:
 		res.Status = DoctorAPIError
 		res.Message = fmt.Sprintf("unexpected probe status HTTP %d", status)
