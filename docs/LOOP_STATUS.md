@@ -6,8 +6,8 @@ Last updated: 2026-06-28 (Worker F — integration)
 
 | Field | Value |
 |-------|-------|
-| **SHA** | `c7b10977df035767ddecbf36d560e1e8d5e9a80e` |
-| **Tip** | docs integration on local main (7 commits ahead of `origin/main`) |
+| **SHA** | `396e6bd4a93043d99717d707d464032e371cffb6` |
+| **Tip** | loop-6 catch-up: QA fixes on `05d1485` + volotea `flights:[]` + branch merge records |
 | **Remote** | `Sintetiko-labs/agentic-travel` |
 
 ## Merge status
@@ -19,8 +19,8 @@ Last updated: 2026-06-28 (Worker F — integration)
 | `loop-6/hotel-batch-es` | **done** | eurostars, hotusa, vincci, silken, sercotel live search |
 | `loop-6/hotels-akamai` | **done** | melia, nh, iberostar unblock (partial / Akamai) |
 | `loop-6/airlines-partial` | **done** | easyjet, aireuropa, iberiaexpress partial unblock |
-| `loop-6/volotea-binter` | **merged locally** | on main `c7b1097` ancestry; `origin/main` still at `4e60367` until push |
-| `loop-6/qa-*` | **pending** | QA fix branches (ryanair, volotea, travelodge, riu, marriott, hilton, binter, fixes, inventory) — integration only |
+| `loop-6/volotea-binter` | **done** | live APIs on main; merge record `5cfd2e0` |
+| `loop-6/qa-*` | **done** (integrated) | hotusa, travelkit, melia, iberostar, volotea, binter, ryanair, travelodge, marriott, hilton, hotels-es — on `dead273` / `05d1485` ancestry |
 
 ## Loop 6 worker lanes (prep — not merged)
 
@@ -52,13 +52,14 @@ Build + `{slug} help` for every `*-cli` directory. Run on clean `main` after mer
 
 | Run | SHA | Pass | Fail | Notes |
 |-----|-----|-----:|-----:|-------|
-| Loop 6 integration (2026-06-28) | pre-`4e60367` snapshot | 184 | 10 | Transient build failures under parallel load: aerlingus, aerolineas, aeromexico, aircanada, catalonia, coolrooms, iberojet, marriott, travelodge, umusic — re-run on quiet machine |
+| Loop 6 QA subset (2026-06-28) | `05d1485` | 194 | 0 | hilton, marriott, ryanair, travelodge + docs |
+| Loop 6 catch-up (2026-06-28) | `396e6bd` | 194 | 0 | volotea `flights:[]` + merge records (re-run `./scripts/verify-clis.sh` to confirm) |
 
 Update this table after each integration pass.
 
 ## Next integration actions
 
-1. Merge `loop-6/volotea-binter` when Worker E + QA sign off.
-2. Merge `loop-6/qa-*` fixes as they land; resolve worktree conflicts (`agentic-travel-merge-wt`, `agentic-travel-qa-integration-wt`).
-3. Re-run `./scripts/verify-clis.sh` on `main`; target **194/194 PASS**.
-4. Refresh live/partial counts after each merge.
+1. ~~Merge `loop-6/volotea-binter`~~ — **done** on `396e6bd`.
+2. ~~Merge `loop-6/qa-*` on main~~ — **done** (`05d1485` + merge commits).
+3. Keep `./scripts/verify-clis.sh` at **194/194** after each integration pass.
+4. Next: Akamai partials (melia, nh, iberostar, easyjet, …) toward more **live** slugs.
