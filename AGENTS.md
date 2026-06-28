@@ -1,12 +1,48 @@
 # Guía para agentes de IA — agentic-travel
 
-Documentación orientada a **agentes autónomos** que orquestan búsqueda de hoteles y vuelos mediante los CLIs de este monorepo.
+Documentación orientada a **agentes autónomos** que orquestan búsqueda de hoteles y vuelos mediante **MCP oficial (primero)** y **CLIs de este monorepo (fallback / marcas)**.
 
-> **No oficial.** APIs reverse-engineered. Puede romperse cuando el proveedor cambie el sitio. **Ejecutar solo en local** (IP residencial).
+> **No oficial (CLIs).** APIs reverse-engineered. Puede romperse cuando el proveedor cambie el sitio. **Ejecutar solo en local** (IP residencial).
 
 ---
 
-## Propósito del monorepo
+## MCP-first (loop 7)
+
+**Regla por defecto:** intenta **MCP** para descubrimiento agregado; usa **CLI** cuando el usuario nombra una marca, cuando MCP no cubre el inventario, o cuando necesitas tarifas directas / sesión WAF.
+
+| Intención | Herramienta primaria | Fallback |
+|-----------|---------------------|----------|
+| Vuelo ciudad→ciudad sin aerolínea | **Duffel MCP** | CLI LCC (`ryanair`, `vueling`, `volotea`, `binter`) |
+| Hotel por ciudad / POI | **Amadeus** o **Booking.com MCP** | CLI cadena española (`melia`, `barcelo`, `nh`, …) |
+| "Solo Meliá / Ryanair / …" | **CLI** (`groups.json` → slug) | MCP solo si CLI falla |
+| Disponibilidad / precio miembro | **CLI** | MCP no sustituye BFF de marca |
+| Reserva / orden | MCP con contrato (Duffel/Amadeus/Booking) | CLI entrega `booking_url` |
+
+Arquitectura completa, costes y matriz de fiabilidad: **[docs/MCP_VS_CLI.md](docs/MCP_VS_CLI.md)**.
+
+### Variables de entorno MCP (orquestador)
+
+```bash
+DUFFEL_API_KEY=...          # vuelos
+AMADEUS_CLIENT_ID=...       # vuelos + hoteles GDS
+AMADEUS_CLIENT_SECRET=...
+BOOKING_PARTNER_ID=...      # hoteles agregador (si aplica)
+```
+
+Sin claves MCP → degradar a CLI donde exista implementación **live** o **partial**; no inventar ofertas.
+
+### Flujo híbrido recomendado
+
+1. Parsear destino, fechas y **marca explícita** (si hay).
+2. Sin marca → MCP search (vuelos y/o hoteles).
+3. Con marca o MCP vacío → `{slug} search --json` (ver `scripts/groups.json`).
+4. Normalizar a tipos `travelkit` (`hotels[]`, `flights[]` — nunca `null`).
+5. Detalle / availability → MCP `offer_id` si existe; si no, CLI `read` / `availability`.
+6. Devolver `booking_url` de la capa que respondió.
+
+---
+
+## Propósito del monorepo (capa CLI)
 
 `agentic-travel` agrupa CLIs Go con un **contrato común**:
 
@@ -66,6 +102,13 @@ export RYANAIR_REQUEST_DELAY=1s
 
 Cookie opcional cuando hay anti-bot: `{PREFIX}_COOKIE`.
 
+Sesión Akamai/Incapsula:
+
+```bash
+melia session chrome --wait --timeout 3m
+melia session doctor --json
+```
+
 ---
 
 ## Agrupación de marcas
@@ -74,11 +117,15 @@ Consulta `scripts/groups.json` o el subcomando `brands` del CLI correspondiente.
 
 Ejemplo: `melia brands` lista Meliá, Paradisus, INNSiDE, etc.
 
+**Cadenas españolas sin MCP fiable** (priorizar CLI): Meliá, Barceló, NH, Iberostar, H10, Hotusa, Palladium, Catalonia, Eurostars, RIU, Vincci, Silken, Sercotel, Paradores, …
+
+**LCCs** (priorizar CLI): Ryanair, Vueling, Volotea, Binter, easyJet (partial).
+
 ---
 
 ## Librería compartida
 
-[`travelkit/`](travelkit/) — HTTP client (uTLS), cookies, rate limit, tipos JSON normalizados.
+[`travelkit/`](travelkit/) — HTTP client (uTLS), cookies, rate limit, tipos JSON normalizados (contrato común MCP ↔ CLI).
 
 ```go
 replace github.com/fbelchi/travelkit => ../travelkit
@@ -94,8 +141,8 @@ replace github.com/fbelchi/travelkit => ../travelkit
 
 ---
 
-## Estado del proyecto (iteración 1)
+## Estado del proyecto (loop 6 → 7)
 
-- Estructura y scaffolds completos
-- Endpoints reales: **TODO** en `internal/client/search.go` y `read.go`
-- Prioridad loop 2: Meliá, Barceló, Ryanair, Vueling, Iberia Express
+- **18 live** + **7 partial** CLIs prioritarios (ver README)
+- MCP: documentado en [docs/MCP_VS_CLI.md](docs/MCP_VS_CLI.md); adaptadores `travelkit/mcp/` — roadmap loop 7
+- Prioridad loop 7: router híbrido MCP+CLI, registry `preferred_tool` en `groups.json`
