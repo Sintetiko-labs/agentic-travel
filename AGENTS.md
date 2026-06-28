@@ -33,7 +33,7 @@ BOOKING_PARTNER_ID=...      # opcional — Booking.com partner (cuando haya MCP 
 
 Kiwi (`https://mcp.kiwi.com`) y Gondola (`https://mcp.gondola.ai/mcp`) **no requieren clave**.
 
-Configuración Cursor: [`.cursor/mcp.json`](.cursor/mcp.json) · guía: [docs/MCP_SETUP.md](docs/MCP_SETUP.md).
+Configuración Cursor: [`.cursor/mcp.json`](.cursor/mcp.json) · guía: [docs/MCP_SETUP.md](docs/MCP_SETUP.md) · auditoría: [docs/MCP_LOCAL_AUDIT.md](docs/MCP_LOCAL_AUDIT.md).
 
 Sin claves Duffel → usar **Kiwi** para vuelos agregados y **Gondola** para hoteles de cadena; degradar a CLI donde exista implementación **live** o **partial**; no inventar ofertas.
 

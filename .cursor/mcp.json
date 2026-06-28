@@ -3,7 +3,10 @@
     "cursor-ide-browser": {},
     "playwright": {
       "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest"],
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ],
       "description": "Browser automation fallback when cursor-ide-browser is unavailable (Cursor #3878)"
     },
     "kiwi-com-flight-search": {
@@ -14,7 +17,9 @@
     },
     "duffel": {
       "command": "node",
-      "args": ["${workspaceFolder}/mcp/vendor/duffel-mcp/dist/index.js"],
+      "args": [
+        "${workspaceFolder}/mcp/vendor/duffel-mcp/dist/index.js"
+      ],
       "env": {
         "DUFFEL_ACCESS_TOKEN": "${env:DUFFEL_ACCESS_TOKEN}"
       }
