@@ -101,7 +101,7 @@ func runSessionDoctor(args []string) error {
 		EnvPrefix:   cl.EnvPrefix,
 		BaseURL:     client.BaseURL,
 		Cookie:      cl.Cookie,
-		ProbeURL:    "https://www.easyjet.com/ejavailability/api/v5/availability/query?DepartureIata=MAD&ArrivalIata=BCN&MinDepartureDate=2026-07-01&MaxDepartureDate=2026-07-01&AdultSeats=1&LanguageCode=ES",
+		ProbeURL:    client.BaseURL + "/ejavailability/api/v5/availability/query?DepartureIata=MAD&ArrivalIata=PMI&MinDepartureDate=2026-07-05&MaxDepartureDate=2026-07-05&AdultSeats=1&ChildSeats=0&Infants=0&LanguageCode=ES&IncludePrices=true&IncludeLowestFareSeats=true&IncludeAdminFees=true",
 		ProbeMethod: "GET",
 	})
 	if cf.jsonOut {

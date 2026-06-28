@@ -101,7 +101,9 @@ func runSessionDoctor(args []string) error {
 		EnvPrefix:   cl.EnvPrefix,
 		BaseURL:     client.BaseURL,
 		Cookie:      cl.Cookie,
-		ProbeURL:    "https://www.iberiaexpress.com/api/availability/v1/flights?market=ES&language=es&origin=MAD&destination=BCN&departureDate=2026-07-01&adults=1&operatingCarrier=I2",
+		ProbeURL:    client.BaseURL + "/api/availability/v1/flights?market=ES&language=es&origin=MAD&destination=BCN&departureDate=2026-07-05&adults=1&operatingCarrier=I2",
+		ProbeOrigin: client.BaseURL,
+		ProbeReferer: client.BaseURL + "/es/",
 		ProbeMethod: "GET",
 	})
 	if cf.jsonOut {

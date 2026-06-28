@@ -94,10 +94,11 @@ func runSessionDoctor(args []string) error {
 		EnvPrefix:        cl.EnvPrefix,
 		BaseURL:          client.BaseURL,
 		Cookie:           cl.Cookie,
-		ProbeURL:         client.APIBaseURL + "/api/v1/flights/search",
+		ProbeURL:         client.APIBaseURL + "/api/channel-home/v1/redirect/flow/BOOKING/urldata",
 		ProbeMethod:      "POST",
-		ProbeBody:        `{"origin":"MAD","destination":"BCN","departureDate":"2026-07-01","adults":1,"language":"es","market":"ES"}`,
+		ProbeBody:        `{"B_LOCATION_1":"MAD","B_LOCATION_2":"PMI","B_DATE_1":"05JUL26","TRIP_TYPE":"O","TRAVELLER_TYPE_1":"ADT","MARKET_CODE":"ES","SO_SITE_OFFICE_ID":"MADUX08AA"}`,
 		ProbeContentType: "application/json",
+		ProbeOrigin:      client.BaseURL,
 		ProbeReferer:     client.BaseURL + "/es/es/",
 	})
 	if cf.jsonOut {

@@ -105,7 +105,7 @@ func Doctor(opts DoctorOptions) DoctorResult {
 	if method == "" {
 		method = http.MethodGet
 	}
-	status, err := probeHTTP(probeRequest{
+	status, probeBody, err := probeHTTP(probeRequest{
 		method: method, url: opts.ProbeURL, cookie: cookie,
 		body: opts.ProbeBody, contentType: opts.ProbeContentType,
 		origin: opts.ProbeOrigin, referer: opts.ProbeReferer, baseURL: opts.BaseURL,
@@ -120,6 +120,14 @@ func Doctor(opts DoctorOptions) DoctorResult {
 		return res
 	}
 	switch {
+	case status >= 200 && status < 300 && akamai.IsWAFBlocked(status, probeBody):
+		res.Status = DoctorBlocked
+		if cookieOK {
+			res.Message = fmt.Sprintf("probe returned WAF challenge (HTTP %d) — cookies may be stale", status)
+		} else {
+			res.Message = fmt.Sprintf("probe returned WAF challenge (HTTP %d) — need headed Chrome session", status)
+		}
+		res.NextStep = slug + " session chrome --wait --timeout 3m"
 	case status >= 200 && status < 300:
 		res.Status = DoctorOK
 		if cookieOK {
@@ -156,14 +164,14 @@ type probeRequest struct {
 	method, url, cookie, body, contentType, origin, referer, baseURL string
 }
 
-func probeHTTP(p probeRequest) (int, error) {
+func probeHTTP(p probeRequest) (int, string, error) {
 	var body io.Reader
 	if p.body != "" {
 		body = strings.NewReader(p.body)
 	}
 	req, err := http.NewRequest(p.method, p.url, body)
 	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
 	if p.cookie != "" {
 		req.Header.Set("cookie", p.cookie)
@@ -189,11 +197,11 @@ func probeHTTP(p probeRequest) (int, error) {
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
 	defer resp.Body.Close()
-	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 4096))
-	return resp.StatusCode, nil
+	raw, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+	return resp.StatusCode, string(raw), nil
 }
 
 func sessionFileInfo(path string) (bool, time.Duration) {
