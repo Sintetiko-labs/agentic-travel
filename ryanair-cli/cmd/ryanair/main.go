@@ -19,6 +19,8 @@ func main() {
 		err = cmdSearch(os.Args[2:])
 	case "read":
 		err = cmdRead(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -43,6 +45,8 @@ USAGE:
   ryanair search [--json] --from ORIGIN --to DEST --depart DATE [--return DATE]
   ryanair read [--json] <id|url>
   ryanair brands
+  ryanair session chrome [--wait] [--port N]
+  ryanair session sync
   ryanair version | help
 `)
 }

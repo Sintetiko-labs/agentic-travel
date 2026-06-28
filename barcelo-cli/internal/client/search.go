@@ -48,8 +48,12 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 	hits := make([]HotelHit, 0, end-start)
 	for _, h := range filtered[start:end] {
 		slug := slugFromURL(h.URL)
+		id := h.ID
+		if id == "" {
+			id = slug
+		}
 		hits = append(hits, HotelHit{
-			ID:       slug,
+			ID:       id,
 			Name:     h.Name,
 			Brand:    brandFor(c.Brand, h.Name),
 			City:     query,

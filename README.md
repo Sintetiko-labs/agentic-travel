@@ -10,22 +10,24 @@ Monorepo de **CLIs agent-friendly** para hoteles y aerolíneas (cadenas español
 - **321** marcas cubiertas (agrupadas por API padre compartida)
 - Librería compartida: [`travelkit/`](travelkit/)
 
-## Priority CLIs (loop 2)
+## Priority CLIs (loop 3)
 
-| CLI | Tipo | Status | Fuente |
-|-----|------|--------|--------|
-| `ryanair` | airline | **live** | `farfnd` + booking API |
-| `barcelo` | hotel | **live** | JSON-LD listing |
-| `riu` | hotel | **live** | ng-state destination pages |
-| `melia` | hotel | partial | BFF (Akamai cookie) |
-| `nh` | hotel | partial | REST API (Akamai cookie) |
-| `iberostar` | hotel | partial | GraphQL (Akamai cookie) |
-| `vueling` | airline | partial | BIT API (cookie) |
-| `easyjet` | airline | partial | ejavailability (cookie) |
-| `aireuropa` | airline | partial | REST search (cookie) |
-| `iberiaexpress` | airline | partial | REST API (Incapsula cookie) |
+| CLI | Tipo | Status | Session chrome | Fuente |
+|-----|------|--------|----------------|--------|
+| `ryanair` | airline | **live** | wired | `farfnd` + booking API |
+| `barcelo` | hotel | **live** | wired | JSON-LD listing (+ `@id` slug) |
+| `riu` | hotel | **live** | wired | ng-state destination pages |
+| `melia` | hotel | partial | wired | BFF (Akamai `_abck`) |
+| `nh` | hotel | partial | wired | REST API (Akamai) |
+| `iberostar` | hotel | partial | wired | GraphQL (Akamai) |
+| `vueling` | airline | partial | wired | BIT v2 → fallback `tickets.vueling.com` |
+| `easyjet` | airline | partial | wired | ejavailability (cookie) |
+| `aireuropa` | airline | partial | wired | REST search (cookie) |
+| `iberiaexpress` | airline | partial | wired | REST API (Incapsula) |
 
-Session chrome: `travelkit/chrome` — use `{SLUG}_COOKIE` from browser or `session chrome` (melia pattern).
+**Session chrome:** `{slug} session chrome` → `~/.{slug}/cookies.json` (commerce pattern). Env `{SLUG}_COOKIE` overrides file. Manual smoke: headed Chrome required (not CI).
+
+**Vueling note:** `www.vueling.com/bit/v2` returns SPA 404; client falls back to `tickets.vueling.com/bit/v2` (Skysales). Still needs Akamai session from booking flow.
 
 ## Hoteles
 

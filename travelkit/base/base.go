@@ -12,6 +12,7 @@ import (
 
 	"github.com/fbelchi/travelkit/cookies"
 	"github.com/fbelchi/travelkit/ratelimit"
+	"github.com/fbelchi/travelkit/session"
 	"github.com/fbelchi/travelkit/transport"
 )
 
@@ -42,7 +43,7 @@ func New(baseURL, envPrefix string) *Client {
 	if prefix == "" {
 		prefix = "TRAVEL"
 	}
-	return &Client{
+	c := &Client{
 		HTTP:      hc,
 		Jar:       jar,
 		BaseURL:   strings.TrimRight(baseURL, "/"),
@@ -51,6 +52,41 @@ func New(baseURL, envPrefix string) *Client {
 		Pacer:     ratelimit.NewPacerFromEnv(prefix),
 		EnvPrefix: prefix,
 	}
+	c.LoadPersistedCookies()
+	return c
+}
+
+// LoadPersistedCookies merges env cookie with on-disk session (env wins).
+func (c *Client) LoadPersistedCookies() {
+	if c.Cookie != "" {
+		cookies.SetJar(c.Jar, c.BaseURL, c.Cookie)
+		return
+	}
+	d, err := session.Load(c.EnvPrefix)
+	if err != nil || d.Cookie == "" {
+		return
+	}
+	c.Cookie = d.Cookie
+	cookies.SetJar(c.Jar, c.BaseURL, c.Cookie)
+}
+
+// SavePersistedCookies writes the current cookie header to disk.
+func (c *Client) SavePersistedCookies() error {
+	return session.Save(c.EnvPrefix, session.Data{Cookie: c.Cookie, BaseURL: c.BaseURL})
+}
+
+// ApplyCookieHeader replaces the client cookie and syncs the jar.
+func (c *Client) ApplyCookieHeader(raw string) {
+	if raw == "" {
+		return
+	}
+	c.Cookie = cookies.MergeStrings(c.Cookie, raw)
+	cookies.SetJar(c.Jar, c.BaseURL, c.Cookie)
+}
+
+// CookiesFilePath returns ~/.{slug}/cookies.json for this client.
+func (c *Client) CookiesFilePath() string {
+	return session.FilePath(c.EnvPrefix)
 }
 
 func (c *Client) Throttle() {

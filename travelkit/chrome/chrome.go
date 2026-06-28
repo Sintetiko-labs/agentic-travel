@@ -59,7 +59,7 @@ func Capture(opts Options) (Result, error) {
 		var cks []*network.Cookie
 		if err := chromedp.Run(ctx, chromedp.ActionFunc(func(ctx context.Context) error {
 			var err error
-			cks, err = network.GetCookies().WithURLs([]string{opts.BaseURL, opts.BaseURL + "/"}).Do(ctx)
+			cks, err = network.GetCookies().WithUrls([]string{opts.BaseURL, opts.BaseURL + "/"}).Do(ctx)
 			return err
 		})); err != nil {
 			return Result{}, err

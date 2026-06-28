@@ -31,14 +31,38 @@ func (c *Client) Search(origin, dest, depart, ret string, page, pageSize int) (*
 		q.Set("returnDate", ret)
 	}
 	path := "/bit/v2/flights/search?" + q.Encode()
+
 	var resp vuelingSearchResponse
-	if err := c.GetJSON(path, &resp); err != nil {
+	err := c.searchBIT(c.BaseURL+path, &resp)
+	if err != nil {
+		if he, ok := err.(*tkbase.HTTPError); ok && he.Status == 404 {
+			// www.vueling.com serves SPA shell; Skysales BIT lives on tickets host.
+			err = c.searchBIT(skysalesBaseURL+path, &resp)
+		}
+	}
+	if err != nil {
 		if he, ok := err.(*tkbase.HTTPError); ok && akamai.IsDenied(he.Status, he.Body) {
 			return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("vueling"))
 		}
-		return nil, fmt.Errorf("search %s→%s: %w — try VUELING_COOKIE", origin, dest, err)
+		return nil, fmt.Errorf("search %s→%s: %w — run `vueling session chrome` (BIT v2 on tickets.vueling.com)", origin, dest, err)
 	}
 	return resp.toResult(origin, dest, depart, ret, page, pageSize, c.Brand, c.BaseURL), nil
+}
+
+const skysalesBaseURL = "https://tickets.vueling.com"
+
+func (c *Client) searchBIT(fullURL string, out *vuelingSearchResponse) error {
+	body, status, err := c.GetRaw(fullURL)
+	if err != nil {
+		return err
+	}
+	if status < 200 || status >= 300 {
+		return &tkbase.HTTPError{Status: status, Body: tkbase.Truncate(string(body), 300)}
+	}
+	if err := jsonUnmarshal(body, out); err != nil {
+		return err
+	}
+	return nil
 }
 
 type vuelingSearchResponse struct {

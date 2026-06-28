@@ -27,23 +27,36 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		}
 		return nil, fmt.Errorf("search %q: %w", query, err)
 	}
+	resp.normalize()
 	return resp.toResult(query, page, pageSize, c.Brand, c.BaseURL), nil
 }
 
+type nhHotelRow struct {
+	ID       string  `json:"id"`
+	Name     string  `json:"name"`
+	Brand    string  `json:"brand"`
+	City     string  `json:"city"`
+	Country  string  `json:"country"`
+	Stars    float64 `json:"stars"`
+	Price    float64 `json:"price"`
+	Currency string  `json:"currency"`
+	Slug     string  `json:"slug"`
+	Image    string  `json:"image"`
+}
+
 type nhSearchResponse struct {
-	Total int `json:"total"`
-	Data  []struct {
-		ID       string  `json:"id"`
-		Name     string  `json:"name"`
-		Brand    string  `json:"brand"`
-		City     string  `json:"city"`
-		Country  string  `json:"country"`
-		Stars    float64 `json:"stars"`
-		Price    float64 `json:"price"`
-		Currency string  `json:"currency"`
-		Slug     string  `json:"slug"`
-		Image    string  `json:"image"`
-	} `json:"data"`
+	Total  int          `json:"total"`
+	Data   []nhHotelRow `json:"data"`
+	Hotels []nhHotelRow `json:"hotels"`
+}
+
+func (r *nhSearchResponse) normalize() {
+	if len(r.Data) == 0 && len(r.Hotels) > 0 {
+		r.Data = r.Hotels
+	}
+	if r.Total == 0 {
+		r.Total = len(r.Data)
+	}
 }
 
 func (r *nhSearchResponse) toResult(query string, page, pageSize int, brand, base string) *HotelSearchResult {

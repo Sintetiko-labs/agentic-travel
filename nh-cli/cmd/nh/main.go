@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -46,6 +48,8 @@ USAGE:
   nh read [--json] [--brand BRAND] <id|url>
   nh availability [--json] [--brand BRAND] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
   nh brands
+  nh session chrome [--wait] [--port N]
+  nh session sync
   nh version | help
 `)
 }

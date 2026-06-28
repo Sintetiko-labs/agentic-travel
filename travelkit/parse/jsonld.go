@@ -11,6 +11,7 @@ var hotelNameRE = regexp.MustCompile(`"@type"\s*:\s*"Hotel"\s*,\s*"name"\s*:\s*"
 
 // HotelLD is a minimal JSON-LD hotel row extracted from HTML.
 type HotelLD struct {
+	ID         string
 	Name       string
 	Stars      float64
 	Address    string
@@ -34,6 +35,10 @@ func HotelsFromJSONLD(html, baseURL string) []HotelLD {
 		seen[name] = true
 		h := HotelLD{Name: name}
 		chunk := extractHotelChunk(html, m[0])
+		h.ID = jsonLDString(chunk, "@id")
+		if h.ID == "" {
+			h.ID = jsonLDString(chunk, "identifier")
+		}
 		h.Stars = jsonLDStars(chunk)
 		h.Address = jsonLDString(chunk, "address")
 		h.URL = absolutize(baseURL, jsonLDString(chunk, "url"))

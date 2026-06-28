@@ -23,25 +23,31 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 			"q": query, "page": page, "size": pageSize,
 		},
 	}
+	type hotelRow struct {
+		ID       string  `json:"id"`
+		Name     string  `json:"name"`
+		Brand    string  `json:"brand"`
+		City     string  `json:"city"`
+		Country  string  `json:"country"`
+		Stars    float64 `json:"stars"`
+		MinPrice float64 `json:"minPrice"`
+		Currency string  `json:"currency"`
+		URL      string  `json:"url"`
+		Image    string  `json:"image"`
+	}
+	type searchBlock struct {
+		Total   int        `json:"total"`
+		HasNext bool       `json:"hasNext"`
+		Hotels  []hotelRow `json:"hotels"`
+	}
 	var resp struct {
 		Data struct {
-			SearchHotels struct {
-				Total   int  `json:"total"`
-				HasNext bool `json:"hasNext"`
-				Hotels  []struct {
-					ID       string  `json:"id"`
-					Name     string  `json:"name"`
-					Brand    string  `json:"brand"`
-					City     string  `json:"city"`
-					Country  string  `json:"country"`
-					Stars    float64 `json:"stars"`
-					MinPrice float64 `json:"minPrice"`
-					Currency string  `json:"currency"`
-					URL      string  `json:"url"`
-					Image    string  `json:"image"`
-				} `json:"hotels"`
-			} `json:"searchHotels"`
+			SearchHotels searchBlock `json:"searchHotels"`
+			HotelSearch  searchBlock `json:"hotelSearch"`
 		} `json:"data"`
+		Errors []struct {
+			Message string `json:"message"`
+		} `json:"errors"`
 	}
 	if err := c.PostJSON(c.BaseURL+"/api/graphql", payload, &resp); err != nil {
 		if he, ok := err.(*tkbase.HTTPError); ok && akamai.IsDenied(he.Status, he.Body) {
@@ -49,7 +55,13 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		}
 		return nil, fmt.Errorf("search %q: %w", query, err)
 	}
+	if len(resp.Errors) > 0 {
+		return nil, fmt.Errorf("graphql: %s", resp.Errors[0].Message)
+	}
 	sh := resp.Data.SearchHotels
+	if len(sh.Hotels) == 0 {
+		sh = resp.Data.HotelSearch
+	}
 	hits := make([]HotelHit, 0, len(sh.Hotels))
 	for _, h := range sh.Hotels {
 		price := ""
