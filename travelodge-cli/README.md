@@ -22,30 +22,30 @@ travelodge session chrome|sync|doctor
 
 ## Search (London / UK)
 
-`search` reads `sitemap-fusion.xml` and filters hotel URLs by destination (e.g. `London` matches `london` and `greater-london` paths). No session required in most cases.
+`search` calls the public `/api/v2/hotel` JSON API (same backend as travelodge.co.uk search results). Default stay dates: **2026-07-05 → 2026-07-06**. No session required in most cases.
 
 ```bash
 travelodge search --json London
-travelodge search --json "greater london" --limit 5
+travelodge search --json "Central London" --limit 5
+```
+
+## Read
+
+`read` fetches hotel detail from a page URL (JSON-LD). Use `hotel_url` from search output:
+
+```bash
+travelodge read --json /hotels/318/London-Covent-Garden-hotel
 ```
 
 ## Environment
 
-- `TRAVELODGE_COOKIE` — optional browser cookie when sitemap is WAF-blocked
+- `TRAVELODGE_COOKIE` — optional browser cookie when blocked
 - `TRAVELODGE_REQUEST_DELAY` — rate limit (e.g. `2s`)
-
-## Session (WAF fallback)
-
-If the sitemap returns 403:
-
-```bash
-travelodge session chrome --wait --timeout 3m
-travelodge session doctor
-travelodge search --json London
-```
-
-Chrome opens `travelodge.co.uk/uk/london/`; cookies save to `~/.travelodge/cookies.json`.
 
 ## Status
 
-Category: **hotel** · Search: **live** (sitemap) · Session: optional (WAF fallback)
+Category: **hotel**
+
+Search: **live** — `/api/v2/hotel` JSON API (July 2026 dates by default)
+Read: **partial** — JSON-LD on hotel page URLs
+Availability: **scaffold**

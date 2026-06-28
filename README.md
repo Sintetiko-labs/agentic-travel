@@ -30,7 +30,6 @@ Monorepo de **CLIs agent-friendly** para hoteles y aerolíneas (cadenas español
 | `easyjet` | airline | partial | chrome+sync+doctor | ejavailability (Akamai after session) |
 | `aireuropa` | airline | partial | chrome+sync+doctor | `dapi.aireuropa.com/api/v1/flights/search` POST |
 | `iberiaexpress` | airline | partial | chrome+sync+doctor | `/api/availability/v1/flights` (Incapsula) |
-| `travelodge` | hotel | **live** | chrome+sync+doctor | `sitemap-fusion.xml` (UK; session if WAF) |
 | `hilton` | hotel | **live** | chrome+sync+doctor | `/en/locations/united-kingdom/{city}/` HTML cards |
 | `marriott` | hotel | partial | chrome+sync+doctor | `findHotels.mi` (Akamai; session required) |
 
@@ -42,7 +41,7 @@ Monorepo de **CLIs agent-friendly** para hoteles y aerolíneas (cadenas español
 
 ### Iteration 6 priorities
 
-1. **UK hotels (Madrid→London scenario)** — `travelodge` (live sitemap), `hilton` (live locations HTML), `marriott` (partial; `session chrome` required)
+1. **UK hotels (Madrid→London scenario)** — `travelodge` (live `/api/v2/hotel`), `hilton` (live locations HTML), `marriott` (partial; `session chrome` required)
 2. Priority partials — live search smoke after manual `session chrome --wait` (melia, nh, iberostar, easyjet, aireuropa, iberiaexpress)
 2. Volotea / Binter — airline batch (simpler than Akamai-heavy majors)
 3. Next hotel batch — eurostars, hotusa, vincci, silken, sercotel
