@@ -10,6 +10,23 @@ Monorepo de **CLIs agent-friendly** para hoteles y aerolíneas (cadenas español
 - **321** marcas cubiertas (agrupadas por API padre compartida)
 - Librería compartida: [`travelkit/`](travelkit/)
 
+## Priority CLIs (loop 2)
+
+| CLI | Tipo | Status | Fuente |
+|-----|------|--------|--------|
+| `ryanair` | airline | **live** | `farfnd` + booking API |
+| `barcelo` | hotel | **live** | JSON-LD listing |
+| `riu` | hotel | **live** | ng-state destination pages |
+| `melia` | hotel | partial | BFF (Akamai cookie) |
+| `nh` | hotel | partial | REST API (Akamai cookie) |
+| `iberostar` | hotel | partial | GraphQL (Akamai cookie) |
+| `vueling` | airline | partial | BIT API (cookie) |
+| `easyjet` | airline | partial | ejavailability (cookie) |
+| `aireuropa` | airline | partial | REST search (cookie) |
+| `iberiaexpress` | airline | partial | REST API (Incapsula cookie) |
+
+Session chrome: `travelkit/chrome` — use `{SLUG}_COOKIE` from browser or `session chrome` (melia pattern).
+
 ## Hoteles
 
 | Grupo / API | Directorio | Binario | Marcas | README |

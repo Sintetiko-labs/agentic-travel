@@ -25,6 +25,8 @@ aireuropa brands
 
 ## Status
 
-Category: **airline**
-
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+| Feature | Status |
+|---------|--------|
+| `search` | **partial** — `/ae/api/v1/flights/search`; needs `AIREUROPA_COOKIE` |
+| `read` | implemented |
+| Rate limit | `AIREUROPA_REQUEST_DELAY` (~2s) |

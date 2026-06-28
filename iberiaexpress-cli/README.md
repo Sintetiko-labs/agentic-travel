@@ -25,6 +25,8 @@ iberiaexpress brands
 
 ## Status
 
-Category: **airline**
-
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+| Feature | Status |
+|---------|--------|
+| `search` | **partial** — `/api/availability/v1/flights`; needs `IBERIAEXPRESS_COOKIE` |
+| `read` | implemented |
+| Rate limit | `IBERIAEXPRESS_REQUEST_DELAY` (~2s) |

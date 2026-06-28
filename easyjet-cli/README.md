@@ -25,6 +25,8 @@ easyjet brands
 
 ## Status
 
-Category: **airline**
-
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+| Feature | Status |
+|---------|--------|
+| `search` | **partial** — `ejavailability/api/v5`; needs `EASYJET_COOKIE` |
+| `read` | implemented |
+| Rate limit | `EASYJET_REQUEST_DELAY` (~2s) |

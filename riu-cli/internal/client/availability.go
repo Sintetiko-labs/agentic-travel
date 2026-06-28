@@ -1,8 +1,18 @@
 package client
 
-import "fmt"
-
-// Availability checks room availability (stub).
+// Availability returns price snapshot from hotel detail (live rooms need booking session).
 func (c *Client) Availability(hotelID, checkIn, checkOut string, guests, rooms int) (*AvailSummary, error) {
-	return nil, fmt.Errorf("availability not yet implemented for RIU (hotel=%q)", hotelID)
+	view, err := c.Read(hotelID)
+	if err != nil {
+		return nil, err
+	}
+	return &AvailSummary{
+		CheckIn:  checkIn,
+		CheckOut: checkOut,
+		Guests:   guests,
+		Rooms:    rooms,
+		Status:   "from_detail",
+		From:     view.Price.Price,
+		Currency: view.Price.Currency,
+	}, nil
 }

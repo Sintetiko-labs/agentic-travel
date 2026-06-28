@@ -25,6 +25,8 @@ vueling brands
 
 ## Status
 
-Category: **airline**
-
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+| Feature | Status |
+|---------|--------|
+| `search` | **partial** — `/bit/v2/flights/search`; needs `VUELING_COOKIE` |
+| `read` | implemented |
+| Rate limit | `VUELING_REQUEST_DELAY` (~2s) |

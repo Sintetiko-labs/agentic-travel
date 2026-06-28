@@ -38,6 +38,12 @@ Use `--brand` to select a sub-brand when searching.
 
 ## Status
 
-Category: **hotel**
+| Feature | Status |
+|---------|--------|
+| `search` | **live** — JSON-LD from `/es/hoteles` |
+| `read` / `availability` | implemented |
+| Rate limit | `BARCELO_REQUEST_DELAY` (~2s) |
 
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+```bash
+barcelo search --json Madrid
+```

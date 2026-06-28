@@ -25,6 +25,17 @@ ryanair brands
 
 ## Status
 
-Category: **airline**
+| Feature | Status |
+|---------|--------|
+| `search` | **live** — `farfnd` fare calendar (no cookie); `booking/v4/availability` when session present |
+| `read` | **stable** — resolves via search |
+| Rate limit | ~1 req/min recommended; set `RYANAIR_REQUEST_DELAY=2s` |
 
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+Example:
+
+```bash
+ryanair search --json --from BCN --to PMI --depart 2026-07-15
+# MAD→BCN may return empty (no Ryanair route) — use routes Ryanair operates
+```
+
+Session: export `RYANAIR_COOKIE` after browser search, or set `RYANAIR_CLIENT_VERSION` on 409 errors.

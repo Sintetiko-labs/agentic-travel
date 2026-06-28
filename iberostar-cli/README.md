@@ -36,6 +36,8 @@ Use `--brand` to select a sub-brand when searching.
 
 ## Status
 
-Category: **hotel**
-
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+| Feature | Status |
+|---------|--------|
+| `search` | **partial** — GraphQL `/api/graphql`; needs `IBEROSTAR_COOKIE` |
+| `read` / `availability` | implemented |
+| Rate limit | `IBEROSTAR_REQUEST_DELAY` (~2s) |

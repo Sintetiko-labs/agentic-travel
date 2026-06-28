@@ -90,6 +90,45 @@ func (c *Client) GetJSON(path string, out any) error {
 	return c.DoJSON(req, out)
 }
 
+// GetRaw performs GET and returns the response body.
+func (c *Client) GetRaw(url string) ([]byte, int, error) {
+	c.Throttle()
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, 0, err
+	}
+	c.SetAPIHeaders(req)
+	c.ApplyCookie(req)
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
+	return body, resp.StatusCode, nil
+}
+
+// PostJSON performs POST with a JSON body and decodes the response.
+func (c *Client) PostJSON(url string, payload, out any) error {
+	c.Throttle()
+	var body io.Reader
+	if payload != nil {
+		b, err := json.Marshal(payload)
+		if err != nil {
+			return err
+		}
+		body = strings.NewReader(string(b))
+	}
+	req, err := http.NewRequest(http.MethodPost, url, body)
+	if err != nil {
+		return err
+	}
+	c.SetAPIHeaders(req)
+	req.Header.Set("content-type", "application/json")
+	c.ApplyCookie(req)
+	return c.DoJSON(req, out)
+}
+
 // DoJSON executes req and decodes JSON response.
 func (c *Client) DoJSON(req *http.Request, out any) error {
 	c.Throttle()
@@ -100,7 +139,7 @@ func (c *Client) DoJSON(req *http.Request, out any) error {
 		return err
 	}
 	defer resp.Body.Close()
-	body, _ := io.ReadAll(io.LimitReader(resp.Body, 8<<20))
+	body, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return &HTTPError{Status: resp.StatusCode, Body: Truncate(string(body), 300)}
 	}
@@ -126,7 +165,7 @@ func (c *Client) FetchHTML(url string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-	body, _ := io.ReadAll(io.LimitReader(resp.Body, 8<<20))
+	body, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
 	text := string(body)
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return "", &HTTPError{Status: resp.StatusCode, Body: Truncate(text, 300)}

@@ -42,6 +42,8 @@ Use `--brand` to select a sub-brand when searching.
 
 ## Status
 
-Category: **hotel**
-
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+| Feature | Status |
+|---------|--------|
+| `search` | **partial** — BFF `/services/search/hotels/v2/search`; needs `MELIA_COOKIE` (Akamai) |
+| `read` / `availability` | implemented (cookie for live) |
+| Rate limit | `MELIA_REQUEST_DELAY` (~2s) |

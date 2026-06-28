@@ -8,7 +8,8 @@ const BaseURL = "https://www.ryanair.com"
 
 type Client struct {
 	*tkbase.Client
-	Brand string
+	Brand     string
+	clientVer string
 }
 
 var Brands = []string{

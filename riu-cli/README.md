@@ -26,6 +26,12 @@ riu brands
 
 ## Status
 
-Category: **hotel**
+| Feature | Status |
+|---------|--------|
+| `search` | **live** — destination ng-state (`/es/hotels/europa/espana/{city}`) |
+| `read` / `availability` | implemented |
+| Rate limit | `RIU_REQUEST_DELAY` (~2s) |
 
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+```bash
+riu search --json Madrid
+```

@@ -37,6 +37,8 @@ Use `--brand` to select a sub-brand when searching.
 
 ## Status
 
-Category: **hotel**
-
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+| Feature | Status |
+|---------|--------|
+| `search` | **partial** — `/nh/es/api/v1/hotels/search`; needs `NH_COOKIE` |
+| `read` / `availability` | implemented |
+| Rate limit | `NH_REQUEST_DELAY` (~2s) |
