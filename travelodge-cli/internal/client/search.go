@@ -53,7 +53,7 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 	}
 
 	checkIn, checkOut := defaultStayDates()
-	rows, err := c.fetchAllHotels(query, checkIn, checkOut)
+	rows, err := c.fetchAllHotelsForQuery(query, checkIn, checkOut)
 	if err != nil {
 		return nil, err
 	}
@@ -86,6 +86,51 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		Brand:    brandOrDefault(c.Brand),
 		Source:   "api/v2/hotel",
 	}, nil
+}
+
+
+func (c *Client) fetchAllHotelsForQuery(query, checkIn, checkOut string) ([]hotelRow, error) {
+	terms := splitDestinationTerms(query)
+	if len(terms) <= 1 {
+		return c.fetchAllHotels(query, checkIn, checkOut)
+	}
+	seen := map[int]bool{}
+	var all []hotelRow
+	for _, term := range terms {
+		part, err := c.fetchAllHotels(term, checkIn, checkOut)
+		if err != nil {
+			if len(all) > 0 {
+				return all, nil
+			}
+			return nil, err
+		}
+		for _, h := range part {
+			if seen[h.ID] {
+				continue
+			}
+			seen[h.ID] = true
+			all = append(all, h)
+		}
+	}
+	return all, nil
+}
+
+func splitDestinationTerms(query string) []string {
+	for _, sep := range []string{"&", "|"} {
+		if !strings.Contains(query, sep) {
+			continue
+		}
+		var terms []string
+		for _, part := range strings.Split(query, sep) {
+			if t := strings.TrimSpace(part); t != "" {
+				terms = append(terms, t)
+			}
+		}
+		if len(terms) > 1 {
+			return terms
+		}
+	}
+	return []string{query}
 }
 
 func (c *Client) fetchAllHotels(query, checkIn, checkOut string) ([]hotelRow, error) {
