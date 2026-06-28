@@ -20,37 +20,39 @@ const DefaultUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/5
 
 // Client is the shared HTTP transport used by scaffolded travel CLIs.
 type Client struct {
-	HTTP      *http.Client
-	Jar       cookies.Jar
-	BaseURL   string
-	UserAgent string
-	Cookie    string
-	Pacer     *ratelimit.Pacer
-	EnvPrefix string
+	HTTP       *http.Client
+	stdlibHTTP *http.Client
+	Jar        cookies.Jar
+	BaseURL    string
+	UserAgent  string
+	Cookie     string
+	Pacer      *ratelimit.Pacer
+	EnvPrefix  string
 }
 
 // New builds a client with Chrome-like TLS and optional env-based rate limiting.
 func New(baseURL, envPrefix string) *Client {
 	jar := cookies.NewJar()
-	hc := &http.Client{
-		Timeout: 30 * time.Second,
-		Jar:     jar,
-	}
-	if tr, err := transport.NewChromeTransport(); err == nil {
-		hc.Transport = tr
-	}
 	prefix := strings.ToUpper(strings.ReplaceAll(envPrefix, "-", "_"))
 	if prefix == "" {
 		prefix = "TRAVEL"
 	}
+	stdlib := &http.Client{Timeout: 30 * time.Second, Jar: jar}
+	hc := stdlib
+	if os.Getenv(prefix+"_STD_HTTP") != "1" {
+		if tr, err := transport.NewChromeTransport(); err == nil {
+			hc = &http.Client{Timeout: 30 * time.Second, Jar: jar, Transport: tr}
+		}
+	}
 	c := &Client{
-		HTTP:      hc,
-		Jar:       jar,
-		BaseURL:   strings.TrimRight(baseURL, "/"),
-		UserAgent: DefaultUA,
-		Cookie:    strings.TrimSpace(os.Getenv(prefix + "_COOKIE")),
-		Pacer:     ratelimit.NewPacerFromEnv(prefix),
-		EnvPrefix: prefix,
+		HTTP:       hc,
+		stdlibHTTP: stdlib,
+		Jar:        jar,
+		BaseURL:    strings.TrimRight(baseURL, "/"),
+		UserAgent:  DefaultUA,
+		Cookie:     strings.TrimSpace(os.Getenv(prefix + "_COOKIE")),
+		Pacer:      ratelimit.NewPacerFromEnv(prefix),
+		EnvPrefix:  prefix,
 	}
 	c.LoadPersistedCookies()
 	return c
@@ -128,6 +130,14 @@ func (c *Client) GetJSON(path string, out any) error {
 
 // GetRaw performs GET and returns the response body.
 func (c *Client) GetRaw(url string) ([]byte, int, error) {
+	body, status, err := c.getRawWith(c.HTTP, url)
+	if err == nil || c.stdlibHTTP == nil || c.stdlibHTTP == c.HTTP {
+		return body, status, err
+	}
+	return c.getRawWith(c.stdlibHTTP, url)
+}
+
+func (c *Client) getRawWith(hc *http.Client, url string) ([]byte, int, error) {
 	c.Throttle()
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -135,7 +145,7 @@ func (c *Client) GetRaw(url string) ([]byte, int, error) {
 	}
 	c.SetAPIHeaders(req)
 	c.ApplyCookie(req)
-	resp, err := c.HTTP.Do(req)
+	resp, err := hc.Do(req)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -192,6 +202,17 @@ func (c *Client) DoJSON(req *http.Request, out any) error {
 
 // FetchHTML GETs a document URL.
 func (c *Client) FetchHTML(url string) (string, error) {
+	text, err := c.fetchHTMLWith(c.HTTP, url)
+	if err == nil {
+		return text, nil
+	}
+	if c.stdlibHTTP == nil || c.stdlibHTTP == c.HTTP {
+		return "", err
+	}
+	return c.fetchHTMLWith(c.stdlibHTTP, url)
+}
+
+func (c *Client) fetchHTMLWith(hc *http.Client, url string) (string, error) {
 	c.Throttle()
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -199,7 +220,7 @@ func (c *Client) FetchHTML(url string) (string, error) {
 	}
 	c.SetDocumentHeaders(req)
 	c.ApplyCookie(req)
-	resp, err := c.HTTP.Do(req)
+	resp, err := hc.Do(req)
 	if err != nil {
 		return "", err
 	}
