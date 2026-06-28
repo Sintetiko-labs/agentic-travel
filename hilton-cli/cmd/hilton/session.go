@@ -42,7 +42,7 @@ func runSessionChrome(args []string, syncOnly bool) error {
 	}
 
 	cl := client.New("")
-	startURL := "https://www.hilton.com/es"
+	startURL := "https://www.hilton.com/en/locations/united-kingdom/london/"
 	if !syncOnly {
 		fmt.Fprintln(os.Stderr, "Capturing session from headed Chrome…")
 		fmt.Fprintf(os.Stderr, "  Save to: %s\n", cl.CookiesFilePath())

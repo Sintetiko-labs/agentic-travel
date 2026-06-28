@@ -17,42 +17,42 @@ marriott search [--json] [--limit N] [--brand BRAND] <destination>
 marriott read [--json] [--brand BRAND] <id|url>
 marriott availability [--json] [--brand BRAND] --check-in DATE --check-out DATE <hotel-id>
 marriott brands
+marriott session chrome|sync|doctor
 ```
+
+## Search (London / UK)
+
+`search` calls `findHotels.mi` for the destination city. **Akamai blocks unauthenticated requests** — capture a headed Chrome session first.
+
+```bash
+marriott session chrome --wait --timeout 3m   # browse London search if challenged
+marriott session doctor
+marriott search --json London
+```
+
+Without session, `search` returns an Akamai error with `marriott session chrome` hint.
 
 ## Environment
 
-- `MARRIOTT_COOKIE` — optional browser cookie when blocked
+- `MARRIOTT_COOKIE` — browser cookie from headed Chrome (required for live search)
 - `MARRIOTT_REQUEST_DELAY` — rate limit (e.g. `2s`)
+
+## Session (required for search)
+
+Marriott returns HTTP 403 (Akamai) without `_abck` + `bm_sz` cookies:
+
+```bash
+marriott session chrome --wait --timeout 3m
+marriott session sync          # copy cookies from running Chrome
+marriott session doctor
+```
+
+Chrome starts at a London `findHotels.mi` URL; cookies save to `~/.marriott/cookies.json`.
 
 ## Sub-brands
 
-This CLI covers multiple brands sharing the Marriott booking API:
-
-- Marriott
-- Marriott Hotels
-- JW Marriott
-- The Ritz-Carlton
-- St. Regis
-- W Hotels
-- Edition
-- Luxury Collection
-- Westin
-- Sheraton
-- Le Méridien
-- Renaissance Hotels
-- Autograph Collection
-- Tribute Portfolio
-- AC Hotels
-- AC Hotels by Marriott
-- Aloft
-- Moxy
-- Courtyard by Marriott
-- Residence Inn
-
-Use `--brand` to select a sub-brand when searching.
+Marriott, JW Marriott, Ritz-Carlton, St. Regis, W Hotels, Westin, Sheraton, Courtyard, and more — use `--brand` to filter.
 
 ## Status
 
-Category: **hotel**
-
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+Category: **hotel** · Search: **partial** (findHotels + session chrome) · Session: **required**

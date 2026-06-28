@@ -22,6 +22,7 @@ Monorepo de **CLIs agent-friendly** para hoteles y aerolíneas (cadenas español
 | `h10` | hotel | **live** | chrome+sync+doctor | ng-state `menu-es` destination pages |
 | `palladium` | hotel | **live** | chrome+sync+doctor | AEM `data-hotel-name` cards |
 | `lopesan` | hotel | **live** | chrome+sync+doctor | hotel detail links on listing pages |
+| `travelodge` | hotel | **live** | optional cookie | `/api/v2/hotel` JSON search (UK) |
 | `princess` | hotel | **live** | chrome+sync+doctor | destination page headings |
 | `melia` | hotel | partial | chrome+sync+doctor | BFF `/services/search/hotels/v2/search` (Akamai; needs `--wait`) |
 | `nh` | hotel | partial | chrome+sync+doctor | REST `/nh/es/api/v1/hotels/search` (Akamai) |
@@ -29,6 +30,9 @@ Monorepo de **CLIs agent-friendly** para hoteles y aerolíneas (cadenas español
 | `easyjet` | airline | partial | chrome+sync+doctor | ejavailability (Akamai after session) |
 | `aireuropa` | airline | partial | chrome+sync+doctor | `dapi.aireuropa.com/api/v1/flights/search` POST |
 | `iberiaexpress` | airline | partial | chrome+sync+doctor | `/api/availability/v1/flights` (Incapsula) |
+| `travelodge` | hotel | **live** | chrome+sync+doctor | `sitemap-fusion.xml` (UK; session if WAF) |
+| `hilton` | hotel | **live** | chrome+sync+doctor | `/en/locations/united-kingdom/{city}/` HTML cards |
+| `marriott` | hotel | partial | chrome+sync+doctor | `findHotels.mi` (Akamai; session required) |
 
 **Session chrome (headed Chrome required):** `{slug} session chrome --wait --timeout 3m` polls until `_abck` **and** `bm_sz` (or `cf_clearance` / Incapsula pair). Saves to `~/.{slug}/cookies.json`. `{slug} session doctor` probes WAF cookies + brand API (POST bodies for BFF/GraphQL/dapi).
 
@@ -38,7 +42,8 @@ Monorepo de **CLIs agent-friendly** para hoteles y aerolíneas (cadenas español
 
 ### Iteration 6 priorities
 
-1. Priority partials — live search smoke after manual `session chrome --wait` (melia, nh, iberostar, easyjet, aireuropa, iberiaexpress)
+1. **UK hotels (Madrid→London scenario)** — `travelodge` (live sitemap), `hilton` (live locations HTML), `marriott` (partial; `session chrome` required)
+2. Priority partials — live search smoke after manual `session chrome --wait` (melia, nh, iberostar, easyjet, aireuropa, iberiaexpress)
 2. Volotea / Binter — airline batch (simpler than Akamai-heavy majors)
 3. Next hotel batch — eurostars, hotusa, vincci, silken, sercotel
 4. Vueling — Skysales booking flow XHR (ScheduleSelect) for seat/fare detail beyond FlightPrice calendar
