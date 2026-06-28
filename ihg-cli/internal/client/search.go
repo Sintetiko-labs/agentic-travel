@@ -1,8 +1,16 @@
 package client
 
-import "fmt"
+import (
+	"fmt"
+	"net/url"
+	"strings"
 
-// Search runs hotel search (TODO: implement for IHG).
+	"github.com/fbelchi/travelkit/akamai"
+	tkbase "github.com/fbelchi/travelkit/base"
+	tkhotel "github.com/fbelchi/travelkit/hotel"
+	"github.com/fbelchi/travelkit/parse"
+)
+
 func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, error) {
 	if page < 1 {
 		page = 1
@@ -10,6 +18,33 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 	if pageSize < 1 {
 		pageSize = 24
 	}
-	_ = c
-	return nil, fmt.Errorf("search not yet implemented for IHG — see README and internal/client/search.go TODO")
+	query = strings.TrimSpace(query)
+	if query == "" {
+		return nil, fmt.Errorf("destination required")
+	}
+	path := "/hotels/gb/en/find-hotels/hotel/list?qDest=" + url.QueryEscape(tkhotel.IHGQDest(query))
+	html, err := c.FetchHTML(c.BaseURL + path)
+	if err != nil {
+		if he, ok := err.(*tkbase.HTTPError); ok && akamai.IsDenied(he.Status, he.Body) {
+			return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("ihg"))
+		}
+		return nil, fmt.Errorf("search %q: %w", query, err)
+	}
+	if akamai.IsDenied(403, html) {
+		return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("ihg"))
+	}
+	rows := parse.HotelsFromJSONLD(html, c.BaseURL)
+	if len(rows) == 0 {
+		rows = parse.HotelsFromMarriottSearch(html, c.BaseURL)
+	}
+	rows = tkhotel.FilterHotelLD(rows, query)
+	rows = tkhotel.FilterByBrand(rows, c.Brand)
+	if len(rows) == 0 {
+		return nil, fmt.Errorf("search %q: no hotels parsed", query)
+	}
+	b := c.Brand
+	if b == "" {
+		b = "IHG"
+	}
+	return tkhotel.LDToResult(rows, query, page, pageSize, b, c.BaseURL, "hotel-list"), nil
 }
