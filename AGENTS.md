@@ -219,6 +219,6 @@ replace github.com/fbelchi/travelkit => ../travelkit
 ## Estado del proyecto (loop 6 → 7)
 
 - **18 live** + **7 partial** CLIs prioritarios (ver README)
-- MCP integrados: **Kiwi**, **Gondola**, **Duffel**, **cursor-ide-browser** — [docs/MCP_SETUP.md](docs/MCP_SETUP.md)
+- MCP integrados: **Kiwi**, **Gondola**, **Duffel**, **cursor-ide-browser** — [docs/MCP_SETUP.md](docs/MCP_SETUP.md) · auditoría: [docs/MCP_LOCAL_AUDIT.md](docs/MCP_LOCAL_AUDIT.md)
 - Arquitectura híbrida: [docs/MCP_VS_CLI.md](docs/MCP_VS_CLI.md) · inventario loop 7: [docs/MCP_TRAVEL_INVENTORY.md](docs/MCP_TRAVEL_INVENTORY.md)
 - Prioridad loop 7: router híbrido MCP+CLI+browser, registry `preferred_tool` en `groups.json`
