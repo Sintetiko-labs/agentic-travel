@@ -101,7 +101,7 @@ func runSessionDoctor(args []string) error {
 		EnvPrefix:   cl.EnvPrefix,
 		BaseURL:     client.BaseURL,
 		Cookie:      cl.Cookie,
-		ProbeURL:    "https://www.marriott.com/",
+		ProbeURL:    client.BaseURL + client.DefaultSearchProbePath(),
 		ProbeMethod: "GET",
 	})
 	if cf.jsonOut {
