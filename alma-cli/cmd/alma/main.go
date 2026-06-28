@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   alma search [--json] [--limit N] <destination...>
   alma read [--json] <id|url>
   alma availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  alma session chrome [--wait] [--timeout 3m]
+  alma session sync
+  alma session doctor [--json]
   alma brands
   alma version | help
 `)

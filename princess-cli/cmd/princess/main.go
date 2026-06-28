@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   princess search [--json] [--limit N] <destination...>
   princess read [--json] <id|url>
   princess availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  princess session chrome [--wait] [--timeout 3m]
+  princess session sync
+  princess session doctor [--json]
   princess brands
   princess version | help
 `)

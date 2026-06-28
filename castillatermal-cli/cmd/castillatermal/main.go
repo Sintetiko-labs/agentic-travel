@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   castillatermal search [--json] [--limit N] <destination...>
   castillatermal read [--json] <id|url>
   castillatermal availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  castillatermal session chrome [--wait] [--timeout 3m]
+  castillatermal session sync
+  castillatermal session doctor [--json]
   castillatermal brands
   castillatermal version | help
 `)

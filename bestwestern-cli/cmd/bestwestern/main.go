@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   bestwestern search [--json] [--limit N] [--brand BRAND] <destination...>
   bestwestern read [--json] [--brand BRAND] <id|url>
   bestwestern availability [--json] [--brand BRAND] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  bestwestern session chrome [--wait] [--timeout 3m]
+  bestwestern session sync
+  bestwestern session doctor [--json]
   bestwestern brands
   bestwestern version | help
 `)

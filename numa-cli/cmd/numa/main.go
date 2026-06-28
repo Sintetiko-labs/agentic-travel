@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   numa search [--json] [--limit N] <destination...>
   numa read [--json] <id|url>
   numa availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  numa session chrome [--wait] [--timeout 3m]
+  numa session sync
+  numa session doctor [--json]
   numa brands
   numa version | help
 `)

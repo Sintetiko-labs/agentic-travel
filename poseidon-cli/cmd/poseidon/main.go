@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   poseidon search [--json] [--limit N] <destination...>
   poseidon read [--json] <id|url>
   poseidon availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  poseidon session chrome [--wait] [--timeout 3m]
+  poseidon session sync
+  poseidon session doctor [--json]
   poseidon brands
   poseidon version | help
 `)

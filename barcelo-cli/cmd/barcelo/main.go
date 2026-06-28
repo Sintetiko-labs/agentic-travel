@@ -50,6 +50,7 @@ USAGE:
   barcelo brands
   barcelo session chrome [--wait] [--port N]
   barcelo session sync
+  barcelo session doctor [--json]
   barcelo version | help
 `)
 }

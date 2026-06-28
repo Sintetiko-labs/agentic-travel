@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   sercotel search [--json] [--limit N] <destination...>
   sercotel read [--json] <id|url>
   sercotel availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  sercotel session chrome [--wait] [--timeout 3m]
+  sercotel session sync
+  sercotel session doctor [--json]
   sercotel brands
   sercotel version | help
 `)

@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   fergus search [--json] [--limit N] <destination...>
   fergus read [--json] <id|url>
   fergus availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  fergus session chrome [--wait] [--timeout 3m]
+  fergus session sync
+  fergus session doctor [--json]
   fergus brands
   fergus version | help
 `)

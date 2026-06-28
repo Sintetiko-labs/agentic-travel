@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   bypillow search [--json] [--limit N] <destination...>
   bypillow read [--json] <id|url>
   bypillow availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  bypillow session chrome [--wait] [--timeout 3m]
+  bypillow session sync
+  bypillow session doctor [--json]
   bypillow brands
   bypillow version | help
 `)

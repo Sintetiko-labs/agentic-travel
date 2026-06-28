@@ -50,6 +50,7 @@ USAGE:
   nh brands
   nh session chrome [--wait] [--port N]
   nh session sync
+  nh session doctor [--json]
   nh version | help
 `)
 }

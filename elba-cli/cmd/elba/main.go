@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   elba search [--json] [--limit N] <destination...>
   elba read [--json] <id|url>
   elba availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  elba session chrome [--wait] [--timeout 3m]
+  elba session sync
+  elba session doctor [--json]
   elba brands
   elba version | help
 `)

@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   iberik search [--json] [--limit N] <destination...>
   iberik read [--json] <id|url>
   iberik availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  iberik session chrome [--wait] [--timeout 3m]
+  iberik session sync
+  iberik session doctor [--json]
   iberik brands
   iberik version | help
 `)

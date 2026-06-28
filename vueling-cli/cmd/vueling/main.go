@@ -47,6 +47,7 @@ USAGE:
   vueling brands
   vueling session chrome [--wait] [--port N]
   vueling session sync
+  vueling session doctor [--json]
   vueling version | help
 `)
 }

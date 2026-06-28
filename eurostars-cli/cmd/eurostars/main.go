@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   eurostars search [--json] [--limit N] [--brand BRAND] <destination...>
   eurostars read [--json] [--brand BRAND] <id|url>
   eurostars availability [--json] [--brand BRAND] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  eurostars session chrome [--wait] [--timeout 3m]
+  eurostars session sync
+  eurostars session doctor [--json]
   eurostars brands
   eurostars version | help
 `)

@@ -47,6 +47,7 @@ USAGE:
   iberiaexpress brands
   iberiaexpress session chrome [--wait] [--port N]
   iberiaexpress session sync
+  iberiaexpress session doctor [--json]
   iberiaexpress version | help
 `)
 }

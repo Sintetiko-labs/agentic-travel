@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   accor search [--json] [--limit N] [--brand BRAND] <destination...>
   accor read [--json] [--brand BRAND] <id|url>
   accor availability [--json] [--brand BRAND] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  accor session chrome [--wait] [--timeout 3m]
+  accor session sync
+  accor session doctor [--json]
   accor brands
   accor version | help
 `)

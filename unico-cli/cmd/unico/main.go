@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   unico search [--json] [--limit N] <destination...>
   unico read [--json] <id|url>
   unico availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  unico session chrome [--wait] [--timeout 3m]
+  unico session sync
+  unico session doctor [--json]
   unico brands
   unico version | help
 `)

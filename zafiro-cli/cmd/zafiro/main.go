@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   zafiro search [--json] [--limit N] <destination...>
   zafiro read [--json] <id|url>
   zafiro availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  zafiro session chrome [--wait] [--timeout 3m]
+  zafiro session sync
+  zafiro session doctor [--json]
   zafiro brands
   zafiro version | help
 `)

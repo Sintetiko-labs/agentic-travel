@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   eurobuilding search [--json] [--limit N] <destination...>
   eurobuilding read [--json] <id|url>
   eurobuilding availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  eurobuilding session chrome [--wait] [--timeout 3m]
+  eurobuilding session sync
+  eurobuilding session doctor [--json]
   eurobuilding brands
   eurobuilding version | help
 `)

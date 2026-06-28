@@ -50,6 +50,7 @@ USAGE:
   iberostar brands
   iberostar session chrome [--wait] [--port N]
   iberostar session sync
+  iberostar session doctor [--json]
   iberostar version | help
 `)
 }

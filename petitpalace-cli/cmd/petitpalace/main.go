@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   petitpalace search [--json] [--limit N] <destination...>
   petitpalace read [--json] <id|url>
   petitpalace availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  petitpalace session chrome [--wait] [--timeout 3m]
+  petitpalace session sync
+  petitpalace session doctor [--json]
   petitpalace brands
   petitpalace version | help
 `)

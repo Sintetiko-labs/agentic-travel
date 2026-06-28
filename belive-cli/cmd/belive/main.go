@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   belive search [--json] [--limit N] <destination...>
   belive read [--json] <id|url>
   belive availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  belive session chrome [--wait] [--timeout 3m]
+  belive session sync
+  belive session doctor [--json]
   belive brands
   belive version | help
 `)

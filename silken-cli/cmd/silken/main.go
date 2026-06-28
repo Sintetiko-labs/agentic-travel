@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   silken search [--json] [--limit N] <destination...>
   silken read [--json] <id|url>
   silken availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  silken session chrome [--wait] [--timeout 3m]
+  silken session sync
+  silken session doctor [--json]
   silken brands
   silken version | help
 `)

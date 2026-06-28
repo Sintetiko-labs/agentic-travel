@@ -14,6 +14,7 @@ import (
 
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
+	"github.com/fbelchi/travelkit/akamai"
 	"github.com/fbelchi/travelkit/cookies"
 )
 
@@ -22,14 +23,20 @@ type Options struct {
 	EnvPrefix   string
 	BaseURL     string
 	StartURL    string
+	ExtraURLs   []string
 	Port        int
+	Wait        bool
 	WaitTimeout time.Duration
 	Replace     bool
+	SyncOnly    bool
 }
 
 // Result is a captured cookie header string.
 type Result struct {
-	Cookie string
+	Cookie  string
+	Ready   bool
+	HasAbck bool
+	HasBmSz bool
 }
 
 // Capture opens or attaches to Chrome and returns cookies for baseURL.
@@ -38,7 +45,11 @@ func Capture(opts Options) (Result, error) {
 		opts.Port = 9222
 	}
 	if opts.WaitTimeout == 0 {
-		opts.WaitTimeout = 2 * time.Minute
+		if opts.Wait {
+			opts.WaitTimeout = 3 * time.Minute
+		} else {
+			opts.WaitTimeout = 30 * time.Second
+		}
 	}
 	if opts.StartURL == "" {
 		opts.StartURL = opts.BaseURL
@@ -56,29 +67,86 @@ func Capture(opts Options) (Result, error) {
 	}
 	deadline := time.Now().Add(opts.WaitTimeout)
 	for {
-		var cks []*network.Cookie
-		if err := chromedp.Run(ctx, chromedp.ActionFunc(func(ctx context.Context) error {
-			var err error
-			cks, err = network.GetCookies().WithUrls([]string{opts.BaseURL, opts.BaseURL + "/"}).Do(ctx)
-			return err
-		})); err != nil {
+		cookieHeader, err := readCookieHeader(ctx, cookieURLs(opts))
+		if err != nil {
 			return Result{}, err
 		}
-		parts := make([]string, 0, len(cks))
-		for _, ck := range cks {
-			if ck.Name != "" {
-				parts = append(parts, ck.Name+"="+ck.Value)
-			}
-		}
-		cookieHeader := strings.Join(parts, "; ")
-		if cookieHeader != "" {
-			return Result{Cookie: cookieHeader}, nil
+		report := akamai.AnalyzeCookies(cookieHeader)
+		ready := captureReady(opts, cookieHeader)
+		if ready {
+			return Result{
+				Cookie: cookieHeader, Ready: true,
+				HasAbck: report.HasAbck, HasBmSz: report.HasBmSz,
+			}, nil
 		}
 		if time.Now().After(deadline) {
+			if opts.Wait && cookieHeader != "" {
+				return Result{
+					Cookie: cookieHeader, Ready: false,
+					HasAbck: report.HasAbck, HasBmSz: report.HasBmSz,
+				}, fmt.Errorf("timeout (%s) waiting for WAF cookies (_abck+bm_sz, cf_clearance, or Incapsula) on %s — browse the site in headed Chrome",
+					opts.WaitTimeout, opts.BaseURL)
+			}
 			return Result{}, fmt.Errorf("timeout (%s) waiting for cookies on %s", opts.WaitTimeout, opts.BaseURL)
 		}
 		time.Sleep(2 * time.Second)
 	}
+}
+
+func captureReady(opts Options, cookie string) bool {
+	if cookie == "" {
+		return false
+	}
+	if opts.SyncOnly || !opts.Wait {
+		return true
+	}
+	return akamai.SessionReady(cookie)
+}
+
+func cookieURLs(opts Options) []string {
+	seen := make(map[string]struct{})
+	var urls []string
+	add := func(u string) {
+		u = strings.TrimRight(strings.TrimSpace(u), "/")
+		if u == "" {
+			return
+		}
+		if _, ok := seen[u]; ok {
+			return
+		}
+		seen[u] = struct{}{}
+		urls = append(urls, u, u+"/")
+	}
+	add(opts.BaseURL)
+	add(opts.StartURL)
+	for _, u := range opts.ExtraURLs {
+		add(u)
+	}
+	return urls
+}
+
+func readCookieHeader(ctx context.Context, urls []string) (string, error) {
+	var cks []*network.Cookie
+	if err := chromedp.Run(ctx, chromedp.ActionFunc(func(ctx context.Context) error {
+		var err error
+		cks, err = network.GetCookies().WithURLs(urls).Do(ctx)
+		return err
+	})); err != nil {
+		return "", err
+	}
+	parts := make([]string, 0, len(cks))
+	seen := make(map[string]struct{})
+	for _, ck := range cks {
+		if ck.Name == "" {
+			continue
+		}
+		if _, ok := seen[ck.Name]; ok {
+			continue
+		}
+		seen[ck.Name] = struct{}{}
+		parts = append(parts, ck.Name+"="+ck.Value)
+	}
+	return strings.Join(parts, "; "), nil
 }
 
 func profileDir(envPrefix string) string {
@@ -92,7 +160,7 @@ func ensureDebugging(debugURL string, opts Options) error {
 		return nil
 	}
 	if !opts.Replace {
-		return fmt.Errorf("Chrome not listening on %s — launch with: chrome --remote-debugging-port=%d --user-data-dir=%q %s",
+		return fmt.Errorf("Chrome not listening on %s — launch headed Chrome with: chrome --remote-debugging-port=%d --user-data-dir=%q %s",
 			debugURL, opts.Port, profileDir(opts.EnvPrefix), opts.StartURL)
 	}
 	_ = exec.Command("pkill", "-f", profileDir(opts.EnvPrefix)).Run()

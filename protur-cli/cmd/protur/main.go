@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   protur search [--json] [--limit N] <destination...>
   protur read [--json] <id|url>
   protur availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  protur session chrome [--wait] [--timeout 3m]
+  protur session sync
+  protur session doctor [--json]
   protur brands
   protur version | help
 `)

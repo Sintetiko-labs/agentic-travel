@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   nobu search [--json] [--limit N] <destination...>
   nobu read [--json] <id|url>
   nobu availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  nobu session chrome [--wait] [--timeout 3m]
+  nobu session sync
+  nobu session doctor [--json]
   nobu brands
   nobu version | help
 `)

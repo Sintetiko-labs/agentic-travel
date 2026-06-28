@@ -46,6 +46,7 @@ type ChromeOptions struct {
 	EnvPrefix   string
 	BaseURL     string
 	StartURL    string
+	ExtraURLs   []string
 	Port        int
 	Wait        bool
 	WaitTimeout time.Duration
@@ -67,7 +68,7 @@ func CaptureChrome(opts ChromeOptions) (ChromeResult, error) {
 		opts.Port = 9222
 	}
 	if opts.WaitTimeout == 0 {
-		if opts.Wait {
+		if opts.Wait && !opts.SyncOnly {
 			opts.WaitTimeout = 3 * time.Minute
 		} else {
 			opts.WaitTimeout = 30 * time.Second
@@ -80,21 +81,31 @@ func CaptureChrome(opts ChromeOptions) (ChromeResult, error) {
 		EnvPrefix:   opts.EnvPrefix,
 		BaseURL:     opts.BaseURL,
 		StartURL:    opts.StartURL,
+		ExtraURLs:   opts.ExtraURLs,
 		Port:        opts.Port,
+		Wait:        opts.Wait && !opts.SyncOnly,
 		WaitTimeout: opts.WaitTimeout,
 		Replace:     opts.Replace,
+		SyncOnly:    opts.SyncOnly,
 	})
 	if err != nil {
+		if res.Cookie != "" {
+			report := akamai.AnalyzeCookies(res.Cookie)
+			return ChromeResult{
+				Cookie: res.Cookie, Ready: res.Ready,
+				HasAbck: report.HasAbck, HasBmSz: report.HasBmSz,
+			}, err
+		}
 		return ChromeResult{}, err
 	}
-	lower := strings.ToLower(res.Cookie)
-	hasAbck := strings.Contains(lower, "_abck=")
-	hasBmSz := strings.Contains(lower, "bm_sz=")
-	ready := hasAbck || hasBmSz || strings.Contains(lower, "cf_clearance=") ||
-		strings.Contains(lower, "incap_ses") || strings.Contains(lower, "visid_incap")
-	if !opts.Wait || ready || res.Cookie != "" {
-		return ChromeResult{Cookie: res.Cookie, Ready: ready, HasAbck: hasAbck, HasBmSz: hasBmSz}, nil
+	report := akamai.AnalyzeCookies(res.Cookie)
+	ready := res.Ready || akamai.SessionReady(res.Cookie)
+	if !opts.Wait || opts.SyncOnly || ready {
+		return ChromeResult{
+			Cookie: res.Cookie, Ready: ready,
+			HasAbck: report.HasAbck, HasBmSz: report.HasBmSz,
+		}, nil
 	}
 	return ChromeResult{}, fmt.Errorf("timeout waiting for session cookies on %s — %s",
-		opts.BaseURL, akamai.NeedsSessionHint(opts.EnvPrefix))
+		opts.BaseURL, akamai.NeedsSessionHint(strings.ToLower(strings.ReplaceAll(opts.EnvPrefix, "_", "-"))))
 }

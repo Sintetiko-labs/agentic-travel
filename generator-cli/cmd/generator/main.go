@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   generator search [--json] [--limit N] <destination...>
   generator read [--json] <id|url>
   generator availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  generator session chrome [--wait] [--timeout 3m]
+  generator session sync
+  generator session doctor [--json]
   generator brands
   generator version | help
 `)

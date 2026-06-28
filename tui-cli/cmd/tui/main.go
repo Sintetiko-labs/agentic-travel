@@ -19,6 +19,8 @@ func main() {
 		err = cmdSearch(os.Args[2:])
 	case "read":
 		err = cmdRead(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -42,6 +44,9 @@ func usage() {
 USAGE:
   tui search [--json] [--brand BRAND] --from ORIGIN --to DEST --depart DATE [--return DATE]
   tui read [--json] [--brand BRAND] <id|url>
+  tui session chrome [--wait] [--timeout 3m]
+  tui session sync
+  tui session doctor [--json]
   tui brands
   tui version | help
 `)

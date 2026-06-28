@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   mamashelter search [--json] [--limit N] <destination...>
   mamashelter read [--json] <id|url>
   mamashelter availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  mamashelter session chrome [--wait] [--timeout 3m]
+  mamashelter session sync
+  mamashelter session doctor [--json]
   mamashelter brands
   mamashelter version | help
 `)

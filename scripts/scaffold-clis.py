@@ -6,6 +6,8 @@ from __future__ import annotations
 import json
 import os
 import re
+import subprocess
+import sys
 import textwrap
 from pathlib import Path
 
@@ -1036,7 +1038,7 @@ Ver `scripts/scaffold-clis.py` para el mapa completo grupo → marcas.
 ## Requisitos
 
 - Go 1.26+
-- Chrome/Chromium (solo para futuros comandos `session chrome`)
+- Chrome/Chromium headed browser for `session chrome --wait --timeout 3m` (Akamai `_abck` + `bm_sz`)
 
 ## Build rápido
 
@@ -1084,6 +1086,9 @@ def main() -> None:
     gen_readme(GROUPS)
     manifest = [{"slug": g["slug"], "name": g["name"], "cat": g["cat"], "brands": g["brands"]} for g in GROUPS]
     write(ROOT / "scripts/groups.json", json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
+    session_script = ROOT / "scripts/add-session-subcommands.py"
+    if session_script.exists():
+        subprocess.run([sys.executable, str(session_script)], check=True)
     print(f"Done: {len(GROUPS)} CLIs")
 
 

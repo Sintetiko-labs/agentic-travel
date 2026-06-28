@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   zenit search [--json] [--limit N] <destination...>
   zenit read [--json] <id|url>
   zenit availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  zenit session chrome [--wait] [--timeout 3m]
+  zenit session sync
+  zenit session doctor [--json]
   zenit brands
   zenit version | help
 `)

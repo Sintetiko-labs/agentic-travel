@@ -29,9 +29,8 @@ aireuropa brands
 Capture Akamai/WAF cookies from Chrome (headed browser required):
 
 ```bash
-aireuropa session chrome          # open Chrome, wait for cookies, save to ~/.aireuropa/cookies.json
-aireuropa session sync            # sync cookies from an already-running Chrome on :9222
-aireuropa session chrome --no-wait  # immediate capture
+aireuropa session chrome --wait --timeout 3m
+aireuropa session doctor --json
 ```
 
 Manual Chrome launch (if not using `--replace`):
@@ -53,6 +52,6 @@ Use `AIREUROPA_REQUEST_DELAY=60s` for airlines (~1 req/min). Hotels: `2s` defaul
 
 | Feature | Status |
 |---------|--------|
-| `search` | **partial** — `/ae/api/v1/flights/search`; needs `AIREUROPA_COOKIE` |
+| `search` | **partial** — `dapi.aireuropa.com/api/v1/flights/search` POST; needs `aireuropa session chrome --wait` |
 | `read` | implemented |
 | Rate limit | `AIREUROPA_REQUEST_DELAY` (~2s) |

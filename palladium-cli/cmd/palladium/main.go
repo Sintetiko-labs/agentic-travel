@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   palladium search [--json] [--limit N] [--brand BRAND] <destination...>
   palladium read [--json] [--brand BRAND] <id|url>
   palladium availability [--json] [--brand BRAND] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  palladium session chrome [--wait] [--timeout 3m]
+  palladium session sync
+  palladium session doctor [--json]
   palladium brands
   palladium version | help
 `)

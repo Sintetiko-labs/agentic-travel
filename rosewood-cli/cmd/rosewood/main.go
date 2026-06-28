@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   rosewood search [--json] [--limit N] <destination...>
   rosewood read [--json] <id|url>
   rosewood availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  rosewood session chrome [--wait] [--timeout 3m]
+  rosewood session sync
+  rosewood session doctor [--json]
   rosewood brands
   rosewood version | help
 `)

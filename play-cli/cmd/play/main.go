@@ -19,6 +19,8 @@ func main() {
 		err = cmdSearch(os.Args[2:])
 	case "read":
 		err = cmdRead(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -42,6 +44,9 @@ func usage() {
 USAGE:
   play search [--json] --from ORIGIN --to DEST --depart DATE [--return DATE]
   play read [--json] <id|url>
+  play session chrome [--wait] [--timeout 3m]
+  play session sync
+  play session doctor [--json]
   play brands
   play version | help
 `)

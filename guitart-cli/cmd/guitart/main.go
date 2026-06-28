@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   guitart search [--json] [--limit N] <destination...>
   guitart read [--json] <id|url>
   guitart availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  guitart session chrome [--wait] [--timeout 3m]
+  guitart session sync
+  guitart session doctor [--json]
   guitart brands
   guitart version | help
 `)

@@ -47,6 +47,7 @@ USAGE:
   easyjet brands
   easyjet session chrome [--wait] [--port N]
   easyjet session sync
+  easyjet session doctor [--json]
   easyjet version | help
 `)
 }

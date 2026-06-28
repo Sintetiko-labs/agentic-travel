@@ -10,24 +10,34 @@ Monorepo de **CLIs agent-friendly** para hoteles y aerolíneas (cadenas español
 - **321** marcas cubiertas (agrupadas por API padre compartida)
 - Librería compartida: [`travelkit/`](travelkit/)
 
-## Priority CLIs (loop 3)
+## Priority CLIs (loop 4)
 
-| CLI | Tipo | Status | Session chrome | Fuente |
-|-----|------|--------|----------------|--------|
-| `ryanair` | airline | **live** | wired | `farfnd` + booking API |
-| `barcelo` | hotel | **live** | wired | JSON-LD listing (+ `@id` slug) |
-| `riu` | hotel | **live** | wired | ng-state destination pages |
-| `melia` | hotel | partial | wired | BFF (Akamai `_abck`) |
-| `nh` | hotel | partial | wired | REST API (Akamai) |
-| `iberostar` | hotel | partial | wired | GraphQL (Akamai) |
-| `vueling` | airline | partial | wired | BIT v2 → fallback `tickets.vueling.com` |
-| `easyjet` | airline | partial | wired | ejavailability (cookie) |
-| `aireuropa` | airline | partial | wired | REST search (cookie) |
-| `iberiaexpress` | airline | partial | wired | REST API (Incapsula) |
+| CLI | Tipo | Status | Session | Fuente / notas |
+|-----|------|--------|---------|----------------|
+| `ryanair` | airline | **live** | chrome+sync+doctor | `farfnd` + booking API |
+| `barcelo` | hotel | **live** | chrome+sync+doctor | JSON-LD listing |
+| `riu` | hotel | **live** | chrome+sync+doctor | ng-state destination pages |
+| `melia` | hotel | partial | chrome+sync+doctor | BFF `/services/search/hotels/v2/search` (Akamai; needs `--wait`) |
+| `nh` | hotel | partial | chrome+sync+doctor | REST `/nh/es/api/v1/hotels/search` (Akamai) |
+| `iberostar` | hotel | partial | chrome+sync+doctor | GraphQL `/api/graphql` (Akamai) |
+| `vueling` | airline | partial | chrome+sync+doctor | Skysales `tickets.vueling.com/bit/v2` + Akamai session on tickets host |
+| `easyjet` | airline | partial | chrome+sync+doctor | ejavailability (Akamai after session) |
+| `aireuropa` | airline | partial | chrome+sync+doctor | `dapi.aireuropa.com/api/v1/flights/search` POST (was 405 on www) |
+| `iberiaexpress` | airline | partial | chrome+sync+doctor | `/api/availability/v1/flights` (Incapsula) |
 
-**Session chrome:** `{slug} session chrome` → `~/.{slug}/cookies.json` (commerce pattern). Env `{SLUG}_COOKIE` overrides file. Manual smoke: headed Chrome required (not CI).
+**Session chrome (headed Chrome required):** `{slug} session chrome --wait --timeout 3m` polls until `_abck` **and** `bm_sz` (or `cf_clearance` / Incapsula pair). Saves to `~/.{slug}/cookies.json`. `{slug} session doctor` probes WAF cookies + brand API.
 
-**Vueling note:** `www.vueling.com/bit/v2` returns SPA 404; client falls back to `tickets.vueling.com/bit/v2` (Skysales). Still needs Akamai session from booking flow.
+**CLIs with session subcommands:** **194** / 194 (via `scripts/add-session-subcommands.py`; scaffold regen runs it automatically).
+
+**Smoke tests (loop 4):** `verify-clis.sh` → 194/194 PASS (build only). Live API smoke requires headed Chrome + residential IP — not run in sandbox.
+
+### Iteration 5 priorities
+
+1. Vueling — capture real Skysales XHR path (BIT v2 returns 404; HAR from ScheduleSelect flow)
+2. Melia — confirm BFF path from browser HAR if v2 search still 403 with full session
+3. Priority partials — live search smoke after manual `session chrome --wait`
+4. `session doctor` — POST probe bodies for melia/graphql/aireuropa
+5. Scaffolded CLIs — implement search for next hotel/airline batch
 
 ## Hoteles
 

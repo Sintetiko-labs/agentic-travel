@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   relaischateaux search [--json] [--limit N] <destination...>
   relaischateaux read [--json] <id|url>
   relaischateaux availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  relaischateaux session chrome [--wait] [--timeout 3m]
+  relaischateaux session sync
+  relaischateaux session doctor [--json]
   relaischateaux brands
   relaischateaux version | help
 `)

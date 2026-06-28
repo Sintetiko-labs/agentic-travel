@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   virgin search [--json] [--limit N] <destination...>
   virgin read [--json] <id|url>
   virgin availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  virgin session chrome [--wait] [--timeout 3m]
+  virgin session sync
+  virgin session doctor [--json]
   virgin brands
   virgin version | help
 `)

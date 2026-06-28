@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   roommate search [--json] [--limit N] <destination...>
   roommate read [--json] <id|url>
   roommate availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  roommate session chrome [--wait] [--timeout 3m]
+  roommate session sync
+  roommate session doctor [--json]
   roommate brands
   roommate version | help
 `)

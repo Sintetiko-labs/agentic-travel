@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   medplaya search [--json] [--limit N] <destination...>
   medplaya read [--json] <id|url>
   medplaya availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  medplaya session chrome [--wait] [--timeout 3m]
+  medplaya session sync
+  medplaya session doctor [--json]
   medplaya brands
   medplaya version | help
 `)

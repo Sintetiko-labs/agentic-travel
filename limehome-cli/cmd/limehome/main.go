@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   limehome search [--json] [--limit N] <destination...>
   limehome read [--json] <id|url>
   limehome availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  limehome session chrome [--wait] [--timeout 3m]
+  limehome session sync
+  limehome session doctor [--json]
   limehome brands
   limehome version | help
 `)

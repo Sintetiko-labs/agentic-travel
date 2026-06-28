@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   libere search [--json] [--limit N] <destination...>
   libere read [--json] <id|url>
   libere availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  libere session chrome [--wait] [--timeout 3m]
+  libere session sync
+  libere session doctor [--json]
   libere brands
   libere version | help
 `)

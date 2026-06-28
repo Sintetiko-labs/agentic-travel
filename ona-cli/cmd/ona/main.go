@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   ona search [--json] [--limit N] [--brand BRAND] <destination...>
   ona read [--json] [--brand BRAND] <id|url>
   ona availability [--json] [--brand BRAND] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  ona session chrome [--wait] [--timeout 3m]
+  ona session sync
+  ona session doctor [--json]
   ona brands
   ona version | help
 `)

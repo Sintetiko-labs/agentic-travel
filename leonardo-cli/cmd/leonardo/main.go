@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   leonardo search [--json] [--limit N] [--brand BRAND] <destination...>
   leonardo read [--json] [--brand BRAND] <id|url>
   leonardo availability [--json] [--brand BRAND] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  leonardo session chrome [--wait] [--timeout 3m]
+  leonardo session sync
+  leonardo session doctor [--json]
   leonardo brands
   leonardo version | help
 `)

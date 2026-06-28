@@ -4,7 +4,10 @@ import (
 	tkbase "github.com/fbelchi/travelkit/base"
 )
 
-const BaseURL = "https://www.aireuropa.com"
+const (
+	BaseURL    = "https://www.aireuropa.com"
+	APIBaseURL = "https://dapi.aireuropa.com"
+)
 
 type Client struct {
 	*tkbase.Client

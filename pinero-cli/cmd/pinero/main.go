@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   pinero search [--json] [--limit N] [--brand BRAND] <destination...>
   pinero read [--json] [--brand BRAND] <id|url>
   pinero availability [--json] [--brand BRAND] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  pinero session chrome [--wait] [--timeout 3m]
+  pinero session sync
+  pinero session doctor [--json]
   pinero brands
   pinero version | help
 `)

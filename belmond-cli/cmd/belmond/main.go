@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   belmond search [--json] [--limit N] <destination...>
   belmond read [--json] <id|url>
   belmond availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  belmond session chrome [--wait] [--timeout 3m]
+  belmond session sync
+  belmond session doctor [--json]
   belmond brands
   belmond version | help
 `)

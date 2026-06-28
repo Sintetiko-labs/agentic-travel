@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   citizenm search [--json] [--limit N] <destination...>
   citizenm read [--json] <id|url>
   citizenm availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  citizenm session chrome [--wait] [--timeout 3m]
+  citizenm session sync
+  citizenm session doctor [--json]
   citizenm brands
   citizenm version | help
 `)

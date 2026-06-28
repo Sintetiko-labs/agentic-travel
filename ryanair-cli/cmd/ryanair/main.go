@@ -47,6 +47,7 @@ USAGE:
   ryanair brands
   ryanair session chrome [--wait] [--port N]
   ryanair session sync
+  ryanair session doctor [--json]
   ryanair version | help
 `)
 }

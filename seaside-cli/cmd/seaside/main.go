@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   seaside search [--json] [--limit N] <destination...>
   seaside read [--json] <id|url>
   seaside availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  seaside session chrome [--wait] [--timeout 3m]
+  seaside session sync
+  seaside session doctor [--json]
   seaside brands
   seaside version | help
 `)

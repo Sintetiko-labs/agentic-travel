@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   toc search [--json] [--limit N] <destination...>
   toc read [--json] <id|url>
   toc availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  toc session chrome [--wait] [--timeout 3m]
+  toc session sync
+  toc session doctor [--json]
   toc brands
   toc version | help
 `)

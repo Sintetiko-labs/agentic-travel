@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   aman search [--json] [--limit N] <destination...>
   aman read [--json] <id|url>
   aman availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  aman session chrome [--wait] [--timeout 3m]
+  aman session sync
+  aman session doctor [--json]
   aman brands
   aman version | help
 `)

@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   sonder search [--json] [--limit N] <destination...>
   sonder read [--json] <id|url>
   sonder availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  sonder session chrome [--wait] [--timeout 3m]
+  sonder session sync
+  sonder session doctor [--json]
   sonder brands
   sonder version | help
 `)

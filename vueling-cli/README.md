@@ -53,6 +53,6 @@ Use `VUELING_REQUEST_DELAY=60s` for airlines (~1 req/min). Hotels: `2s` default 
 
 | Feature | Status |
 |---------|--------|
-| `search` | **partial** — `www.vueling.com/bit/v2` 404 (SPA); fallback `tickets.vueling.com/bit/v2` (Skysales). Needs `vueling session chrome` on tickets host |
+| `search` | **partial** — Skysales `tickets.vueling.com/bit/v2` (404 without session/HAR); session on tickets host |
 | `read` | implemented |
 | Rate limit | `VUELING_REQUEST_DELAY` (~60s recommended) |

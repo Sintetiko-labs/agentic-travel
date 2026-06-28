@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   garden search [--json] [--limit N] <destination...>
   garden read [--json] <id|url>
   garden availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  garden session chrome [--wait] [--timeout 3m]
+  garden session sync
+  garden session doctor [--json]
   garden brands
   garden version | help
 `)

@@ -50,6 +50,7 @@ USAGE:
   riu brands
   riu session chrome [--wait] [--port N]
   riu session sync
+  riu session doctor [--json]
   riu version | help
 `)
 }

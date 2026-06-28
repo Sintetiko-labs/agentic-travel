@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   catalonia search [--json] [--limit N] <destination...>
   catalonia read [--json] <id|url>
   catalonia availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  catalonia session chrome [--wait] [--timeout 3m]
+  catalonia session sync
+  catalonia session doctor [--json]
   catalonia brands
   catalonia version | help
 `)

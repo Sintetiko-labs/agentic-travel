@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   tent search [--json] [--limit N] <destination...>
   tent read [--json] <id|url>
   tent availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  tent session chrome [--wait] [--timeout 3m]
+  tent session sync
+  tent session doctor [--json]
   tent brands
   tent version | help
 `)

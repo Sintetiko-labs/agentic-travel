@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   locke search [--json] [--limit N] <destination...>
   locke read [--json] <id|url>
   locke availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  locke session chrome [--wait] [--timeout 3m]
+  locke session sync
+  locke session doctor [--json]
   locke brands
   locke version | help
 `)

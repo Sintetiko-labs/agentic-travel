@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   ilunion search [--json] [--limit N] <destination...>
   ilunion read [--json] <id|url>
   ilunion availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  ilunion session chrome [--wait] [--timeout 3m]
+  ilunion session sync
+  ilunion session doctor [--json]
   ilunion brands
   ilunion version | help
 `)

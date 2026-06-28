@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   umusic search [--json] [--limit N] <destination...>
   umusic read [--json] <id|url>
   umusic availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  umusic session chrome [--wait] [--timeout 3m]
+  umusic session sync
+  umusic session doctor [--json]
   umusic brands
   umusic version | help
 `)

@@ -21,6 +21,8 @@ func main() {
 		err = cmdRead(os.Args[2:])
 	case "availability":
 		err = cmdAvailability(os.Args[2:])
+	case "session":
+		err = cmdSession(os.Args[2:])
 	case "brands":
 		cmdBrands()
 	case "version", "--version", "-v":
@@ -45,6 +47,9 @@ USAGE:
   zoku search [--json] [--limit N] <destination...>
   zoku read [--json] <id|url>
   zoku availability [--json] --check-in DATE --check-out DATE [--guests N] [--rooms N] <hotel-id>
+  zoku session chrome [--wait] [--timeout 3m]
+  zoku session sync
+  zoku session doctor [--json]
   zoku brands
   zoku version | help
 `)

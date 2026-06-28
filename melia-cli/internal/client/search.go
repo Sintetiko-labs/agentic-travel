@@ -54,6 +54,7 @@ func (c *Client) PostRaw(url string, payload any) ([]byte, int, error) {
 	}
 	c.SetAPIHeaders(req)
 	req.Header.Set("content-type", "application/json")
+	req.Header.Set("origin", c.BaseURL)
 	c.ApplyCookie(req)
 	resp, err := c.HTTP.Do(req)
 	if err != nil {

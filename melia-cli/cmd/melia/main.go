@@ -50,6 +50,7 @@ USAGE:
   melia brands
   melia session chrome [--wait] [--port N]
   melia session sync
+  melia session doctor [--json]
   melia version | help
 `)
 }

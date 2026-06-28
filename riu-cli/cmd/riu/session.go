@@ -12,25 +12,27 @@ import (
 
 func cmdSession(args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: riu session <chrome|sync>")
+		return fmt.Errorf("usage: riu session <chrome|sync|doctor>")
 	}
 	switch args[0] {
 	case "chrome":
 		return runSessionChrome(args[1:], false)
 	case "sync":
 		return runSessionChrome(args[1:], true)
+	case "doctor":
+		return runSessionDoctor(args[1:])
 	default:
-		return fmt.Errorf("unknown subcommand %q — use chrome or sync", args[0])
+		return fmt.Errorf("unknown subcommand %q — use chrome, sync, or doctor", args[0])
 	}
 }
 
 func runSessionChrome(args []string, syncOnly bool) error {
 	fs := flag.NewFlagSet("session chrome", flag.ExitOnError)
 	port := fs.Int("port", 9222, "Chrome remote debugging port")
-	wait := fs.Bool("wait", true, "wait for WAF/session cookies (_abck, bm_sz, cf_clearance)")
+	wait := fs.Bool("wait", true, "wait for WAF cookies (_abck+bm_sz, cf_clearance, or Incapsula)")
 	noWait := fs.Bool("no-wait", false, "capture immediately without waiting")
 	replace := fs.Bool("replace", false, "quit Chrome and relaunch with dedicated profile")
-	timeout := fs.Duration("timeout", 180*time.Second, "max wait for session cookies")
+	timeout := fs.Duration("timeout", 3*time.Minute, "max wait for WAF session cookies (headed Chrome required)")
 	cf := addCommon(fs)
 	_ = fs.Parse(reorderArgs(fs, args))
 
@@ -42,9 +44,12 @@ func runSessionChrome(args []string, syncOnly bool) error {
 	cl := client.New("")
 	startURL := "https://www.riu.com/es"
 	if !syncOnly {
-		fmt.Fprintln(os.Stderr, "Capturing session from Chrome…")
+		fmt.Fprintln(os.Stderr, "Capturing session from headed Chrome…")
 		fmt.Fprintf(os.Stderr, "  Save to: %s\n", cl.CookiesFilePath())
 		fmt.Fprintf(os.Stderr, "  URL: %s\n", startURL)
+		if doWait {
+			fmt.Fprintln(os.Stderr, "  Waiting for _abck+bm_sz (or WAF equivalent) — browse the site if needed")
+		}
 	}
 
 	result, err := session.CaptureChrome(session.ChromeOptions{
@@ -58,6 +63,10 @@ func runSessionChrome(args []string, syncOnly bool) error {
 		SyncOnly:    syncOnly,
 	})
 	if err != nil {
+		if result.Cookie != "" {
+			cl.ApplyCookieHeader(result.Cookie)
+			_ = cl.SavePersistedCookies()
+		}
 		return err
 	}
 	cl.ApplyCookieHeader(result.Cookie)
@@ -76,7 +85,44 @@ func runSessionChrome(args []string, syncOnly bool) error {
 	if result.Ready {
 		fmt.Fprintln(os.Stderr, "WAF/session cookies OK")
 	} else {
-		fmt.Fprintln(os.Stderr, "Warning: WAF cookies not detected — browse the site in Chrome, then re-run session sync")
+		fmt.Fprintln(os.Stderr, "Warning: WAF cookies incomplete — re-run: riu session chrome --wait --timeout 3m")
+	}
+	return nil
+}
+
+func runSessionDoctor(args []string) error {
+	fs := flag.NewFlagSet("session doctor", flag.ExitOnError)
+	cf := addCommon(fs)
+	_ = fs.Parse(reorderArgs(fs, args))
+
+	cl := client.New("")
+	res := session.Doctor(session.DoctorOptions{
+		Slug:        "riu",
+		EnvPrefix:   cl.EnvPrefix,
+		BaseURL:     client.BaseURL,
+		Cookie:      cl.Cookie,
+		ProbeURL:    "https://www.riu.com/",
+		ProbeMethod: "GET",
+	})
+	if cf.jsonOut {
+		return emitJSON(res)
+	}
+	fmt.Fprintf(os.Stderr, "status: %s\n", res.Status)
+	fmt.Fprintf(os.Stderr, "file:   %s (exists=%v)\n", res.SessionFile, res.SessionFileExists)
+	if res.SessionAge != "" {
+		fmt.Fprintf(os.Stderr, "age:    %s\n", res.SessionAge)
+	}
+	fmt.Fprintf(os.Stderr, "cookies: abck=%v bm_sz=%v cf=%v incap=%v\n",
+		res.Cookies.HasAbck, res.Cookies.HasBmSz, res.Cookies.HasCF, res.Cookies.HasIncapsula)
+	if res.ProbeHTTPStatus > 0 {
+		fmt.Fprintf(os.Stderr, "probe:  HTTP %d\n", res.ProbeHTTPStatus)
+	}
+	fmt.Fprintln(os.Stderr, res.Message)
+	if res.NextStep != "" {
+		fmt.Fprintln(os.Stderr, "next:", res.NextStep)
+	}
+	if res.Status != session.DoctorOK {
+		return fmt.Errorf("%s", res.Message)
 	}
 	return nil
 }
