@@ -15,9 +15,9 @@ PROBE_URLS: dict[str, str] = {
     "nh": "https://www.nh-hotels.com/nh/es/api/v1/hotels/search?query=Madrid&locale=es&page=1&size=1",
     "iberostar": "https://www.iberostar.com/api/graphql",
     "vueling": "https://tickets.vueling.com/ScheduleSelect.aspx?culture=es-ES",
-    "easyjet": "https://www.easyjet.com/ejavailability/api/v5/availability/query?DepartureIata=MAD&ArrivalIata=BCN&MinDepartureDate=2026-07-01&MaxDepartureDate=2026-07-01&AdultSeats=1&LanguageCode=ES",
-    "aireuropa": "https://dapi.aireuropa.com/api/v1/flights/search",
-    "iberiaexpress": "https://www.iberiaexpress.com/api/availability/v1/flights?market=ES&language=es&origin=MAD&destination=BCN&departureDate=2026-07-01&adults=1&operatingCarrier=I2",
+    "easyjet": "https://www.easyjet.com/ejavailability/api/v5/availability/query?DepartureIata=MAD&ArrivalIata=PMI&MinDepartureDate=2026-07-05&MaxDepartureDate=2026-07-05&AdultSeats=1&ChildSeats=0&Infants=0&LanguageCode=ES&IncludePrices=true",
+    "aireuropa": "https://dapi.aireuropa.com/api/channel-home/v1/redirect/flow/BOOKING/urldata",
+    "iberiaexpress": "https://www.iberiaexpress.com/api/availability/v1/flights?market=ES&language=es&origin=MAD&destination=BCN&departureDate=2026-07-05&adults=1&operatingCarrier=I2",
 }
 
 EXTRA_URLS: dict[str, list[str]] = {

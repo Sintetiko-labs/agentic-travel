@@ -27,9 +27,9 @@ Monorepo de **CLIs agent-friendly** para hoteles y aerolíneas (cadenas español
 | `melia` | hotel | partial | chrome+sync+doctor | BFF `/services/search/hotels/v2/search` (Akamai; needs `--wait`) |
 | `nh` | hotel | partial | chrome+sync+doctor | REST `/nh/es/api/v1/hotels/search` (Akamai) |
 | `iberostar` | hotel | partial | chrome+sync+doctor | GraphQL `/api/graphql` (Akamai) |
-| `easyjet` | airline | partial | chrome+sync+doctor | ejavailability (Akamai after session) |
-| `aireuropa` | airline | partial | chrome+sync+doctor | `dapi.aireuropa.com/api/v1/flights/search` POST |
-| `iberiaexpress` | airline | partial | chrome+sync+doctor | `/api/availability/v1/flights` (Incapsula) |
+| `easyjet` | airline | partial | chrome+sync+doctor | `ejavailability/api/v5` (Akamai; session chrome --wait) |
+| `aireuropa` | airline | partial | chrome+sync+doctor | `dapi` `api/channel-home/v1/redirect/flow/BOOKING/urldata` POST + flightinfo fallback |
+| `iberiaexpress` | airline | partial | chrome+sync+doctor | `/api/availability/v1/flights` (Incapsula; doctor detects challenge on HTTP 200) |
 | `hilton` | hotel | **live** | chrome+sync+doctor | `/en/locations/united-kingdom/{city}/` HTML cards |
 | `marriott` | hotel | partial | chrome+sync+doctor | `findHotels.mi` (Akamai; session required) |
 

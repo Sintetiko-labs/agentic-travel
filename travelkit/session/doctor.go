@@ -85,19 +85,9 @@ func Doctor(opts DoctorOptions) DoctorResult {
 			}
 		}
 	} else if !akamai.SessionReady(cookie) {
-		if akamai.NeedsAkamaiWAF(slug) {
-			res.Status = DoctorIncomplete
-			res.Message = "Akamai cookies incomplete — need _abck+bm_sz; browse nh-hotels.com in headed Chrome"
-			res.NextStep = slug + " session chrome --wait --timeout 3m"
-		} else if report.HasMaterial {
-			res.Status = DoctorIncomplete
-			res.Message = "site cookies captured — run doctor after chrome --wait to verify API probe"
-			res.NextStep = slug + " session doctor"
-		} else {
-			res.Status = DoctorIncomplete
-			res.Message = "WAF cookies incomplete — need _abck+bm_sz (Akamai), cf_clearance (Cloudflare), or Incapsula pair"
-			res.NextStep = slug + " session chrome --wait --timeout 3m"
-		}
+		res.Status = DoctorIncomplete
+		res.Message = "WAF cookies incomplete — need _abck+bm_sz (Akamai), cf_clearance (Cloudflare), or Incapsula pair"
+		res.NextStep = slug + " session chrome --wait --timeout 3m"
 		if opts.ProbeURL == "" {
 			return res
 		}
@@ -130,26 +120,20 @@ func Doctor(opts DoctorOptions) DoctorResult {
 		return res
 	}
 	switch {
-	case status >= 200 && status < 300:
-		if !probeResponseOK(probeBody) {
-			res.Status = DoctorAPIError
-			res.Message = fmt.Sprintf("probe HTTP %d but response is not valid JSON — check API path/payload", status)
-			res.NextStep = slug + " session chrome --wait --timeout 3m"
-			break
+	case status >= 200 && status < 300 && akamai.IsWAFBlocked(status, probeBody):
+		res.Status = DoctorBlocked
+		if cookieOK {
+			res.Message = fmt.Sprintf("probe returned WAF challenge (HTTP %d) — cookies may be stale", status)
+		} else {
+			res.Message = fmt.Sprintf("probe returned WAF challenge (HTTP %d) — need headed Chrome session", status)
 		}
+		res.NextStep = slug + " session chrome --wait --timeout 3m"
+	case status >= 200 && status < 300:
 		res.Status = DoctorOK
 		if cookieOK {
 			res.Message = fmt.Sprintf("session OK — cookies present, probe HTTP %d", status)
-		} else if opts.SessionOptional || !akamai.NeedsAkamaiWAF(slug) {
-			if report.HasMaterial {
-				res.Message = fmt.Sprintf("session OK (HTTP %d) — site cookies present", status)
-			} else {
-				res.Message = fmt.Sprintf("API OK (HTTP %d) — session optional for this brand", status)
-			}
-		} else if report.HasMaterial {
-			res.Status = DoctorIncomplete
-			res.Message = fmt.Sprintf("probe HTTP %d but Akamai cookies (_abck+bm_sz) missing or stale", status)
-			res.NextStep = slug + " session chrome --wait --timeout 3m"
+		} else if opts.SessionOptional {
+			res.Message = fmt.Sprintf("API OK (HTTP %d) — session optional for this brand", status)
 		} else {
 			res.Message = fmt.Sprintf("probe HTTP %d but WAF cookies missing", status)
 			res.Status = DoctorMissing
@@ -206,7 +190,7 @@ func probeHTTP(p probeRequest) (int, string, error) {
 	}
 	referer := p.referer
 	if referer == "" && p.baseURL != "" {
-		referer = strings.TrimRight(p.baseURL, "/") + "/es/"
+		referer = strings.TrimRight(p.baseURL, "/") + "/"
 	}
 	if referer != "" {
 		req.Header.Set("referer", referer)
@@ -218,21 +202,6 @@ func probeHTTP(p probeRequest) (int, string, error) {
 	defer resp.Body.Close()
 	raw, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
 	return resp.StatusCode, string(raw), nil
-}
-
-func probeResponseOK(body string) bool {
-	trim := strings.TrimSpace(body)
-	if trim == "" {
-		return true
-	}
-	low := strings.ToLower(trim)
-	if strings.HasPrefix(low, "<!doctype") || strings.HasPrefix(low, "<html") {
-		return false
-	}
-	if strings.Contains(low, "access denied") || strings.Contains(low, "edgesuite.net") {
-		return false
-	}
-	return strings.HasPrefix(trim, "{") || strings.HasPrefix(trim, "[")
 }
 
 func sessionFileInfo(path string) (bool, time.Duration) {

@@ -2,6 +2,8 @@ package client
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"net/url"
 	"strings"
 
@@ -42,21 +44,44 @@ func (c *Client) Search(origin, dest, depart, ret string, page, pageSize int) (*
 		q.Set("MaxReturnDate", ret)
 	}
 	apiURL := c.BaseURL + "/ejavailability/api/v5/availability/query?" + q.Encode()
-	var resp easyjetResponse
-	body, status, err := c.GetRaw(apiURL)
+	body, status, err := c.getAvailability(apiURL)
 	if err != nil {
 		return nil, err
 	}
-	if akamai.IsDenied(status, string(body)) {
+	if akamai.IsWAFBlocked(status, string(body)) {
 		return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("easyjet"))
 	}
 	if status < 200 || status >= 300 {
 		return nil, fmt.Errorf("availability HTTP %d", status)
 	}
+	if !akamai.LooksLikeJSON(string(body)) {
+		return nil, fmt.Errorf("availability: non-JSON response — %s", akamai.NeedsSessionHint("easyjet"))
+	}
+	var resp easyjetResponse
 	if err := jsonUnmarshal(body, &resp); err != nil {
 		return nil, err
 	}
 	return resp.toResult(origin, dest, depart, ret, page, pageSize, c.Brand), nil
+}
+
+func (c *Client) getAvailability(fullURL string) ([]byte, int, error) {
+	c.Throttle()
+	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
+	if err != nil {
+		return nil, 0, err
+	}
+	c.SetAPIHeaders(req)
+	req.Header.Set("accept", "application/json, text/plain, */*")
+	req.Header.Set("origin", c.BaseURL)
+	req.Header.Set("referer", c.BaseURL+"/es/")
+	c.ApplyCookie(req)
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
+	return body, resp.StatusCode, nil
 }
 
 type easyjetResponse struct {
