@@ -1,0 +1,29 @@
+{
+  "data": {
+    "booking_search": {
+      "availability": [
+        {
+          "flights": [
+            {
+              "flightSegments": [
+                {
+                  "line": "NT",
+                  "flightNumber": 101,
+                  "origin": { "iata": "LPA" },
+                  "destination": { "iata": "TFN" },
+                  "departureTime": "2026-08-15T07:00:00+00:00",
+                  "arrivalTime": "2026-08-15T07:30:00+00:00",
+                  "stops": 0
+                }
+              ],
+              "fares": [
+                { "bestPrice": true, "amount": { "totalAmount": 63, "currency": { "code": "EUR" } } },
+                { "bestPrice": false, "amount": { "totalAmount": 2500, "currency": { "code": "PTS" } } }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -27,4 +27,4 @@ volotea brands
 
 Category: **airline**
 
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+Search: **live** — Volotea booking SPA API (`api.volotea.com/api/spa/voe/v1/flights/search`, anonymous login)
