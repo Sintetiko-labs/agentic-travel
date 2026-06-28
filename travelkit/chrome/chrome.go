@@ -104,7 +104,10 @@ func captureReady(opts Options, cookie string) bool {
 		return true
 	}
 	slug := strings.ToLower(strings.ReplaceAll(opts.EnvPrefix, "_", "-"))
-	return !akamai.NeedsAkamaiWAF(slug) && akamai.HasSessionMaterial(cookie)
+	if akamai.NeedsAkamaiWAF(slug) {
+		return false
+	}
+	return akamai.SiteSessionReady(slug, cookie) || akamai.HasSessionMaterial(cookie)
 }
 
 func cookieURLs(opts Options) []string {

@@ -28,8 +28,11 @@ func TestShouldFallbackSearch(t *testing.T) {
 	if !shouldFallbackSearch(errString("search: HTTP 404: not found")) {
 		t.Fatal("expected 404 fallback")
 	}
-	if shouldFallbackSearch(errString("akamai blocked")) {
-		t.Fatal("should not fallback on akamai block")
+	if !shouldFallbackSearch(errString("search: HTTP 403: denied")) {
+		t.Fatal("expected 403 fallback")
+	}
+	if !shouldFallbackSearch(errString("akamai blocked — MELIA_COOKIE required")) {
+		t.Fatal("expected akamai fallback to directory")
 	}
 }
 

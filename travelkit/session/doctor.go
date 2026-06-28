@@ -35,6 +35,7 @@ type DoctorOptions struct {
 	ProbeContentType  string
 	ProbeOrigin       string
 	ProbeReferer      string
+	ProbeHeaders      map[string]string
 	SessionOptional   bool // probe success is enough without WAF cookies
 }
 
@@ -76,6 +77,8 @@ func Doctor(opts DoctorOptions) DoctorResult {
 		slug = strings.ToLower(strings.ReplaceAll(opts.EnvPrefix, "_", "-"))
 	}
 	cookieOK := cookie != "" && akamai.SessionReady(cookie)
+	siteCookieOK := cookie != "" && !akamai.NeedsAkamaiWAF(slug) &&
+		(akamai.SiteSessionReady(slug, cookie) || akamai.HasSessionMaterial(cookie))
 	if cookie == "" {
 		if !opts.SessionOptional {
 			res.Status = DoctorMissing
@@ -85,7 +88,7 @@ func Doctor(opts DoctorOptions) DoctorResult {
 				return res
 			}
 		}
-	} else if !akamai.SessionReady(cookie) {
+	} else if !cookieOK && akamai.NeedsAkamaiWAF(slug) && !opts.SessionOptional {
 		res.Status = DoctorIncomplete
 		res.Message = "WAF cookies incomplete — need _abck+bm_sz (Akamai), cf_clearance (Cloudflare), or Incapsula pair"
 		res.NextStep = slug + " session chrome --wait --timeout 3m"
@@ -107,13 +110,14 @@ func Doctor(opts DoctorOptions) DoctorResult {
 		method = http.MethodGet
 	}
 	probeCookie := ""
-	if cookieOK {
+	if cookieOK || siteCookieOK || opts.SessionOptional {
 		probeCookie = cookie
 	}
 	status, probeBody, err := probeHTTP(probeRequest{
 		method: method, url: opts.ProbeURL, cookie: probeCookie,
 		body: opts.ProbeBody, contentType: opts.ProbeContentType,
 		origin: opts.ProbeOrigin, referer: opts.ProbeReferer, baseURL: opts.BaseURL,
+		extra: opts.ProbeHeaders,
 	})
 	res.ProbeHTTPStatus = status
 	if err != nil {
@@ -135,7 +139,7 @@ func Doctor(opts DoctorOptions) DoctorResult {
 		res.NextStep = slug + " session chrome --wait --timeout 3m"
 	case status >= 200 && status < 300:
 		res.Status = DoctorOK
-		if cookieOK {
+		if cookieOK || siteCookieOK {
 			res.Message = fmt.Sprintf("session OK — cookies present, probe HTTP %d", status)
 		} else if opts.SessionOptional {
 			res.Message = fmt.Sprintf("API OK (HTTP %d) — session optional for this brand", status)
@@ -177,6 +181,7 @@ func Doctor(opts DoctorOptions) DoctorResult {
 
 type probeRequest struct {
 	method, url, cookie, body, contentType, origin, referer, baseURL string
+	extra map[string]string
 }
 
 func probeHTTP(p probeRequest) (int, string, error) {
@@ -209,6 +214,11 @@ func probeHTTP(p probeRequest) (int, string, error) {
 	}
 	if referer != "" {
 		req.Header.Set("referer", referer)
+	}
+	for k, v := range p.extra {
+		if k != "" && v != "" {
+			req.Header.Set(k, v)
+		}
 	}
 	resp, err := network.DirectClient(30 * time.Second).Do(req)
 	if err != nil {
