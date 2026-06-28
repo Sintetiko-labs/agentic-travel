@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "cursor-ide-browser": {},
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"],
+      "description": "Browser automation fallback when cursor-ide-browser is unavailable (Cursor #3878)"
+    }
+  }
+}
