@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/fbelchi/travelkit/akamai"
+	"github.com/fbelchi/travelkit/network"
 )
 
 // DoctorStatus classifies persisted session health.
@@ -209,7 +210,7 @@ func probeHTTP(p probeRequest) (int, string, error) {
 	if referer != "" {
 		req.Header.Set("referer", referer)
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := network.DirectClient(30 * time.Second).Do(req)
 	if err != nil {
 		return 0, "", err
 	}
