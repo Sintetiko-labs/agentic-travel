@@ -10,6 +10,7 @@ import (
 	"time"
 
 	tkbase "github.com/fbelchi/travelkit/base"
+	"github.com/fbelchi/travelkit/network"
 	utls "github.com/refraction-networking/utls"
 )
 
@@ -21,8 +22,8 @@ func (c *Client) fetchHotusaHTML(path string) (string, error) {
 	}
 	dialer := &net.Dialer{Timeout: 15 * time.Second}
 	tr := &http.Transport{
-		DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-			raw, err := dialer.DialContext(ctx, network, "www.hotusa.com:443")
+		DialTLSContext: func(ctx context.Context, networkName, addr string) (net.Conn, error) {
+			raw, err := dialer.DialContext(ctx, networkName, "www.hotusa.com:443")
 			if err != nil {
 				return nil, err
 			}
@@ -35,6 +36,7 @@ func (c *Client) fetchHotusaHTML(path string) (string, error) {
 			return uconn, nil
 		},
 	}
+	network.DisableProxy(tr)
 	client := &http.Client{Transport: tr, Timeout: c.HTTP.Timeout}
 	req, err := http.NewRequest(http.MethodGet, c.BaseURL+path, nil)
 	if err != nil {

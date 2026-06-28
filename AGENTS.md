@@ -68,6 +68,55 @@ Smoke MAD→London: `./scripts/mcp-smoke-madrid-london.sh`
 
 ---
 
+## PARALLEL SEARCH PROTOCOL (loop 7)
+
+**Objetivo:** respuestas agregadas en **<15s** en Mac Mini M-series. Guía completa: **[docs/FAST_SEARCH.md](docs/FAST_SEARCH.md)**.
+
+### Reglas (obligatorias para agentes)
+
+| Regla | Detalle |
+|-------|---------|
+| **NUNCA** CLIs secuenciales en multi-marca | Un `for slug in …` suma latencias (4×30s = 2 min). Usa orquestadores. |
+| **Vuelos N marcas** | `./scripts/parallel-flights.sh --from ORIGIN --to DEST --depart DATE` |
+| **Hoteles N cadenas** | `./scripts/parallel-hotels.sh --city CITY` |
+| **MAD→LON vuelos + hotel** | `./scripts/wave-search-madrid-london.sh` → `wave-result.json` |
+| **MCP + CLI misma ola** | Duffel MCP en **background** mientras corren parallel CLIs — no esperar MCP antes de CLIs |
+| **Concurrencia** | Máx **8–10** procesos (Go orchestrator: `workers = NumCPU()`) |
+| **Timeout** | **30s por fuente**; devolver **resultados parciales** |
+| **1 marca nombrada** | Excepción: un solo CLI (`ryanair search --json …`) sin orquestador |
+
+### Árbol de decisión rápido
+
+```
+¿1 marca?     → CLI único
+¿N marcas?    → parallel-flights.sh / parallel-hotels.sh
+¿Agregado?    → MCP (Duffel) async + parallel CLI en la misma ola
+¿Confirmar?   → MCP top 3, luego CLI read solo en los 3 mejores
+```
+
+### Comandos clave
+
+```bash
+# Pre-build (una vez)
+./scripts/parallel-search/build-bins.sh
+
+# Multi-LCC
+./scripts/parallel-flights.sh --from MAD --to STN --depart 2026-07-05
+
+# Multi-cadena hoteles
+./scripts/parallel-hotels.sh --city London --limit 10
+
+# Híbrido: Madrid London flights + hotel July (<15s target)
+WAVE_DEPART=2026-07-05 WAVE_HOTELS=London ./scripts/wave-search-madrid-london.sh
+
+# MCP vuelos (background, misma ola que parallel CLIs)
+MCP_FROM=MAD MCP_TO=STN MCP_DEPART=2026-07-05 ./scripts/mcp-travel-search.sh &
+```
+
+Variables: `DUFFEL_ACCESS_TOKEN`, `WAVE_DEPART`, `WAVE_OUT`, `AGENTIC_TRAVEL_BINS`.
+
+---
+
 ## Propósito del monorepo (capa CLI)
 
 `agentic-travel` agrupa CLIs Go con un **contrato común**:
