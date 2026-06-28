@@ -1,0 +1,22 @@
+{
+  "query": "London",
+  "total": 1,
+  "page": 1,
+  "page_size": 24,
+  "has_next_page": false,
+  "hotels": [
+    {
+      "id": "/hotels/travel/london-marriott-hotel-county-hall/overview/",
+      "name": "London Marriott Hotel County Hall",
+      "brand": "Marriott",
+      "city": "London",
+      "country": "GB",
+      "price": "",
+      "currency": "GBP",
+      "hotel_url": "https://www.marriott.com/hotels/travel/london-marriott-hotel-county-hall/overview/",
+      "image_url": ""
+    }
+  ],
+  "brand": "Marriott",
+  "source": "findHotels-browser-mcp"
+}

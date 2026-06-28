@@ -1,0 +1,29 @@
+{
+  "total": 2,
+  "hotels": [
+    {
+      "code": "MADMC",
+      "name": "Meliá Castilla",
+      "brand": "Meliá",
+      "city": "Madrid",
+      "country": "España",
+      "category": 4,
+      "minPrice": 189.5,
+      "currency": "EUR",
+      "url": "/es/hoteles/espana/madrid/melia-castilla",
+      "image": "/media/hotel.jpg"
+    },
+    {
+      "code": "MADIN",
+      "name": "INNSiDE Madrid Génova",
+      "brand": "INNSiDE by Meliá",
+      "city": "Madrid",
+      "country": "España",
+      "category": 4,
+      "minPrice": 145,
+      "currency": "EUR",
+      "url": "/es/hoteles/espana/madrid/innside-madrid-genova",
+      "image": "/media/hotel2.jpg"
+    }
+  ]
+}

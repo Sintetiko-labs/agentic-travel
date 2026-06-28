@@ -1,0 +1,28 @@
+{
+  "query": "MAD-LTN 2026-07-15",
+  "origin": "MAD",
+  "destination": "LTN",
+  "depart_date": "2026-07-15",
+  "return_date": "",
+  "total": 1,
+  "page": 1,
+  "page_size": 24,
+  "has_next_page": false,
+  "flights": [
+    {
+      "id": "MAD-LTN-2026-07-15",
+      "airline": "easyJet",
+      "flight_number": "U2 2401",
+      "origin": "MAD",
+      "destination": "LTN",
+      "depart_at": "2026-07-15T06:45:00",
+      "arrive_at": "2026-07-15T08:15:00",
+      "stops": 0,
+      "price": "89.99",
+      "currency": "EUR",
+      "booking_url": "https://www.easyjet.com/es/"
+    }
+  ],
+  "brand": "easyJet",
+  "source": "ejavailability-browser-mcp"
+}

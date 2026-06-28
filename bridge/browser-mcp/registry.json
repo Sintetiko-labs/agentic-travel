@@ -1,0 +1,41 @@
+{
+  "description": "Browser MCP capture registry for WAF-blocked partial CLIs",
+  "brands": {
+    "melia": {
+      "tier": "partial",
+      "waf": "akamai",
+      "type": "hotel",
+      "start_url": "https://www.melia.com/es/hoteles",
+      "network_filter": "/services/search/hotels/v2/search",
+      "adapter": "adapters/melia.mjs",
+      "cli_equivalent": "melia search Madrid"
+    },
+    "nh": {
+      "tier": "partial",
+      "waf": "akamai",
+      "type": "hotel",
+      "start_url": "https://www.nh-hotels.com/es/hoteles/espana/madrid",
+      "network_filter": "/nh/es/api/v1/hotels/search",
+      "adapter": "adapters/nh.mjs",
+      "cli_equivalent": "nh search Madrid"
+    },
+    "marriott": {
+      "tier": "partial",
+      "waf": "akamai",
+      "type": "hotel",
+      "start_url": "https://www.marriott.com/search/findHotels.mi",
+      "dom_fallback": true,
+      "adapter": "adapters/marriott.mjs",
+      "cli_equivalent": "marriott search London"
+    },
+    "easyjet": {
+      "tier": "partial",
+      "waf": "akamai",
+      "type": "flight",
+      "start_url": "https://www.easyjet.com/es",
+      "network_filter": "/ejavailability/api/v5/availability/query",
+      "adapter": "adapters/easyjet.mjs",
+      "cli_equivalent": "easyjet search --from MAD --to LTN --depart 2026-07-15"
+    }
+  }
+}

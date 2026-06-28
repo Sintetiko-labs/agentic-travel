@@ -1,0 +1,23 @@
+{
+  "query": "Madrid",
+  "total": 2,
+  "page": 1,
+  "page_size": 24,
+  "has_next_page": false,
+  "hotels": [
+    {
+      "id": "2596",
+      "name": "NH Collection Madrid Suecia",
+      "brand": "NH",
+      "city": "Madrid",
+      "country": "ES",
+      "stars": 5,
+      "price": "210.00",
+      "currency": "EUR",
+      "hotel_url": "https://www.nh-hotels.com/es/hotel/nh-collection-madrid-suecia",
+      "image_url": ""
+    }
+  ],
+  "brand": "NH",
+  "source": "nh-api-browser-mcp"
+}

@@ -1,0 +1,35 @@
+{
+  "query": "Madrid",
+  "total": 2,
+  "page": 1,
+  "page_size": 24,
+  "has_next_page": false,
+  "hotels": [
+    {
+      "id": "MADMC",
+      "name": "Meliá Castilla",
+      "brand": "Meliá",
+      "city": "Madrid",
+      "country": "España",
+      "stars": 4,
+      "price": "189.5",
+      "currency": "EUR",
+      "hotel_url": "https://www.melia.com/es/hoteles/espana/madrid/melia-castilla",
+      "image_url": "https://www.melia.com/media/hotel.jpg"
+    },
+    {
+      "id": "MADIN",
+      "name": "INNSiDE Madrid Génova",
+      "brand": "INNSiDE by Meliá",
+      "city": "Madrid",
+      "country": "España",
+      "stars": 4,
+      "price": "145",
+      "currency": "EUR",
+      "hotel_url": "https://www.melia.com/es/hoteles/espana/madrid/innside-madrid-genova",
+      "image_url": "https://www.melia.com/media/hotel2.jpg"
+    }
+  ],
+  "brand": "Meliá",
+  "source": "melia-bff-browser-mcp"
+}
