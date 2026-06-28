@@ -1,0 +1,38 @@
+{
+  "data": {
+    "trips": [
+      {
+        "journeysAvailable": [
+          {
+            "hasFlights": false,
+            "designator": { "departure": "2026-07-22T00:00:00" },
+            "segments": null,
+            "fares": null
+          },
+          {
+            "hasFlights": true,
+            "designator": { "departure": "2026-07-23T18:45:00" },
+            "segments": [
+              {
+                "designator": {
+                  "origin": "BCN",
+                  "destination": "OVD",
+                  "departure": "2026-07-23T18:45:00",
+                  "arrival": "2026-07-23T20:25:00"
+                },
+                "identifier": { "carrierCode": "V7", "identifier": "3573" }
+              }
+            ],
+            "fares": [
+              {
+                "passengerFares": [
+                  { "fareAmount": { "amount": 104.86 } }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

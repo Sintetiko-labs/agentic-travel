@@ -27,4 +27,4 @@ binter brands
 
 Category: **airline**
 
-Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
+Search: **live** — Binter GraphQL `booking_search` (`services.bintercanarias.com`; uses `hash_getHash1` + `X-ENVIRONMENT: desktop`)
