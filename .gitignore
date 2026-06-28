@@ -1,0 +1,23 @@
+# Binaries
+*.exe
+**/*-cli/melia
+**/*-cli/barcelo
+
+# Go
+/vendor/
+
+# Local config / secrets
+.env
+*.pem
+config.toml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+
+# Verification output
+scripts/verify-results.txt

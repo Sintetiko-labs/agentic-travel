@@ -1,0 +1,30 @@
+# Wamos Air CLI
+
+Unofficial, agent-friendly CLI for [Wamos Air](https://www.wamosair.com).
+
+> **Not official.** Reverse-engineered endpoints. Run locally only. Respect rate limits.
+
+## Build
+
+```bash
+go build -o wamos ./cmd/wamos
+```
+
+## Commands
+
+```bash
+wamos search [--json] --from MAD --to BCN --depart 2026-07-01
+wamos read [--json] <id|url>
+wamos brands
+```
+
+## Environment
+
+- `WAMOS_COOKIE` — optional browser cookie when blocked
+- `WAMOS_REQUEST_DELAY` — rate limit (e.g. `2s`)
+
+## Status
+
+Category: **airline**
+
+Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`

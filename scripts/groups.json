@@ -1,0 +1,1681 @@
+[
+  {
+    "slug": "melia",
+    "name": "Meliá",
+    "cat": "hotel",
+    "brands": [
+      "Meliá Hotels International",
+      "Meliá",
+      "Gran Meliá",
+      "ME by Meliá",
+      "The Meliá Collection",
+      "Paradisus",
+      "INNSiDE by Meliá",
+      "Sol by Meliá",
+      "ZEL"
+    ]
+  },
+  {
+    "slug": "barcelo",
+    "name": "Barceló",
+    "cat": "hotel",
+    "brands": [
+      "Barceló Hotel Group",
+      "Barceló Hotels & Resorts",
+      "Royal Hideaway",
+      "Occidental Hotels & Resorts",
+      "Allegro Hotels"
+    ]
+  },
+  {
+    "slug": "riu",
+    "name": "RIU",
+    "cat": "hotel",
+    "brands": [
+      "RIU Hotels & Resorts"
+    ]
+  },
+  {
+    "slug": "iberostar",
+    "name": "Iberostar",
+    "cat": "hotel",
+    "brands": [
+      "Iberostar",
+      "Iberostar Selection",
+      "Iberostar Grand"
+    ]
+  },
+  {
+    "slug": "nh",
+    "name": "NH Hotel Group",
+    "cat": "hotel",
+    "brands": [
+      "NH Hotel Group",
+      "NH Hotels",
+      "NH Collection",
+      "nhow"
+    ]
+  },
+  {
+    "slug": "minor",
+    "name": "Minor Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Avani",
+      "Tivoli",
+      "Minor Hotels"
+    ]
+  },
+  {
+    "slug": "eurostars",
+    "name": "Eurostars",
+    "cat": "hotel",
+    "brands": [
+      "Eurostars Hotel Company",
+      "Eurostars Hotels",
+      "Exe Hotels",
+      "Ikonik Hotels",
+      "Áurea Hotels",
+      "Tandem Suites"
+    ]
+  },
+  {
+    "slug": "hotusa",
+    "name": "Hotusa",
+    "cat": "hotel",
+    "brands": [
+      "Hotusa",
+      "Crisol Hotels"
+    ]
+  },
+  {
+    "slug": "h10",
+    "name": "H10",
+    "cat": "hotel",
+    "brands": [
+      "H10 Hotels",
+      "H10",
+      "Ocean by H10"
+    ]
+  },
+  {
+    "slug": "princess",
+    "name": "Princess Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Princess Hotels"
+    ]
+  },
+  {
+    "slug": "catalonia",
+    "name": "Catalonia Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Catalonia Hotels & Resorts"
+    ]
+  },
+  {
+    "slug": "vincci",
+    "name": "Vincci",
+    "cat": "hotel",
+    "brands": [
+      "Vincci Hoteles"
+    ]
+  },
+  {
+    "slug": "silken",
+    "name": "Silken",
+    "cat": "hotel",
+    "brands": [
+      "Silken Hoteles"
+    ]
+  },
+  {
+    "slug": "sercotel",
+    "name": "Sercotel",
+    "cat": "hotel",
+    "brands": [
+      "Sercotel"
+    ]
+  },
+  {
+    "slug": "roommate",
+    "name": "Room Mate",
+    "cat": "hotel",
+    "brands": [
+      "Room Mate Hotels"
+    ]
+  },
+  {
+    "slug": "onlyyou",
+    "name": "Only YOU",
+    "cat": "hotel",
+    "brands": [
+      "Only YOU Hotels"
+    ]
+  },
+  {
+    "slug": "palladium",
+    "name": "Palladium",
+    "cat": "hotel",
+    "brands": [
+      "Palladium Hotel Group",
+      "Ushuaïa Ibiza Beach Hotel",
+      "Hard Rock Hotel Ibiza",
+      "TRS Hotels",
+      "Grand Palladium",
+      "Palladium Hotels"
+    ]
+  },
+  {
+    "slug": "bless",
+    "name": "BLESS Collection",
+    "cat": "hotel",
+    "brands": [
+      "BLESS Collection Hotels"
+    ]
+  },
+  {
+    "slug": "pinero",
+    "name": "Grupo Piñero",
+    "cat": "hotel",
+    "brands": [
+      "Fiesta Hotels & Resorts",
+      "Grupo Piñero",
+      "Bahia Principe"
+    ]
+  },
+  {
+    "slug": "senator",
+    "name": "Senator",
+    "cat": "hotel",
+    "brands": [
+      "Senator Hotels & Resorts",
+      "Playa Senator"
+    ]
+  },
+  {
+    "slug": "hipotels",
+    "name": "Hipotels",
+    "cat": "hotel",
+    "brands": [
+      "Hipotels"
+    ]
+  },
+  {
+    "slug": "lopesan",
+    "name": "Lopesan",
+    "cat": "hotel",
+    "brands": [
+      "Lopesan Hotel Group",
+      "Abora by Lopesan",
+      "Lopesan Hotels",
+      "Lopesan Collection"
+    ]
+  },
+  {
+    "slug": "seaside",
+    "name": "Seaside Collection",
+    "cat": "hotel",
+    "brands": [
+      "Seaside Collection"
+    ]
+  },
+  {
+    "slug": "belive",
+    "name": "Be Live",
+    "cat": "hotel",
+    "brands": [
+      "Be Live Hotels"
+    ]
+  },
+  {
+    "slug": "globales",
+    "name": "Globales",
+    "cat": "hotel",
+    "brands": [
+      "Globales Hotels",
+      "Hoteles Globales"
+    ]
+  },
+  {
+    "slug": "grupotel",
+    "name": "Grupotel",
+    "cat": "hotel",
+    "brands": [
+      "Grupotel"
+    ]
+  },
+  {
+    "slug": "garden",
+    "name": "Garden Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Garden Hotels"
+    ]
+  },
+  {
+    "slug": "zafiro",
+    "name": "Zafiro",
+    "cat": "hotel",
+    "brands": [
+      "Zafiro Hotels"
+    ]
+  },
+  {
+    "slug": "viva",
+    "name": "Viva Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Viva Hotels"
+    ]
+  },
+  {
+    "slug": "protur",
+    "name": "Protur",
+    "cat": "hotel",
+    "brands": [
+      "Protur Hotels"
+    ]
+  },
+  {
+    "slug": "fergus",
+    "name": "Fergus",
+    "cat": "hotel",
+    "brands": [
+      "Fergus Hotels"
+    ]
+  },
+  {
+    "slug": "tent",
+    "name": "Tent Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Tent Hotels"
+    ]
+  },
+  {
+    "slug": "iberik",
+    "name": "Iberik",
+    "cat": "hotel",
+    "brands": [
+      "Iberik Hoteles"
+    ]
+  },
+  {
+    "slug": "servigroup",
+    "name": "Servigroup",
+    "cat": "hotel",
+    "brands": [
+      "Hoteles Servigroup"
+    ]
+  },
+  {
+    "slug": "medplaya",
+    "name": "MedPlaya",
+    "cat": "hotel",
+    "brands": [
+      "MedPlaya"
+    ]
+  },
+  {
+    "slug": "besthotels",
+    "name": "Best Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Best Hotels"
+    ]
+  },
+  {
+    "slug": "alegria",
+    "name": "Alegria",
+    "cat": "hotel",
+    "brands": [
+      "Alegria Hotels"
+    ]
+  },
+  {
+    "slug": "htop",
+    "name": "HTop",
+    "cat": "hotel",
+    "brands": [
+      "HTop Hotels"
+    ]
+  },
+  {
+    "slug": "guitart",
+    "name": "Guitart",
+    "cat": "hotel",
+    "brands": [
+      "Guitart Hotels"
+    ]
+  },
+  {
+    "slug": "evenia",
+    "name": "Evenia",
+    "cat": "hotel",
+    "brands": [
+      "Evenia Hotels"
+    ]
+  },
+  {
+    "slug": "sbhotels",
+    "name": "SB Hotels",
+    "cat": "hotel",
+    "brands": [
+      "SB Hotels"
+    ]
+  },
+  {
+    "slug": "ilunion",
+    "name": "Ilunion",
+    "cat": "hotel",
+    "brands": [
+      "Ilunion Hotels"
+    ]
+  },
+  {
+    "slug": "paradores",
+    "name": "Paradores",
+    "cat": "hotel",
+    "brands": [
+      "Paradores"
+    ]
+  },
+  {
+    "slug": "soho",
+    "name": "Soho Boutique",
+    "cat": "hotel",
+    "brands": [
+      "Soho Boutique Hotels"
+    ]
+  },
+  {
+    "slug": "casual",
+    "name": "Casual Hoteles",
+    "cat": "hotel",
+    "brands": [
+      "Casual Hoteles"
+    ]
+  },
+  {
+    "slug": "petitpalace",
+    "name": "Petit Palace",
+    "cat": "hotel",
+    "brands": [
+      "Petit Palace"
+    ]
+  },
+  {
+    "slug": "hightech",
+    "name": "High Tech Hotels",
+    "cat": "hotel",
+    "brands": [
+      "High Tech Hotels"
+    ]
+  },
+  {
+    "slug": "oneshot",
+    "name": "One Shot",
+    "cat": "hotel",
+    "brands": [
+      "One Shot Hotels"
+    ]
+  },
+  {
+    "slug": "umusic",
+    "name": "UMusic Hotels",
+    "cat": "hotel",
+    "brands": [
+      "UMusic Hotels"
+    ]
+  },
+  {
+    "slug": "abba",
+    "name": "Abba Hoteles",
+    "cat": "hotel",
+    "brands": [
+      "Abba Hoteles"
+    ]
+  },
+  {
+    "slug": "zenit",
+    "name": "Zenit",
+    "cat": "hotel",
+    "brands": [
+      "Zenit Hoteles"
+    ]
+  },
+  {
+    "slug": "vp",
+    "name": "VP Hoteles",
+    "cat": "hotel",
+    "brands": [
+      "VP Hoteles"
+    ]
+  },
+  {
+    "slug": "derby",
+    "name": "Derby Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Derby Hotels Collection"
+    ]
+  },
+  {
+    "slug": "alma",
+    "name": "Alma Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Alma Hotels"
+    ]
+  },
+  {
+    "slug": "hospes",
+    "name": "Hospes",
+    "cat": "hotel",
+    "brands": [
+      "Hospes Hotels"
+    ]
+  },
+  {
+    "slug": "unico",
+    "name": "Único Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Único Hotels"
+    ]
+  },
+  {
+    "slug": "coolrooms",
+    "name": "CoolRooms",
+    "cat": "hotel",
+    "brands": [
+      "CoolRooms Hotels"
+    ]
+  },
+  {
+    "slug": "castillatermal",
+    "name": "Castilla Termal",
+    "cat": "hotel",
+    "brands": [
+      "Castilla Termal"
+    ]
+  },
+  {
+    "slug": "eurobuilding",
+    "name": "Eurobuilding",
+    "cat": "hotel",
+    "brands": [
+      "Eurobuilding"
+    ]
+  },
+  {
+    "slug": "center",
+    "name": "Hoteles Center",
+    "cat": "hotel",
+    "brands": [
+      "Hoteles Center"
+    ]
+  },
+  {
+    "slug": "santos",
+    "name": "Hoteles Santos",
+    "cat": "hotel",
+    "brands": [
+      "Hoteles Santos"
+    ]
+  },
+  {
+    "slug": "elba",
+    "name": "Hoteles Elba",
+    "cat": "hotel",
+    "brands": [
+      "Hoteles Elba"
+    ]
+  },
+  {
+    "slug": "poseidon",
+    "name": "Hoteles Poseidón",
+    "cat": "hotel",
+    "brands": [
+      "Hoteles Poseidón"
+    ]
+  },
+  {
+    "slug": "rh",
+    "name": "Hoteles RH",
+    "cat": "hotel",
+    "brands": [
+      "Hoteles RH"
+    ]
+  },
+  {
+    "slug": "magic",
+    "name": "Magic Costa Blanca",
+    "cat": "hotel",
+    "brands": [
+      "Magic Costa Blanca"
+    ]
+  },
+  {
+    "slug": "porthotels",
+    "name": "Port Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Port Hotels"
+    ]
+  },
+  {
+    "slug": "ona",
+    "name": "Ona Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Ona Hotels",
+      "Ona Hotels & Apartments"
+    ]
+  },
+  {
+    "slug": "pierrevacances",
+    "name": "Pierre & Vacances",
+    "cat": "hotel",
+    "brands": [
+      "Pierre & Vacances",
+      "Pierre & Vacances España",
+      "Apartamentos Pierre & Vacances"
+    ]
+  },
+  {
+    "slug": "smartrental",
+    "name": "SmartRental",
+    "cat": "hotel",
+    "brands": [
+      "SmartRental"
+    ]
+  },
+  {
+    "slug": "libere",
+    "name": "Líbere",
+    "cat": "hotel",
+    "brands": [
+      "Líbere Hospitality"
+    ]
+  },
+  {
+    "slug": "numa",
+    "name": "Numa",
+    "cat": "hotel",
+    "brands": [
+      "Numa"
+    ]
+  },
+  {
+    "slug": "sonder",
+    "name": "Sonder",
+    "cat": "hotel",
+    "brands": [
+      "Sonder"
+    ]
+  },
+  {
+    "slug": "limehome",
+    "name": "Limehome",
+    "cat": "hotel",
+    "brands": [
+      "Limehome"
+    ]
+  },
+  {
+    "slug": "bbhotels",
+    "name": "B&B Hotels",
+    "cat": "hotel",
+    "brands": [
+      "B&B Hotels"
+    ]
+  },
+  {
+    "slug": "travelodge",
+    "name": "Travelodge",
+    "cat": "hotel",
+    "brands": [
+      "Travelodge"
+    ]
+  },
+  {
+    "slug": "easyhotel",
+    "name": "easyHotel",
+    "cat": "hotel",
+    "brands": [
+      "easyHotel"
+    ]
+  },
+  {
+    "slug": "accor",
+    "name": "Accor",
+    "cat": "hotel",
+    "brands": [
+      "Ibis",
+      "Ibis Budget",
+      "Ibis Styles",
+      "Novotel",
+      "Mercure",
+      "Pullman",
+      "Sofitel",
+      "MGallery",
+      "Fairmont",
+      "Raffles",
+      "Accor"
+    ]
+  },
+  {
+    "slug": "marriott",
+    "name": "Marriott",
+    "cat": "hotel",
+    "brands": [
+      "Marriott",
+      "Marriott Hotels",
+      "JW Marriott",
+      "The Ritz-Carlton",
+      "St. Regis",
+      "W Hotels",
+      "Edition",
+      "Luxury Collection",
+      "Westin",
+      "Sheraton",
+      "Le Méridien",
+      "Renaissance Hotels",
+      "Autograph Collection",
+      "Tribute Portfolio",
+      "AC Hotels",
+      "AC Hotels by Marriott",
+      "Aloft",
+      "Moxy",
+      "Courtyard by Marriott",
+      "Residence Inn"
+    ]
+  },
+  {
+    "slug": "hilton",
+    "name": "Hilton",
+    "cat": "hotel",
+    "brands": [
+      "Hilton",
+      "Hilton Hotels & Resorts",
+      "Conrad",
+      "Waldorf Astoria",
+      "DoubleTree by Hilton",
+      "Canopy by Hilton",
+      "Curio Collection",
+      "Hampton by Hilton"
+    ]
+  },
+  {
+    "slug": "hyatt",
+    "name": "Hyatt",
+    "cat": "hotel",
+    "brands": [
+      "Hyatt",
+      "Grand Hyatt",
+      "Hyatt Regency",
+      "Hyatt Centric",
+      "Thompson Hotels",
+      "Andaz",
+      "Alua Hotels",
+      "Dreams Resorts",
+      "Secrets Resorts",
+      "Zoëtry",
+      "Inclusive Collection"
+    ]
+  },
+  {
+    "slug": "ihg",
+    "name": "IHG",
+    "cat": "hotel",
+    "brands": [
+      "IHG Hotels & Resorts",
+      "InterContinental",
+      "Kimpton",
+      "Crowne Plaza",
+      "Holiday Inn",
+      "Holiday Inn Express",
+      "Hotel Indigo",
+      "Six Senses",
+      "Vignette Collection"
+    ]
+  },
+  {
+    "slug": "radisson",
+    "name": "Radisson",
+    "cat": "hotel",
+    "brands": [
+      "Radisson Hotel Group",
+      "Radisson Blu",
+      "Radisson RED",
+      "Radisson Collection",
+      "Park Inn by Radisson"
+    ]
+  },
+  {
+    "slug": "leonardo",
+    "name": "Leonardo Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Leonardo Hotels",
+      "NYX Hotels",
+      "Leonardo Royal",
+      "Leonardo Boutique"
+    ]
+  },
+  {
+    "slug": "wyndham",
+    "name": "Wyndham",
+    "cat": "hotel",
+    "brands": [
+      "Wyndham Hotels & Resorts",
+      "Ramada",
+      "Wyndham",
+      "Tryp",
+      "Dolce by Wyndham"
+    ]
+  },
+  {
+    "slug": "bestwestern",
+    "name": "Best Western",
+    "cat": "hotel",
+    "brands": [
+      "Best Western",
+      "Best Western Plus",
+      "Best Western Premier",
+      "BWH Hotel Group"
+    ]
+  },
+  {
+    "slug": "preferred",
+    "name": "Preferred Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Preferred Hotels & Resorts"
+    ]
+  },
+  {
+    "slug": "lhw",
+    "name": "Leading Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Leading Hotels of the World"
+    ]
+  },
+  {
+    "slug": "slh",
+    "name": "Small Luxury Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Small Luxury Hotels of the World"
+    ]
+  },
+  {
+    "slug": "relaischateaux",
+    "name": "Relais & Châteaux",
+    "cat": "hotel",
+    "brands": [
+      "Relais & Châteaux"
+    ]
+  },
+  {
+    "slug": "designhotels",
+    "name": "Design Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Design Hotels"
+    ]
+  },
+  {
+    "slug": "mandarin",
+    "name": "Mandarin Oriental",
+    "cat": "hotel",
+    "brands": [
+      "Mandarin Oriental"
+    ]
+  },
+  {
+    "slug": "fourseasons",
+    "name": "Four Seasons",
+    "cat": "hotel",
+    "brands": [
+      "Four Seasons"
+    ]
+  },
+  {
+    "slug": "rosewood",
+    "name": "Rosewood",
+    "cat": "hotel",
+    "brands": [
+      "Rosewood"
+    ]
+  },
+  {
+    "slug": "belmond",
+    "name": "Belmond",
+    "cat": "hotel",
+    "brands": [
+      "Belmond"
+    ]
+  },
+  {
+    "slug": "aman",
+    "name": "Aman",
+    "cat": "hotel",
+    "brands": [
+      "Aman"
+    ]
+  },
+  {
+    "slug": "nobu",
+    "name": "Nobu Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Nobu Hotels"
+    ]
+  },
+  {
+    "slug": "virgin",
+    "name": "Virgin Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Virgin Hotels"
+    ]
+  },
+  {
+    "slug": "citizenm",
+    "name": "citizenM",
+    "cat": "hotel",
+    "brands": [
+      "citizenM"
+    ]
+  },
+  {
+    "slug": "mamashelter",
+    "name": "Mama Shelter",
+    "cat": "hotel",
+    "brands": [
+      "Mama Shelter"
+    ]
+  },
+  {
+    "slug": "hoxton",
+    "name": "The Hoxton",
+    "cat": "hotel",
+    "brands": [
+      "The Hoxton"
+    ]
+  },
+  {
+    "slug": "25hours",
+    "name": "25hours Hotels",
+    "cat": "hotel",
+    "brands": [
+      "25hours Hotels"
+    ]
+  },
+  {
+    "slug": "ruby",
+    "name": "Ruby Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Ruby Hotels"
+    ]
+  },
+  {
+    "slug": "zoku",
+    "name": "Zoku",
+    "cat": "hotel",
+    "brands": [
+      "Zoku"
+    ]
+  },
+  {
+    "slug": "locke",
+    "name": "Locke",
+    "cat": "hotel",
+    "brands": [
+      "Locke"
+    ]
+  },
+  {
+    "slug": "bypillow",
+    "name": "ByPillow",
+    "cat": "hotel",
+    "brands": [
+      "ByPillow"
+    ]
+  },
+  {
+    "slug": "axel",
+    "name": "Axel Hotels",
+    "cat": "hotel",
+    "brands": [
+      "Axel Hotels"
+    ]
+  },
+  {
+    "slug": "generator",
+    "name": "Generator Hostels",
+    "cat": "hotel",
+    "brands": [
+      "Generator Hostels"
+    ]
+  },
+  {
+    "slug": "toc",
+    "name": "TOC Hostels",
+    "cat": "hotel",
+    "brands": [
+      "TOC Hostels"
+    ]
+  },
+  {
+    "slug": "latroupe",
+    "name": "Latroupe",
+    "cat": "hotel",
+    "brands": [
+      "Latroupe"
+    ]
+  },
+  {
+    "slug": "safestay",
+    "name": "Safestay",
+    "cat": "hotel",
+    "brands": [
+      "Safestay"
+    ]
+  },
+  {
+    "slug": "stchristophers",
+    "name": "St Christopher's",
+    "cat": "hotel",
+    "brands": [
+      "St Christopher's Inns Iberia"
+    ]
+  },
+  {
+    "slug": "iberiaexpress",
+    "name": "Iberia Express",
+    "cat": "airline",
+    "brands": [
+      "Iberia Express"
+    ]
+  },
+  {
+    "slug": "vueling",
+    "name": "Vueling",
+    "cat": "airline",
+    "brands": [
+      "Vueling"
+    ]
+  },
+  {
+    "slug": "aireuropa",
+    "name": "Air Europa",
+    "cat": "airline",
+    "brands": [
+      "Air Europa"
+    ]
+  },
+  {
+    "slug": "ryanair",
+    "name": "Ryanair",
+    "cat": "airline",
+    "brands": [
+      "Ryanair"
+    ]
+  },
+  {
+    "slug": "easyjet",
+    "name": "easyJet",
+    "cat": "airline",
+    "brands": [
+      "easyJet"
+    ]
+  },
+  {
+    "slug": "wizzair",
+    "name": "Wizz Air",
+    "cat": "airline",
+    "brands": [
+      "Wizz Air"
+    ]
+  },
+  {
+    "slug": "volotea",
+    "name": "Volotea",
+    "cat": "airline",
+    "brands": [
+      "Volotea"
+    ]
+  },
+  {
+    "slug": "binter",
+    "name": "Binter",
+    "cat": "airline",
+    "brands": [
+      "Binter"
+    ]
+  },
+  {
+    "slug": "canaryfly",
+    "name": "Canaryfly",
+    "cat": "airline",
+    "brands": [
+      "Canaryfly"
+    ]
+  },
+  {
+    "slug": "level",
+    "name": "Level",
+    "cat": "airline",
+    "brands": [
+      "Level"
+    ]
+  },
+  {
+    "slug": "plusultra",
+    "name": "Plus Ultra",
+    "cat": "airline",
+    "brands": [
+      "Plus Ultra Líneas Aéreas"
+    ]
+  },
+  {
+    "slug": "world2fly",
+    "name": "World2Fly",
+    "cat": "airline",
+    "brands": [
+      "World2Fly"
+    ]
+  },
+  {
+    "slug": "iberojet",
+    "name": "Iberojet",
+    "cat": "airline",
+    "brands": [
+      "Iberojet"
+    ]
+  },
+  {
+    "slug": "privilegestyle",
+    "name": "Privilege Style",
+    "cat": "airline",
+    "brands": [
+      "Privilege Style"
+    ]
+  },
+  {
+    "slug": "airnostrum",
+    "name": "Air Nostrum",
+    "cat": "airline",
+    "brands": [
+      "Air Nostrum"
+    ]
+  },
+  {
+    "slug": "swiftair",
+    "name": "Swiftair",
+    "cat": "airline",
+    "brands": [
+      "Swiftair"
+    ]
+  },
+  {
+    "slug": "albastar",
+    "name": "Albastar",
+    "cat": "airline",
+    "brands": [
+      "Albastar"
+    ]
+  },
+  {
+    "slug": "tui",
+    "name": "TUI",
+    "cat": "airline",
+    "brands": [
+      "TUI Airways",
+      "TUI fly"
+    ]
+  },
+  {
+    "slug": "jet2",
+    "name": "Jet2",
+    "cat": "airline",
+    "brands": [
+      "Jet2"
+    ]
+  },
+  {
+    "slug": "norwegian",
+    "name": "Norwegian",
+    "cat": "airline",
+    "brands": [
+      "Norwegian"
+    ]
+  },
+  {
+    "slug": "lufthansagroup",
+    "name": "Lufthansa Group",
+    "cat": "airline",
+    "brands": [
+      "Lufthansa",
+      "Lufthansa City Airlines",
+      "Discover Airlines",
+      "Swiss",
+      "Austrian Airlines",
+      "Brussels Airlines",
+      "Eurowings"
+    ]
+  },
+  {
+    "slug": "airfranceklm",
+    "name": "Air France-KLM",
+    "cat": "airline",
+    "brands": [
+      "Air France",
+      "KLM",
+      "Transavia"
+    ]
+  },
+  {
+    "slug": "britishairways",
+    "name": "British Airways",
+    "cat": "airline",
+    "brands": [
+      "British Airways",
+      "BA CityFlyer"
+    ]
+  },
+  {
+    "slug": "aerlingus",
+    "name": "Aer Lingus",
+    "cat": "airline",
+    "brands": [
+      "Aer Lingus"
+    ]
+  },
+  {
+    "slug": "tap",
+    "name": "TAP Air Portugal",
+    "cat": "airline",
+    "brands": [
+      "TAP Air Portugal"
+    ]
+  },
+  {
+    "slug": "ita",
+    "name": "ITA Airways",
+    "cat": "airline",
+    "brands": [
+      "ITA Airways"
+    ]
+  },
+  {
+    "slug": "sas",
+    "name": "SAS",
+    "cat": "airline",
+    "brands": [
+      "SAS"
+    ]
+  },
+  {
+    "slug": "finnair",
+    "name": "Finnair",
+    "cat": "airline",
+    "brands": [
+      "Finnair"
+    ]
+  },
+  {
+    "slug": "lot",
+    "name": "LOT Polish Airlines",
+    "cat": "airline",
+    "brands": [
+      "LOT Polish Airlines"
+    ]
+  },
+  {
+    "slug": "czechairlines",
+    "name": "Czech Airlines",
+    "cat": "airline",
+    "brands": [
+      "Czech Airlines"
+    ]
+  },
+  {
+    "slug": "smartwings",
+    "name": "Smartwings",
+    "cat": "airline",
+    "brands": [
+      "Smartwings"
+    ]
+  },
+  {
+    "slug": "aegean",
+    "name": "Aegean",
+    "cat": "airline",
+    "brands": [
+      "Aegean Airlines",
+      "Olympic Air"
+    ]
+  },
+  {
+    "slug": "croatiaairlines",
+    "name": "Croatia Airlines",
+    "cat": "airline",
+    "brands": [
+      "Croatia Airlines"
+    ]
+  },
+  {
+    "slug": "airserbia",
+    "name": "Air Serbia",
+    "cat": "airline",
+    "brands": [
+      "Air Serbia"
+    ]
+  },
+  {
+    "slug": "turkish",
+    "name": "Turkish Airlines Group",
+    "cat": "airline",
+    "brands": [
+      "Turkish Airlines",
+      "Pegasus Airlines",
+      "SunExpress",
+      "AnadoluJet / AJet"
+    ]
+  },
+  {
+    "slug": "emirates",
+    "name": "Emirates",
+    "cat": "airline",
+    "brands": [
+      "Emirates"
+    ]
+  },
+  {
+    "slug": "qatar",
+    "name": "Qatar Airways",
+    "cat": "airline",
+    "brands": [
+      "Qatar Airways"
+    ]
+  },
+  {
+    "slug": "etihad",
+    "name": "Etihad Airways",
+    "cat": "airline",
+    "brands": [
+      "Etihad Airways"
+    ]
+  },
+  {
+    "slug": "saudia",
+    "name": "Saudia",
+    "cat": "airline",
+    "brands": [
+      "Saudia"
+    ]
+  },
+  {
+    "slug": "royaljordanian",
+    "name": "Royal Jordanian",
+    "cat": "airline",
+    "brands": [
+      "Royal Jordanian"
+    ]
+  },
+  {
+    "slug": "kuwaitairways",
+    "name": "Kuwait Airways",
+    "cat": "airline",
+    "brands": [
+      "Kuwait Airways"
+    ]
+  },
+  {
+    "slug": "gulfair",
+    "name": "Gulf Air",
+    "cat": "airline",
+    "brands": [
+      "Gulf Air"
+    ]
+  },
+  {
+    "slug": "egyptair",
+    "name": "Egyptair",
+    "cat": "airline",
+    "brands": [
+      "Egyptair"
+    ]
+  },
+  {
+    "slug": "royalairmaroc",
+    "name": "Royal Air Maroc",
+    "cat": "airline",
+    "brands": [
+      "Royal Air Maroc"
+    ]
+  },
+  {
+    "slug": "airarabia",
+    "name": "Air Arabia",
+    "cat": "airline",
+    "brands": [
+      "Air Arabia",
+      "Air Arabia Maroc"
+    ]
+  },
+  {
+    "slug": "tunisair",
+    "name": "Tunisair",
+    "cat": "airline",
+    "brands": [
+      "Tunisair"
+    ]
+  },
+  {
+    "slug": "nouvelair",
+    "name": "Nouvelair",
+    "cat": "airline",
+    "brands": [
+      "Nouvelair"
+    ]
+  },
+  {
+    "slug": "airalgerie",
+    "name": "Air Algérie",
+    "cat": "airline",
+    "brands": [
+      "Air Algerie"
+    ]
+  },
+  {
+    "slug": "caboverde",
+    "name": "Cabo Verde Airlines",
+    "cat": "airline",
+    "brands": [
+      "Cabo Verde Airlines"
+    ]
+  },
+  {
+    "slug": "ethiopian",
+    "name": "Ethiopian Airlines",
+    "cat": "airline",
+    "brands": [
+      "Ethiopian Airlines"
+    ]
+  },
+  {
+    "slug": "kenyaairways",
+    "name": "Kenya Airways",
+    "cat": "airline",
+    "brands": [
+      "Kenya Airways"
+    ]
+  },
+  {
+    "slug": "united",
+    "name": "United Airlines",
+    "cat": "airline",
+    "brands": [
+      "United Airlines"
+    ]
+  },
+  {
+    "slug": "american",
+    "name": "American Airlines",
+    "cat": "airline",
+    "brands": [
+      "American Airlines"
+    ]
+  },
+  {
+    "slug": "delta",
+    "name": "Delta Air Lines",
+    "cat": "airline",
+    "brands": [
+      "Delta Air Lines"
+    ]
+  },
+  {
+    "slug": "aircanada",
+    "name": "Air Canada",
+    "cat": "airline",
+    "brands": [
+      "Air Canada"
+    ]
+  },
+  {
+    "slug": "airtransat",
+    "name": "Air Transat",
+    "cat": "airline",
+    "brands": [
+      "Air Transat"
+    ]
+  },
+  {
+    "slug": "westjet",
+    "name": "WestJet",
+    "cat": "airline",
+    "brands": [
+      "WestJet"
+    ]
+  },
+  {
+    "slug": "aeromexico",
+    "name": "Aeroméxico",
+    "cat": "airline",
+    "brands": [
+      "Aeroméxico"
+    ]
+  },
+  {
+    "slug": "avianca",
+    "name": "Avianca",
+    "cat": "airline",
+    "brands": [
+      "Avianca"
+    ]
+  },
+  {
+    "slug": "latam",
+    "name": "LATAM",
+    "cat": "airline",
+    "brands": [
+      "LATAM Airlines",
+      "LATAM Brasil",
+      "LATAM Chile"
+    ]
+  },
+  {
+    "slug": "aerolineas",
+    "name": "Aerolíneas Argentinas",
+    "cat": "airline",
+    "brands": [
+      "Aerolíneas Argentinas"
+    ]
+  },
+  {
+    "slug": "copa",
+    "name": "Copa Airlines",
+    "cat": "airline",
+    "brands": [
+      "Copa Airlines"
+    ]
+  },
+  {
+    "slug": "airchina",
+    "name": "Air China",
+    "cat": "airline",
+    "brands": [
+      "Air China"
+    ]
+  },
+  {
+    "slug": "chinaeastern",
+    "name": "China Eastern",
+    "cat": "airline",
+    "brands": [
+      "China Eastern"
+    ]
+  },
+  {
+    "slug": "chinasouthern",
+    "name": "China Southern",
+    "cat": "airline",
+    "brands": [
+      "China Southern"
+    ]
+  },
+  {
+    "slug": "hainan",
+    "name": "Hainan Airlines",
+    "cat": "airline",
+    "brands": [
+      "Hainan Airlines"
+    ]
+  },
+  {
+    "slug": "cathaypacific",
+    "name": "Cathay Pacific",
+    "cat": "airline",
+    "brands": [
+      "Cathay Pacific"
+    ]
+  },
+  {
+    "slug": "koreanair",
+    "name": "Korean Air",
+    "cat": "airline",
+    "brands": [
+      "Korean Air"
+    ]
+  },
+  {
+    "slug": "asiana",
+    "name": "Asiana Airlines",
+    "cat": "airline",
+    "brands": [
+      "Asiana Airlines"
+    ]
+  },
+  {
+    "slug": "singaporeairlines",
+    "name": "Singapore Airlines",
+    "cat": "airline",
+    "brands": [
+      "Singapore Airlines"
+    ]
+  },
+  {
+    "slug": "thaiairways",
+    "name": "Thai Airways",
+    "cat": "airline",
+    "brands": [
+      "Thai Airways"
+    ]
+  },
+  {
+    "slug": "vietnamairlines",
+    "name": "Vietnam Airlines",
+    "cat": "airline",
+    "brands": [
+      "Vietnam Airlines"
+    ]
+  },
+  {
+    "slug": "qantas",
+    "name": "Qantas",
+    "cat": "airline",
+    "brands": [
+      "Qantas"
+    ]
+  },
+  {
+    "slug": "elal",
+    "name": "El Al",
+    "cat": "airline",
+    "brands": [
+      "El Al"
+    ]
+  },
+  {
+    "slug": "icelandair",
+    "name": "Icelandair",
+    "cat": "airline",
+    "brands": [
+      "Icelandair"
+    ]
+  },
+  {
+    "slug": "play",
+    "name": "PLAY Airlines",
+    "cat": "airline",
+    "brands": [
+      "PLAY Airlines"
+    ]
+  },
+  {
+    "slug": "norse",
+    "name": "Norse Atlantic Airways",
+    "cat": "airline",
+    "brands": [
+      "Norse Atlantic Airways"
+    ]
+  },
+  {
+    "slug": "condor",
+    "name": "Condor",
+    "cat": "airline",
+    "brands": [
+      "Condor"
+    ]
+  },
+  {
+    "slug": "corendon",
+    "name": "Corendon Airlines",
+    "cat": "airline",
+    "brands": [
+      "Corendon Airlines"
+    ]
+  },
+  {
+    "slug": "freebird",
+    "name": "Freebird Airlines",
+    "cat": "airline",
+    "brands": [
+      "Freebird Airlines"
+    ]
+  },
+  {
+    "slug": "enterair",
+    "name": "Enter Air",
+    "cat": "airline",
+    "brands": [
+      "Enter Air"
+    ]
+  },
+  {
+    "slug": "neos",
+    "name": "Neos",
+    "cat": "airline",
+    "brands": [
+      "Neos"
+    ]
+  },
+  {
+    "slug": "wamos",
+    "name": "Wamos Air",
+    "cat": "airline",
+    "brands": [
+      "Wamos Air"
+    ]
+  }
+]

@@ -1,0 +1,30 @@
+# Aerolíneas Argentinas CLI
+
+Unofficial, agent-friendly CLI for [Aerolíneas Argentinas](https://www.aerolineas.com.ar).
+
+> **Not official.** Reverse-engineered endpoints. Run locally only. Respect rate limits.
+
+## Build
+
+```bash
+go build -o aerolineas ./cmd/aerolineas
+```
+
+## Commands
+
+```bash
+aerolineas search [--json] --from MAD --to BCN --depart 2026-07-01
+aerolineas read [--json] <id|url>
+aerolineas brands
+```
+
+## Environment
+
+- `AEROLINEAS_COOKIE` — optional browser cookie when blocked
+- `AEROLINEAS_REQUEST_DELAY` — rate limit (e.g. `2s`)
+
+## Status
+
+Category: **airline**
+
+Search: **scaffold** — TODO implement endpoint in `internal/client/search.go`
