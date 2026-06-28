@@ -37,19 +37,15 @@ Configuración Cursor: [`.cursor/mcp.json`](.cursor/mcp.json) · guía: [docs/MC
 
 Sin claves Duffel → usar **Kiwi** para vuelos agregados y **Gondola** para hoteles de cadena; degradar a CLI donde exista implementación **live** o **partial**; no inventar ofertas.
 
-### Browser MCP — partials con WAF (melia, nh, marriott)
+### Browser MCP — partials con WAF
 
-Cuando `{slug} session doctor --json` devuelve **`blocked`** y no hay cookies en `~/.{slug}/cookies.json`, usa **`cursor-ide-browser`** (habilitado en `.cursor/mcp.json`) antes de rendirte:
+Cuando `{slug} session doctor --json` devuelve **`blocked`** y el slug está en [`bridge/browser-mcp/registry.json`](bridge/browser-mcp/registry.json), usa el **browser MCP bridge** (`cursor-ide-browser` en [`.cursor/mcp.json.example`](.cursor/mcp.json.example); fallback `@playwright/mcp`) antes de rendirte:
 
 ```
-browser_navigate → esperar (Akamai) → browser_snapshot → extraer JSON de red o DOM
+browser_navigate → browser_wait_for (Akamai) → browser_network_requests / browser_snapshot
 ```
 
-| Marca | URL inicio | Filtro red / extracción |
-|-------|------------|-------------------------|
-| **melia** | `https://www.melia.com/es/hoteles` | POST `…/services/search/hotels/v2/search` |
-| **nh** | `https://www.nh-hotels.com/es/hoteles/espana/madrid` | GET `…/nh/es/api/v1/hotels/search` |
-| **marriott** | `findHotels.mi` con ciudad + fechas | JSON de red o DOM / JSON-LD |
+Por cada marca, `registry.json` define `start_url`, `network_filter` / `dom_fallback` y el adaptador `bridge/browser-mcp/adapters/{slug}.mjs` (mismo shape `travelkit` que `{slug} search --json`). Playbooks: [bridge/browser-mcp/prompts/](bridge/browser-mcp/prompts/) (p. ej. [madrid-london.md](bridge/browser-mcp/prompts/madrid-london.md)). Arquitectura: [docs/BROWSER_MCP_BRIDGE.md](docs/BROWSER_MCP_BRIDGE.md).
 
 **Cadenas españolas regionales** (Barceló, H10, Hotusa, Palladium, Catalonia, …): seguir en **CLI** — agregadores MCP no cubren inventario miembro.
 
@@ -58,7 +54,7 @@ browser_navigate → esperar (Akamai) → browser_snapshot → extraer JSON de r
 1. Parsear destino, fechas y **marca explícita** (si hay).
 2. **Sin marca** → MCP agregado: vuelos **Kiwi** (o Duffel si hay token); hoteles **Gondola** (cadenas) o Duffel `search_stays` (genérico).
 3. **Con marca española** (Meliá, Barceló, NH, Ryanair, …) → **CLI** `{slug} search --json` (ver `scripts/groups.json`).
-4. Si doctor = `blocked` en marca partial → **browser MCP** o `session chrome`.
+4. Si doctor = `blocked` y slug ∈ `registry.json` → **browser MCP bridge** (playbook + adapter) o `session chrome`.
 5. MCP vacío en ruta agregada → CLI LCC o cadena según `scripts/groups.json`.
 6. Normalizar a tipos `travelkit` (`hotels[]`, `flights[]` — nunca `null`).
 7. Detalle / availability → MCP `offer_id` / booking link si existe; si no, CLI `read` / `availability`.
