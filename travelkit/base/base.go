@@ -161,6 +161,9 @@ func (c *Client) PostJSON(url string, payload, out any) error {
 	}
 	c.SetAPIHeaders(req)
 	req.Header.Set("content-type", "application/json")
+	if c.BaseURL != "" {
+		req.Header.Set("origin", c.BaseURL)
+	}
 	c.ApplyCookie(req)
 	return c.DoJSON(req, out)
 }
