@@ -99,9 +99,10 @@ func CaptureChrome(opts ChromeOptions) (ChromeResult, error) {
 		return ChromeResult{}, err
 	}
 	report := akamai.AnalyzeCookies(res.Cookie)
+	slug := strings.ToLower(strings.ReplaceAll(opts.EnvPrefix, "_", "-"))
 	ready := res.Ready || akamai.SessionReady(res.Cookie)
-	if !akamai.NeedsAkamaiWAF(strings.ToLower(strings.ReplaceAll(opts.EnvPrefix, "_", "-"))) {
-		ready = ready || akamai.HasSessionMaterial(res.Cookie)
+	if !akamai.NeedsAkamaiWAF(slug) {
+		ready = ready || akamai.SiteSessionReady(slug, res.Cookie) || akamai.HasSessionMaterial(res.Cookie)
 	}
 	if !opts.Wait || opts.SyncOnly || ready {
 		return ChromeResult{

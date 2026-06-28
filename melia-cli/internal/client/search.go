@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/fbelchi/travelkit/akamai"
@@ -14,6 +15,12 @@ const (
 	meliaSearchBFF  = "/services/search/hotels/v2/search"
 	meliaHotelsPath = "/es/hoteles"
 )
+
+var meliaCitySlugs = map[string]string{
+	"madrid": "madrid", "barcelona": "barcelona", "valencia": "valencia",
+	"sevilla": "sevilla", "malaga": "malaga", "málaga": "malaga",
+	"bilbao": "bilbao", "zaragoza": "zaragoza", "palma": "palma-de-mallorca",
+}
 
 // Search queries Meliá hotel search BFF, falling back to the hotel directory page.
 func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, error) {
@@ -37,7 +44,16 @@ func shouldFallbackSearch(err error) bool {
 		return false
 	}
 	msg := strings.ToLower(err.Error())
-	return strings.Contains(msg, "http 404") || strings.Contains(msg, "decode json")
+	if strings.Contains(msg, "decode json") {
+		return true
+	}
+	if strings.Contains(msg, "http 404") || strings.Contains(msg, "http 403") {
+		return true
+	}
+	if strings.Contains(msg, "akamai blocked") {
+		return true
+	}
+	return false
 }
 
 func (c *Client) searchBFF(query string, page, pageSize int) (*HotelSearchResult, error) {
@@ -54,7 +70,7 @@ func (c *Client) searchBFF(query string, page, pageSize int) (*HotelSearchResult
 	}
 	if status < 200 || status >= 300 {
 		if akamai.IsDenied(status, string(body)) || akamai.IsAppNotFoundWithoutSession(status, string(body)) {
-			return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("melia"))
+			return nil, fmt.Errorf("search %q: HTTP %d: %s", query, status, tkbase.Truncate(string(body), 200))
 		}
 		return nil, fmt.Errorf("search %q: HTTP %d: %s", query, status, tkbase.Truncate(string(body), 200))
 	}
@@ -66,14 +82,29 @@ func (c *Client) searchBFF(query string, page, pageSize int) (*HotelSearchResult
 }
 
 func (c *Client) searchDirectory(query string, page, pageSize int) (*HotelSearchResult, error) {
-	html, err := c.FetchHTML(c.BaseURL + meliaHotelsPath)
-	if err != nil {
-		if he, ok := err.(*tkbase.HTTPError); ok && akamai.IsDenied(he.Status, he.Body) {
-			return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("melia"))
+	var rows []parse.HotelLD
+	var lastErr error
+	for _, path := range meliaDirectoryPaths(query) {
+		html, err := c.fetchMeliaDirectory(path)
+		if err != nil {
+			if he, ok := err.(*tkbase.HTTPError); ok && akamai.IsDenied(he.Status, he.Body) {
+				lastErr = fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("melia"))
+				continue
+			}
+			lastErr = fmt.Errorf("search %q: %w", query, err)
+			continue
 		}
-		return nil, fmt.Errorf("search %q: %w", query, err)
+		rows = parse.HotelsFromMeliaDirectory(html, c.BaseURL, query)
+		if len(rows) > 0 {
+			break
+		}
 	}
-	rows := parse.HotelsFromMeliaDirectory(html, c.BaseURL, query)
+	if len(rows) == 0 {
+		if lastErr != nil {
+			return nil, lastErr
+		}
+		return nil, fmt.Errorf("search %q: no hotels in directory — %s", query, akamai.NeedsSessionHint("melia"))
+	}
 	total := len(rows)
 	start := (page - 1) * pageSize
 	if start > total {
@@ -100,6 +131,43 @@ func (c *Client) searchDirectory(query string, page, pageSize int) (*HotelSearch
 	}, nil
 }
 
+func meliaDirectoryPaths(query string) []string {
+	paths := []string{meliaHotelsPath}
+	q := strings.ToLower(strings.TrimSpace(query))
+	q = strings.ReplaceAll(q, " ", "-")
+	slug := meliaCitySlugs[q]
+	if slug == "" {
+		slug = q
+	}
+	if slug != "" {
+		paths = append([]string{fmt.Sprintf("%s/espana/%s", meliaHotelsPath, slug)}, paths...)
+	}
+	return paths
+}
+
+func (c *Client) fetchMeliaDirectory(path string) (string, error) {
+	url := c.BaseURL + path
+	c.Throttle()
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	c.SetDocumentHeaders(req)
+	req.Header.Set("referer", c.BaseURL+meliaHotelsPath)
+	c.ApplyCookie(req)
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, _ := ioReadAll(resp.Body)
+	text := string(body)
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return "", &tkbase.HTTPError{Status: resp.StatusCode, Body: tkbase.Truncate(text, 300)}
+	}
+	return text, nil
+}
+
 func (c *Client) postMelia(path string, payload any) ([]byte, int, error) {
 	c.Throttle()
 	b, err := json.Marshal(payload)
@@ -113,7 +181,7 @@ func (c *Client) postMelia(path string, payload any) ([]byte, int, error) {
 	c.SetAPIHeaders(req)
 	req.Header.Set("content-type", "application/json")
 	req.Header.Set("origin", c.BaseURL)
-	req.Header.Set("referer", c.BaseURL+"/es/")
+	req.Header.Set("referer", c.BaseURL+meliaHotelsPath)
 	req.Header.Set("melia-language", "es")
 	req.Header.Set("melia-market", "ES")
 	req.Header.Set("channel", "web")

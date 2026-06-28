@@ -6,7 +6,10 @@ import (
 	"strings"
 )
 
-const graphQLPath = "/api/graphql"
+const (
+	graphQLPath    = "/api/graphql"
+	graphQLReferer = "/es/hoteles"
+)
 
 func (c *Client) postGraphQL(payload, out any) error {
 	c.Throttle()
@@ -21,8 +24,9 @@ func (c *Client) postGraphQL(payload, out any) error {
 	c.SetAPIHeaders(req)
 	req.Header.Set("content-type", "application/json")
 	req.Header.Set("origin", c.BaseURL)
-	req.Header.Set("referer", c.BaseURL+"/es/")
-	req.Header.Set("x-market", "es")
+	req.Header.Set("referer", c.BaseURL+graphQLReferer)
+	req.Header.Set("x-market", "ES")
+	req.Header.Set("x-language", "es")
 	c.ApplyCookie(req)
 	return c.DoJSON(req, out)
 }
