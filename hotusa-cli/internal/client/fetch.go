@@ -13,7 +13,7 @@ import (
 	utls "github.com/refraction-networking/utls"
 )
 
-const hotusaTLSServerName = "booking-channel.com"
+const hotusaTLSServerName = "www.hotusa.com"
 
 func (c *Client) fetchHotusaHTML(path string) (string, error) {
 	if path == "" {
@@ -27,7 +27,7 @@ func (c *Client) fetchHotusaHTML(path string) (string, error) {
 				return nil, err
 			}
 			cfg := &utls.Config{ServerName: hotusaTLSServerName, InsecureSkipVerify: true}
-			uconn := utls.UClient(raw, cfg, utls.HelloChrome_Auto)
+			uconn := utls.UClient(raw, cfg, utls.HelloChrome_131)
 			if err := uconn.HandshakeContext(ctx); err != nil {
 				raw.Close()
 				return nil, err
