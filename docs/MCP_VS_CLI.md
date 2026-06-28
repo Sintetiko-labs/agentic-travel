@@ -265,6 +265,7 @@ Legend: **H** high, **M** medium, **L** low, **—** not applicable.
 ## Related docs
 
 - [AGENTS.md](../AGENTS.md) — MCP-first agent guidance
+- [FAST_SEARCH.md](FAST_SEARCH.md) — parallel orchestrator protocol (<15s)
 - [README.md](../README.md) — priority CLI status table
 - [LOOP_STATUS.md](LOOP_STATUS.md) — live vs partial counts
 - [QA_AIRLINES.md](QA_AIRLINES.md) / [QA_HOTELS_ES.md](QA_HOTELS_ES.md) — smoke reliability evidence
