@@ -10,7 +10,7 @@ Monorepo de **CLIs agent-friendly** para hoteles y aerolíneas (cadenas español
 - **321** marcas cubiertas (agrupadas por API padre compartida)
 - Librería compartida: [`travelkit/`](travelkit/)
 
-## Priority CLIs (loop 5)
+## Priority CLIs (loop 6)
 
 | CLI | Tipo | Status | Session | Fuente / notas |
 |-----|------|--------|---------|----------------|
@@ -22,22 +22,27 @@ Monorepo de **CLIs agent-friendly** para hoteles y aerolíneas (cadenas español
 | `h10` | hotel | **live** | chrome+sync+doctor | ng-state `menu-es` destination pages |
 | `palladium` | hotel | **live** | chrome+sync+doctor | AEM `data-hotel-name` cards |
 | `lopesan` | hotel | **live** | chrome+sync+doctor | hotel detail links on listing pages |
-| `travelodge` | hotel | **live** | optional cookie | `/api/v2/hotel` JSON search (UK) |
 | `princess` | hotel | **live** | chrome+sync+doctor | destination page headings |
+| `eurostars` | hotel | **live** | chrome+sync+doctor | embedded hotel cards on homepage |
+| `hotusa` | hotel | **live** | chrome+sync+doctor | Crisol / Hotusa listing HTML |
+| `vincci` | hotel | **live** | chrome+sync+doctor | destination hotel cards |
+| `silken` | hotel | **live** | chrome+sync+doctor | hotel list pages |
+| `sercotel` | hotel | **live** | chrome+sync+doctor | search results HTML |
+| `travelodge` | hotel | **live** | optional cookie | `/api/v2/hotel` JSON search (UK) |
+| `hilton` | hotel | **live** | chrome+sync+doctor | `/en/locations/united-kingdom/{city}/` HTML cards |
 | `melia` | hotel | partial | chrome+sync+doctor | BFF `/services/search/hotels/v2/search` (Akamai; needs `--wait`) |
 | `nh` | hotel | partial | chrome+sync+doctor | REST `/nh/es/api/v1/hotels/search` (Akamai) |
 | `iberostar` | hotel | partial | chrome+sync+doctor | GraphQL `/api/graphql` (Akamai) |
-| `easyjet` | airline | partial | chrome+sync+doctor | `ejavailability/api/v5` (Akamai; session chrome --wait) |
-| `aireuropa` | airline | partial | chrome+sync+doctor | `dapi` `api/channel-home/v1/redirect/flow/BOOKING/urldata` POST + flightinfo fallback |
-| `iberiaexpress` | airline | partial | chrome+sync+doctor | `/api/availability/v1/flights` (Incapsula; doctor detects challenge on HTTP 200) |
-| `hilton` | hotel | **live** | chrome+sync+doctor | `/en/locations/united-kingdom/{city}/` HTML cards |
 | `marriott` | hotel | partial | chrome+sync+doctor | `findHotels.mi` (Akamai; session required) |
+| `easyjet` | airline | partial | chrome+sync+doctor | `ejavailability/api/v5` (Akamai; session chrome --wait) |
+| `aireuropa` | airline | partial | chrome+sync+doctor | `dapi` redirect POST + flightinfo fallback |
+| `iberiaexpress` | airline | partial | chrome+sync+doctor | `/api/availability/v1/flights` (Incapsula; doctor detects challenge on HTTP 200) |
 
 **Session chrome (headed Chrome required):** `{slug} session chrome --wait --timeout 3m` polls until `_abck` **and** `bm_sz` (or `cf_clearance` / Incapsula pair). Saves to `~/.{slug}/cookies.json`. `{slug} session doctor` probes WAF cookies + brand API (POST bodies for BFF/GraphQL/dapi).
 
 **CLIs with session subcommands:** **194** / 194 (via `scripts/add-session-subcommands.py`; scaffold regen runs it automatically).
 
-**Smoke tests (loop 5):** `verify-clis.sh` → 194/194 PASS (build only). Live API smoke requires headed Chrome + residential IP for Akamai brands — not run in sandbox.
+**Smoke tests:** `./scripts/verify-clis.sh` (build + `help` only). Latest loop-6 integration run on `main` — see [docs/LOOP_STATUS.md](docs/LOOP_STATUS.md). Live API smoke needs headed Chrome + residential IP for Akamai brands.
 
 ### Iteration 6 priorities
 
