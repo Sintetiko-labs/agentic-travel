@@ -20,7 +20,21 @@ import (
 	"github.com/fbelchi/travelkit/transport"
 )
 
-const DefaultUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+const (
+	DefaultUA             = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+	defaultRequestTimeout = 25 * time.Second
+	requestTimeoutEnvKey  = "TRAVELKIT_REQUEST_TIMEOUT"
+)
+
+func RequestTimeout() time.Duration {
+	if v := strings.TrimSpace(os.Getenv(requestTimeoutEnvKey)); v != "" {
+		if d, err := time.ParseDuration(v); err == nil && d > 0 {
+			return d
+		}
+	}
+	return defaultRequestTimeout
+}
+
 
 // Client is the shared HTTP transport used by scaffolded travel CLIs.
 type Client struct {
@@ -42,11 +56,12 @@ func New(baseURL, envPrefix string) *Client {
 	if prefix == "" {
 		prefix = "TRAVEL"
 	}
-	stdlib := &http.Client{Timeout: 30 * time.Second, Jar: jar, Transport: network.DirectTransport()}
+	timeout := RequestTimeout()
+	stdlib := &http.Client{Timeout: timeout, Jar: jar, Transport: network.DirectTransport()}
 	hc := stdlib
 	if os.Getenv(prefix+"_STD_HTTP") != "1" {
-		if tr, err := transport.NewChromeTransport(); err == nil {
-			hc = &http.Client{Timeout: 30 * time.Second, Jar: jar, Transport: tr}
+		if tr, err := transport.SharedRoundTripper(); err == nil {
+			hc = &http.Client{Timeout: timeout, Jar: jar, Transport: tr}
 		}
 	}
 	c := &Client{
