@@ -47,6 +47,7 @@ USAGE:
   aireuropa brands
   aireuropa session chrome [--wait] [--port N]
   aireuropa session sync
+  aireuropa session doctor [--json]
   aireuropa version | help
 `)
 }

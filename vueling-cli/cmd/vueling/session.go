@@ -101,12 +101,13 @@ func runSessionDoctor(args []string) error {
 
 	cl := client.New("")
 	res := session.Doctor(session.DoctorOptions{
-		Slug:        "vueling",
-		EnvPrefix:   cl.EnvPrefix,
-		BaseURL:     client.BaseURL,
-		Cookie:      cl.Cookie,
-		ProbeURL:    "https://tickets.vueling.com/ScheduleSelect.aspx?culture=es-ES",
-		ProbeMethod: "GET",
+		Slug:            "vueling",
+		EnvPrefix:       cl.EnvPrefix,
+		BaseURL:         client.BaseURL,
+		Cookie:          cl.Cookie,
+		SessionOptional: true,
+		ProbeURL:        "https://apiwww.vueling.com/api/FlightPrice/GetAllFlights?originCode=MAD&destinationCode=BCN&year=2026&month=7&currencyCode=EUR&monthsRange=1",
+		ProbeMethod:     "GET",
 	})
 	if cf.jsonOut {
 		return emitJSON(res)

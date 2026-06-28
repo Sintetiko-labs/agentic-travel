@@ -1,0 +1,4 @@
+[
+  {"ArrivalDate":"2026-07-01T06:15:00","ArrivalStation":"BCN","Availability":0,"ClassOfService":"KI","Created":"0001-01-01T00:00:00","DepartureDate":"2026-07-01T04:40:00","DepartureStation":"MAD","Fare":null,"FlightID":"5006","Price":223.93,"ProductClass":null,"Sort":0,"Tax":0.0,"IsInvalidPrice":false},
+  {"ArrivalDate":"2026-07-02T06:15:00","ArrivalStation":"BCN","Availability":0,"ClassOfService":"VI","Created":"0001-01-01T00:00:00","DepartureDate":"2026-07-02T04:40:00","DepartureStation":"MAD","Fare":null,"FlightID":"5006","Price":135.93,"ProductClass":null,"Sort":0,"Tax":0.0,"IsInvalidPrice":false}
+]

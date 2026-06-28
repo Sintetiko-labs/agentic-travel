@@ -53,6 +53,6 @@ Use `VUELING_REQUEST_DELAY=60s` for airlines (~1 req/min). Hotels: `2s` default 
 
 | Feature | Status |
 |---------|--------|
-| `search` | **partial** — Skysales `tickets.vueling.com/bit/v2` (404 without session/HAR); session on tickets host |
+| `search` | **live** — `apiwww.vueling.com/api/FlightPrice/GetAllFlights` (public calendar API; session optional) |
 | `read` | implemented |
 | Rate limit | `VUELING_REQUEST_DELAY` (~60s recommended) |

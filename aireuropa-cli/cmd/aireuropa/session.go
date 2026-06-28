@@ -12,15 +12,17 @@ import (
 
 func cmdSession(args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: aireuropa session <chrome|sync>")
+		return fmt.Errorf("usage: aireuropa session <chrome|sync|doctor>")
 	}
 	switch args[0] {
 	case "chrome":
 		return runSessionChrome(args[1:], false)
 	case "sync":
 		return runSessionChrome(args[1:], true)
+	case "doctor":
+		return runSessionDoctor(args[1:])
 	default:
-		return fmt.Errorf("unknown subcommand %q — use chrome or sync", args[0])
+		return fmt.Errorf("unknown subcommand %q — use chrome, sync, or doctor", args[0])
 	}
 }
 
@@ -77,6 +79,46 @@ func runSessionChrome(args []string, syncOnly bool) error {
 		fmt.Fprintln(os.Stderr, "WAF/session cookies OK")
 	} else {
 		fmt.Fprintln(os.Stderr, "Warning: WAF cookies not detected — browse the site in Chrome, then re-run session sync")
+	}
+	return nil
+}
+
+func runSessionDoctor(args []string) error {
+	fs := flag.NewFlagSet("session doctor", flag.ExitOnError)
+	cf := addCommon(fs)
+	_ = fs.Parse(reorderArgs(fs, args))
+
+	cl := client.New("")
+	res := session.Doctor(session.DoctorOptions{
+		Slug:             "aireuropa",
+		EnvPrefix:        cl.EnvPrefix,
+		BaseURL:          client.BaseURL,
+		Cookie:           cl.Cookie,
+		ProbeURL:         client.APIBaseURL + "/api/v1/flights/search",
+		ProbeMethod:      "POST",
+		ProbeBody:        `{"origin":"MAD","destination":"BCN","departureDate":"2026-07-01","adults":1,"language":"es","market":"ES"}`,
+		ProbeContentType: "application/json",
+		ProbeReferer:     client.BaseURL + "/es/es/",
+	})
+	if cf.jsonOut {
+		return emitJSON(res)
+	}
+	fmt.Fprintf(os.Stderr, "status: %s\n", res.Status)
+	fmt.Fprintf(os.Stderr, "file:   %s (exists=%v)\n", res.SessionFile, res.SessionFileExists)
+	if res.SessionAge != "" {
+		fmt.Fprintf(os.Stderr, "age:    %s\n", res.SessionAge)
+	}
+	fmt.Fprintf(os.Stderr, "cookies: abck=%v bm_sz=%v cf=%v incap=%v\n",
+		res.Cookies.HasAbck, res.Cookies.HasBmSz, res.Cookies.HasCF, res.Cookies.HasIncapsula)
+	if res.ProbeHTTPStatus > 0 {
+		fmt.Fprintf(os.Stderr, "probe:  HTTP %d\n", res.ProbeHTTPStatus)
+	}
+	fmt.Fprintln(os.Stderr, res.Message)
+	if res.NextStep != "" {
+		fmt.Fprintln(os.Stderr, "next:", res.NextStep)
+	}
+	if res.Status != session.DoctorOK {
+		return fmt.Errorf("%s", res.Message)
 	}
 	return nil
 }

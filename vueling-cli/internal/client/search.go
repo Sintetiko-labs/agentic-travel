@@ -6,14 +6,18 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/fbelchi/travelkit/akamai"
 	tkbase "github.com/fbelchi/travelkit/base"
 )
 
-const skysalesBaseURL = "https://tickets.vueling.com"
+const (
+	skysalesBaseURL  = "https://tickets.vueling.com"
+	flightPriceAPI   = "https://apiwww.vueling.com/api/FlightPrice/GetAllFlights"
+)
 
-// Search queries Vueling Skysales BIT endpoint on tickets.vueling.com.
+// Search queries Vueling public FlightPrice calendar API (apiwww.vueling.com).
 func (c *Client) Search(origin, dest, depart, ret string, page, pageSize int) (*FlightSearchResult, error) {
 	if page < 1 {
 		page = 1
@@ -26,34 +30,57 @@ func (c *Client) Search(origin, dest, depart, ret string, page, pageSize int) (*
 	depart = strings.TrimSpace(depart)
 	ret = strings.TrimSpace(ret)
 
-	q := url.Values{}
-	q.Set("origin", origin)
-	q.Set("destination", dest)
-	q.Set("departureDate", depart)
-	q.Set("adults", "1")
-	q.Set("culture", "es-ES")
-	if ret != "" {
-		q.Set("returnDate", ret)
-	}
-	path := "/bit/v2/flights/search?" + q.Encode()
-
-	var resp vuelingSearchResponse
-	err := c.searchBIT(skysalesBaseURL+path, &resp)
+	departTime, err := time.Parse("2006-01-02", depart)
 	if err != nil {
-		if he, ok := err.(*tkbase.HTTPError); ok && he.Status == 404 {
-			err = c.searchBIT(c.BaseURL+path, &resp)
-		}
+		return nil, fmt.Errorf("search %s→%s: invalid depart date %q (use YYYY-MM-DD)", origin, dest, depart)
 	}
+
+	q := url.Values{}
+	q.Set("originCode", origin)
+	q.Set("destinationCode", dest)
+	q.Set("year", fmt.Sprintf("%d", departTime.Year()))
+	q.Set("month", fmt.Sprintf("%d", int(departTime.Month())))
+	q.Set("currencyCode", "EUR")
+	q.Set("monthsRange", "1")
+
+	var rows []vuelingFlightPriceRow
+	err = c.getJSON(flightPriceAPI+"?"+q.Encode(), &rows)
 	if err != nil {
 		if he, ok := err.(*tkbase.HTTPError); ok && akamai.IsDenied(he.Status, he.Body) {
 			return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("vueling"))
 		}
-		return nil, fmt.Errorf("search %s→%s: %w — run `vueling session chrome --wait` on tickets.vueling.com", origin, dest, err)
+		return nil, fmt.Errorf("search %s→%s: %w", origin, dest, err)
 	}
-	return resp.toResult(origin, dest, depart, ret, page, pageSize, c.Brand, skysalesBaseURL), nil
+
+	flights := filterVuelingRows(rows, origin, dest, depart, ret)
+	total := len(flights)
+	start := (page - 1) * pageSize
+	if start > total {
+		start = total
+	}
+	end := start + pageSize
+	if end > total {
+		end = total
+	}
+	pageFlights := flights[start:end]
+
+	return &FlightSearchResult{
+		Query:    fmt.Sprintf("%s-%s %s", origin, dest, depart),
+		Origin:   origin,
+		Dest:     dest,
+		Depart:   depart,
+		Return:   ret,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
+		HasNext:  total > page*pageSize,
+		Flights:  pageFlights,
+		Brand:    c.Brand,
+		Source:   "flightprice",
+	}, nil
 }
 
-func (c *Client) searchBIT(fullURL string, out *vuelingSearchResponse) error {
+func (c *Client) getJSON(fullURL string, out any) error {
 	c.Throttle()
 	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
 	if err != nil {
@@ -61,9 +88,8 @@ func (c *Client) searchBIT(fullURL string, out *vuelingSearchResponse) error {
 	}
 	c.SetAPIHeaders(req)
 	req.Header.Set("accept", "application/json, text/plain, */*")
-	req.Header.Set("x-requested-with", "XMLHttpRequest")
-	req.Header.Set("origin", skysalesBaseURL)
-	req.Header.Set("referer", skysalesBaseURL+"/ScheduleSelect.aspx?culture=es-ES")
+	req.Header.Set("origin", BaseURL)
+	req.Header.Set("referer", BaseURL+"/")
 	c.ApplyCookie(req)
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
@@ -80,41 +106,80 @@ func (c *Client) searchBIT(fullURL string, out *vuelingSearchResponse) error {
 	return nil
 }
 
-type vuelingSearchResponse struct {
-	Flights []struct {
-		ID           string  `json:"id"`
-		FlightNumber string  `json:"flightNumber"`
-		Origin       string  `json:"origin"`
-		Destination  string  `json:"destination"`
-		Departure    string  `json:"departure"`
-		Arrival      string  `json:"arrival"`
-		Duration     string  `json:"duration"`
-		Price        float64 `json:"price"`
-		Currency     string  `json:"currency"`
-	} `json:"flights"`
-	Total int `json:"total"`
+type vuelingFlightPriceRow struct {
+	ArrivalDate      string  `json:"ArrivalDate"`
+	ArrivalStation   string  `json:"ArrivalStation"`
+	DepartureDate    string  `json:"DepartureDate"`
+	DepartureStation string  `json:"DepartureStation"`
+	FlightID         string  `json:"FlightID"`
+	Price            float64 `json:"Price"`
+	IsInvalidPrice   bool    `json:"IsInvalidPrice"`
 }
 
-func (r *vuelingSearchResponse) toResult(origin, dest, depart, ret string, page, pageSize int, brand, base string) *FlightSearchResult {
-	flights := make([]FlightHit, 0, len(r.Flights))
-	for _, f := range r.Flights {
-		flights = append(flights, FlightHit{
-			ID: f.ID, Airline: "Vueling", FlightNumber: f.FlightNumber,
-			Origin: f.Origin, Destination: f.Destination,
-			Depart: f.Departure, Arrive: f.Arrival, Duration: f.Duration,
-			Price: fmt.Sprintf("%.2f", f.Price), Currency: f.Currency,
-			BookingURL: skysalesBaseURL + "/ScheduleSelect.aspx?culture=es-ES",
+func filterVuelingRows(rows []vuelingFlightPriceRow, origin, dest, depart, ret string) []FlightHit {
+	departDay := depart
+	var out []FlightHit
+	for _, r := range rows {
+		if r.IsInvalidPrice || r.Price <= 0 {
+			continue
+		}
+		if !strings.EqualFold(r.DepartureStation, origin) || !strings.EqualFold(r.ArrivalStation, dest) {
+			continue
+		}
+		dep := strings.Split(r.DepartureDate, "T")[0]
+		if dep != departDay {
+			continue
+		}
+		arr := r.ArrivalDate
+		if i := strings.Index(arr, "T"); i > 0 {
+			arr = arr[i+1:]
+			if len(arr) >= 5 {
+				arr = arr[:5]
+			}
+		}
+		depTime := r.DepartureDate
+		if i := strings.Index(depTime, "T"); i > 0 {
+			depTime = depTime[i+1:]
+			if len(depTime) >= 5 {
+				depTime = depTime[:5]
+			}
+		}
+		fn := "VY" + strings.TrimLeft(r.FlightID, "0")
+		if strings.HasPrefix(strings.ToUpper(r.FlightID), "VY") {
+			fn = strings.ToUpper(r.FlightID)
+		}
+		out = append(out, FlightHit{
+			ID:           fmt.Sprintf("%s-%s-%s-%s", origin, dest, dep, r.FlightID),
+			Airline:      "Vueling",
+			FlightNumber: fn,
+			Origin:       origin,
+			Destination:  dest,
+			Depart:       depTime,
+			Arrive:       arr,
+			Price:        fmt.Sprintf("%.2f", r.Price),
+			Currency:     "EUR",
+			BookingURL:   vuelingBookingURL(origin, dest, depart, ret, fn),
 		})
 	}
-	total := r.Total
-	if total == 0 {
-		total = len(flights)
+	return out
+}
+
+func vuelingBookingURL(origin, dest, depart, ret, flightNum string) string {
+	q := url.Values{}
+	q.Set("o", origin)
+	q.Set("d", dest)
+	q.Set("dd", depart)
+	if ret != "" {
+		q.Set("rd", ret)
+		q.Set("dt", "2")
+	} else {
+		q.Set("dt", "1")
 	}
-	return &FlightSearchResult{
-		Query: fmt.Sprintf("%s-%s %s", origin, dest, depart),
-		Origin: origin, Dest: dest, Depart: depart, Return: ret,
-		Total: total, Page: page, PageSize: pageSize,
-		HasNext: total > page*pageSize, Flights: flights,
-		Brand: brand, Source: "bit",
+	q.Set("adt", "1")
+	q.Set("c", "es-ES")
+	q.Set("cur", "EUR")
+	if flightNum != "" {
+		q.Set("ofn", flightNum)
 	}
+	return skysalesBaseURL + "/booking?" + q.Encode()
 }

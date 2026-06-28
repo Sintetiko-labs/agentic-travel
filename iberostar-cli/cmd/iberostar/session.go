@@ -97,12 +97,14 @@ func runSessionDoctor(args []string) error {
 
 	cl := client.New("")
 	res := session.Doctor(session.DoctorOptions{
-		Slug:        "iberostar",
-		EnvPrefix:   cl.EnvPrefix,
-		BaseURL:     client.BaseURL,
-		Cookie:      cl.Cookie,
-		ProbeURL:    "https://www.iberostar.com/api/graphql",
-		ProbeMethod: "POST",
+		Slug:             "iberostar",
+		EnvPrefix:        cl.EnvPrefix,
+		BaseURL:          client.BaseURL,
+		Cookie:           cl.Cookie,
+		ProbeURL:         "https://www.iberostar.com/api/graphql",
+		ProbeMethod:      "POST",
+		ProbeBody:        `{"query":"query { searchHotels(query:\"Madrid\", page:1, size:1) { total } }"}`,
+		ProbeContentType: "application/json",
 	})
 	if cf.jsonOut {
 		return emitJSON(res)

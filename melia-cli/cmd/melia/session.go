@@ -97,12 +97,14 @@ func runSessionDoctor(args []string) error {
 
 	cl := client.New("")
 	res := session.Doctor(session.DoctorOptions{
-		Slug:        "melia",
-		EnvPrefix:   cl.EnvPrefix,
-		BaseURL:     client.BaseURL,
-		Cookie:      cl.Cookie,
-		ProbeURL:    "https://www.melia.com/services/search/hotels/v2/search",
-		ProbeMethod: "POST",
+		Slug:             "melia",
+		EnvPrefix:        cl.EnvPrefix,
+		BaseURL:          client.BaseURL,
+		Cookie:           cl.Cookie,
+		ProbeURL:         "https://www.melia.com/services/search/hotels/v2/search",
+		ProbeMethod:      "POST",
+		ProbeBody:        `{"text":"Madrid","language":"es","market":"ES","page":1,"size":1}`,
+		ProbeContentType: "application/json",
 	})
 	if cf.jsonOut {
 		return emitJSON(res)

@@ -24,12 +24,17 @@ const (
 
 // DoctorOptions configures a session health probe.
 type DoctorOptions struct {
-	Slug        string
-	EnvPrefix   string
-	BaseURL     string
-	Cookie      string
-	ProbeURL    string
-	ProbeMethod string
+	Slug              string
+	EnvPrefix         string
+	BaseURL           string
+	Cookie            string
+	ProbeURL          string
+	ProbeMethod       string
+	ProbeBody         string
+	ProbeContentType  string
+	ProbeOrigin       string
+	ProbeReferer      string
+	SessionOptional   bool // probe success is enough without WAF cookies
 }
 
 // DoctorResult is the structured outcome of session doctor.
@@ -69,61 +74,119 @@ func Doctor(opts DoctorOptions) DoctorResult {
 	if slug == "" {
 		slug = strings.ToLower(strings.ReplaceAll(opts.EnvPrefix, "_", "-"))
 	}
+	cookieOK := cookie != "" && akamai.SessionReady(cookie)
 	if cookie == "" {
-		res.Status = DoctorMissing
-		res.Message = "no saved session — APIs behind Akamai/Incapsula need headed Chrome cookies"
-		res.NextStep = slug + " session chrome --wait --timeout 3m"
-		return res
-	}
-	if !akamai.SessionReady(cookie) {
+		if !opts.SessionOptional {
+			res.Status = DoctorMissing
+			res.Message = "no saved session — APIs behind Akamai/Incapsula need headed Chrome cookies"
+			res.NextStep = slug + " session chrome --wait --timeout 3m"
+			if opts.ProbeURL == "" {
+				return res
+			}
+		}
+	} else if !akamai.SessionReady(cookie) {
 		res.Status = DoctorIncomplete
 		res.Message = "WAF cookies incomplete — need _abck+bm_sz (Akamai), cf_clearance (Cloudflare), or Incapsula pair"
 		res.NextStep = slug + " session chrome --wait --timeout 3m"
-		return res
+		if opts.ProbeURL == "" {
+			return res
+		}
 	}
 	if opts.ProbeURL == "" {
-		res.Status = DoctorOK
-		res.Message = "WAF cookies present — run search to verify API access"
+		if cookieOK {
+			res.Status = DoctorOK
+			res.Message = "WAF cookies present — run search to verify API access"
+			return res
+		}
+		res.Status = DoctorIncomplete
 		return res
 	}
 	method := strings.ToUpper(strings.TrimSpace(opts.ProbeMethod))
 	if method == "" {
 		method = http.MethodGet
 	}
-	status, err := probeHTTP(method, opts.ProbeURL, cookie)
+	status, err := probeHTTP(probeRequest{
+		method: method, url: opts.ProbeURL, cookie: cookie,
+		body: opts.ProbeBody, contentType: opts.ProbeContentType,
+		origin: opts.ProbeOrigin, referer: opts.ProbeReferer, baseURL: opts.BaseURL,
+	})
 	res.ProbeHTTPStatus = status
 	if err != nil {
 		res.Status = DoctorAPIError
 		res.Message = fmt.Sprintf("probe failed: %v", err)
-		res.NextStep = slug + " session chrome --wait --timeout 3m"
+		if !opts.SessionOptional {
+			res.NextStep = slug + " session chrome --wait --timeout 3m"
+		}
 		return res
 	}
-	if status == 403 || status == 401 {
-		if akamai.IsDenied(status, "") {
-			res.Status = DoctorBlocked
-			res.Message = fmt.Sprintf("API probe blocked (HTTP %d) — cookies may be stale", status)
+	switch {
+	case status >= 200 && status < 300:
+		res.Status = DoctorOK
+		if cookieOK {
+			res.Message = fmt.Sprintf("session OK — cookies present, probe HTTP %d", status)
+		} else if opts.SessionOptional {
+			res.Message = fmt.Sprintf("API OK (HTTP %d) — session optional for this brand", status)
+		} else {
+			res.Message = fmt.Sprintf("probe HTTP %d but WAF cookies missing", status)
+			res.Status = DoctorMissing
 			res.NextStep = slug + " session chrome --wait --timeout 3m"
-			return res
+		}
+	case status == 403 || status == 401:
+		res.Status = DoctorBlocked
+		if cookieOK {
+			res.Message = fmt.Sprintf("API probe blocked (HTTP %d) — cookies may be stale", status)
+		} else {
+			res.Message = fmt.Sprintf("API probe blocked (HTTP %d) — need headed Chrome session", status)
+		}
+		res.NextStep = slug + " session chrome --wait --timeout 3m"
+	case status == 404 || status == 405:
+		res.Status = DoctorAPIError
+		res.Message = fmt.Sprintf("probe endpoint not found (HTTP %d) — check API path in client", status)
+	default:
+		res.Status = DoctorAPIError
+		res.Message = fmt.Sprintf("unexpected probe status HTTP %d", status)
+		if status >= 500 {
+			res.NextStep = "retry later or " + slug + " session chrome --wait --timeout 3m"
 		}
 	}
-	if status >= 200 && status < 500 {
-		res.Status = DoctorOK
-		res.Message = fmt.Sprintf("session OK — probe HTTP %d", status)
-		return res
-	}
-	res.Status = DoctorAPIError
-	res.Message = fmt.Sprintf("unexpected probe status HTTP %d", status)
 	return res
 }
 
-func probeHTTP(method, url, cookie string) (int, error) {
-	req, err := http.NewRequest(method, url, nil)
+type probeRequest struct {
+	method, url, cookie, body, contentType, origin, referer, baseURL string
+}
+
+func probeHTTP(p probeRequest) (int, error) {
+	var body io.Reader
+	if p.body != "" {
+		body = strings.NewReader(p.body)
+	}
+	req, err := http.NewRequest(p.method, p.url, body)
 	if err != nil {
 		return 0, err
 	}
-	req.Header.Set("cookie", cookie)
+	if p.cookie != "" {
+		req.Header.Set("cookie", p.cookie)
+	}
 	req.Header.Set("accept", "application/json, text/plain, */*")
 	req.Header.Set("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
+	if p.contentType != "" {
+		req.Header.Set("content-type", p.contentType)
+	}
+	origin := p.origin
+	if origin == "" {
+		origin = strings.TrimRight(p.baseURL, "/")
+	}
+	if origin != "" {
+		req.Header.Set("origin", origin)
+	}
+	referer := p.referer
+	if referer == "" && p.baseURL != "" {
+		referer = strings.TrimRight(p.baseURL, "/") + "/"
+	}
+	if referer != "" {
+		req.Header.Set("referer", referer)
+	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return 0, err
