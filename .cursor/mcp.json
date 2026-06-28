@@ -14,9 +14,9 @@
     },
     "duffel": {
       "command": "node",
-      "args": ["/Users/fbelchi/github/agentic-travel/mcp/vendor/duffel-mcp/dist/index.js"],
+      "args": ["${workspaceFolder}/mcp/vendor/duffel-mcp/dist/index.js"],
       "env": {
-        "DUFFEL_ACCESS_TOKEN": "duffel_test_REPLACE_ME"
+        "DUFFEL_ACCESS_TOKEN": "${env:DUFFEL_ACCESS_TOKEN}"
       }
     }
   }

@@ -1,6 +1,6 @@
 # Guía para agentes de IA — agentic-travel
 
-Documentación orientada a **agentes autónomos** que orquestan búsqueda de hoteles y vuelos mediante **MCP oficial (primero)** y **CLIs de este monorepo (fallback / marcas)**.
+Documentación orientada a **agentes autónomos** que orquestan búsqueda de hoteles y vuelos mediante **MCP oficial (primero)**, **browser MCP (partials WAF)** y **CLIs de este monorepo (marcas / cadenas regionales)**.
 
 > **No oficial (CLIs).** APIs reverse-engineered. Puede romperse cuando el proveedor cambie el sitio. **Ejecutar solo en local** (IP residencial).
 
@@ -8,37 +8,63 @@ Documentación orientada a **agentes autónomos** que orquestan búsqueda de hot
 
 ## MCP-first (loop 7)
 
-**Regla por defecto:** intenta **MCP** para descubrimiento agregado; usa **CLI** cuando el usuario nombra una marca, cuando MCP no cubre el inventario, o cuando necesitas tarifas directas / sesión WAF.
+**Regla por defecto:** intenta **MCP agregado** para descubrimiento; usa **CLI** cuando el usuario nombra una marca española, cuando MCP no cubre el inventario, o cuando necesitas tarifas directas / sesión WAF.
 
 | Intención | Herramienta primaria | Fallback |
 |-----------|---------------------|----------|
-| Vuelo ciudad→ciudad sin aerolínea | **Duffel MCP** | CLI LCC (`ryanair`, `vueling`, `volotea`, `binter`) |
-| Hotel por ciudad / POI | **Amadeus** o **Booking.com MCP** | CLI cadena española (`melia`, `barcelo`, `nh`, …) |
+| Vuelo ciudad→ciudad sin aerolínea | **Kiwi MCP** (`search-flight`) o **Duffel MCP** | CLI LCC (`ryanair`, `vueling`, `volotea`, `binter`) |
+| Hotel por ciudad / cadenas globales | **Gondola MCP** (`search_hotels`) o **Duffel** `search_stays` | CLI cadena española (`melia`, `barcelo`, `nh`, …) |
 | "Solo Meliá / Ryanair / …" | **CLI** (`groups.json` → slug) | MCP solo si CLI falla |
-| Disponibilidad / precio miembro | **CLI** | MCP no sustituye BFF de marca |
-| Reserva / orden | MCP con contrato (Duffel/Amadeus/Booking) | CLI entrega `booking_url` |
+| Partial CLI + doctor `blocked` (Akamai) | **Browser MCP** (`cursor-ide-browser`) | `{slug} session chrome --wait` en Mac con Chrome |
+| Disponibilidad / precio miembro | **CLI** | Gondola puede cubrir Marriott/Hilton/Accor; MCP no sustituye BFF Meliá/NH |
+| Reserva / orden | MCP con contrato (Kiwi/Duffel/Gondola links) | CLI entrega `booking_url` |
 
-Arquitectura completa, costes y matriz de fiabilidad: **[docs/MCP_VS_CLI.md](docs/MCP_VS_CLI.md)**.
+Arquitectura completa: **[docs/MCP_VS_CLI.md](docs/MCP_VS_CLI.md)** · inventario: **[docs/MCP_TRAVEL_INVENTORY.md](docs/MCP_TRAVEL_INVENTORY.md)**.
 
 ### Variables de entorno MCP (orquestador)
 
 ```bash
-DUFFEL_API_KEY=...          # vuelos
-AMADEUS_CLIENT_ID=...       # vuelos + hoteles GDS
+DUFFEL_ACCESS_TOKEN=...     # Duffel MCP — vuelos + stays (test: duffel_test_…)
+AMADEUS_CLIENT_ID=...       # opcional — Amadeus community MCP
 AMADEUS_CLIENT_SECRET=...
-BOOKING_PARTNER_ID=...      # hoteles agregador (si aplica)
+EXPEDIA_API_KEY=...         # opcional — Expedia recommendations MCP
+BOOKING_PARTNER_ID=...      # opcional — Booking.com partner (cuando haya MCP público)
 ```
 
-Sin claves MCP → degradar a CLI donde exista implementación **live** o **partial**; no inventar ofertas.
+Kiwi (`https://mcp.kiwi.com`) y Gondola (`https://mcp.gondola.ai/mcp`) **no requieren clave**.
 
-### Flujo híbrido recomendado
+Configuración Cursor: [`.cursor/mcp.json`](.cursor/mcp.json) · guía: [docs/MCP_SETUP.md](docs/MCP_SETUP.md).
+
+Sin claves Duffel → usar **Kiwi** para vuelos agregados y **Gondola** para hoteles de cadena; degradar a CLI donde exista implementación **live** o **partial**; no inventar ofertas.
+
+### Browser MCP — partials con WAF (melia, nh, marriott)
+
+Cuando `{slug} session doctor --json` devuelve **`blocked`** y no hay cookies en `~/.{slug}/cookies.json`, usa **`cursor-ide-browser`** (habilitado en `.cursor/mcp.json`) antes de rendirte:
+
+```
+browser_navigate → esperar (Akamai) → browser_snapshot → extraer JSON de red o DOM
+```
+
+| Marca | URL inicio | Filtro red / extracción |
+|-------|------------|-------------------------|
+| **melia** | `https://www.melia.com/es/hoteles` | POST `…/services/search/hotels/v2/search` |
+| **nh** | `https://www.nh-hotels.com/es/hoteles/espana/madrid` | GET `…/nh/es/api/v1/hotels/search` |
+| **marriott** | `findHotels.mi` con ciudad + fechas | JSON de red o DOM / JSON-LD |
+
+**Cadenas españolas regionales** (Barceló, H10, Hotusa, Palladium, Catalonia, …): seguir en **CLI** — agregadores MCP no cubren inventario miembro.
+
+### Flujo híbrido recomendado (MCP-first)
 
 1. Parsear destino, fechas y **marca explícita** (si hay).
-2. Sin marca → MCP search (vuelos y/o hoteles).
-3. Con marca o MCP vacío → `{slug} search --json` (ver `scripts/groups.json`).
-4. Normalizar a tipos `travelkit` (`hotels[]`, `flights[]` — nunca `null`).
-5. Detalle / availability → MCP `offer_id` si existe; si no, CLI `read` / `availability`.
-6. Devolver `booking_url` de la capa que respondió.
+2. **Sin marca** → MCP agregado: vuelos **Kiwi** (o Duffel si hay token); hoteles **Gondola** (cadenas) o Duffel `search_stays` (genérico).
+3. **Con marca española** (Meliá, Barceló, NH, Ryanair, …) → **CLI** `{slug} search --json` (ver `scripts/groups.json`).
+4. Si doctor = `blocked` en marca partial → **browser MCP** o `session chrome`.
+5. MCP vacío en ruta agregada → CLI LCC o cadena según `scripts/groups.json`.
+6. Normalizar a tipos `travelkit` (`hotels[]`, `flights[]` — nunca `null`).
+7. Detalle / availability → MCP `offer_id` / booking link si existe; si no, CLI `read` / `availability`.
+8. Devolver `booking_url` de la capa que respondió.
+
+Smoke MAD→London: `./scripts/mcp-smoke-madrid-london.sh`
 
 ---
 
@@ -144,5 +170,6 @@ replace github.com/fbelchi/travelkit => ../travelkit
 ## Estado del proyecto (loop 6 → 7)
 
 - **18 live** + **7 partial** CLIs prioritarios (ver README)
-- MCP: documentado en [docs/MCP_VS_CLI.md](docs/MCP_VS_CLI.md); adaptadores `travelkit/mcp/` — roadmap loop 7
-- Prioridad loop 7: router híbrido MCP+CLI, registry `preferred_tool` en `groups.json`
+- MCP integrados: **Kiwi**, **Gondola**, **Duffel**, **cursor-ide-browser** — [docs/MCP_SETUP.md](docs/MCP_SETUP.md)
+- Arquitectura híbrida: [docs/MCP_VS_CLI.md](docs/MCP_VS_CLI.md) · inventario loop 7: [docs/MCP_TRAVEL_INVENTORY.md](docs/MCP_TRAVEL_INVENTORY.md)
+- Prioridad loop 7: router híbrido MCP+CLI+browser, registry `preferred_tool` en `groups.json`

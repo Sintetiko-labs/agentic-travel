@@ -4,14 +4,21 @@ Official travel APIs exposed to AI agents via [Model Context Protocol](https://m
 
 ## Selected server: [duffel-mcp](https://github.com/bokangsibolla/duffel-mcp)
 
-After comparing public MCP servers (Duffel, Amadeus, Kiwi, multi-API aggregators), **Duffel** is the recommended integration for `agentic-travel`:
+After comparing public MCP servers (Duffel, Amadeus, Kiwi, Gondola, multi-API aggregators), **loop 7** integrates:
+
+| Server | Config | Auth | Best for |
+|--------|--------|------|----------|
+| **kiwi-com-flight-search** | `https://mcp.kiwi.com` | None | Flight metasearch, booking links |
+| **gondola** | `https://mcp.gondola.ai/mcp` | None | Marriott/Hilton/Accor/… hotel search |
+| **duffel** (vendored) | local Node | `DUFFEL_ACCESS_TOKEN` | Multi-carrier flights + stays |
+| **cursor-ide-browser** | built-in | None | WAF partial CLIs |
 
 | Server | Pros | Cons |
 |--------|------|------|
-| **duffel-mcp** (chosen) | Read-only by design; flights + stays; free test tokens; modern REST API; no OAuth dance | Not published reliably on npm yet — vendored via `install.sh` |
-| [HaroldLeo/amadeus-mcp](https://github.com/HaroldLeo/amadeus-mcp) | Broad Amadeus coverage (flights, hotels, tours) | Amadeus Self-Service **shuts down July 2026**; OAuth2; 26+ tools (heavy) |
-| [lev-corrupted/travel-mcp-server](https://github.com/lev-corrupted/travel-mcp-server) | Amadeus + AviationStack flight tracking | Same Amadeus sunset; extra AviationStack key |
-| Kiwi / Skyscanner MCP | — | No maintained open-source MCP with API-key auth found |
+| **duffel-mcp** (vendored) | Read-only; flights + stays; free test tokens | LCC gaps; requires install |
+| **Kiwi MCP** (remote) | Official; no key; flexible dates | Search only; less LCC depth than CLIs |
+| **Gondola MCP** (remote) | Major chain rates + points | No Spanish regional chains |
+| [HaroldLeo/amadeus-mcp](https://github.com/HaroldLeo/amadeus-mcp) | Broad Amadeus coverage | Amadeus Self-Service **shuts down July 2026** |
 
 Duffel complements the repo's **reverse-engineered airline CLIs** (Ryanair, Vueling, …): MCP returns **GDS/NDC aggregated offers** across carriers; CLIs return **airline-direct** fares and booking URLs.
 
@@ -50,9 +57,9 @@ mcp/
 
 | Scenario | Use |
 |----------|-----|
-| Multi-carrier MAD→London comparison | **Duffel MCP** (`search_flights`) |
+| Multi-carrier MAD→London comparison | **Kiwi MCP** or **Duffel MCP** (`search_flights`) |
 | Ryanair-specific fare + booking URL | **`ryanair` CLI** |
-| Akamai/WAF-protected brand sites | **Session CLIs** (`session chrome`) |
-| Hotels UK (Travelodge, Hilton) | **hotel CLIs** or Duffel `search_stays` |
+| Akamai/WAF-protected brand sites | **`cursor-ide-browser`** or session CLIs |
+| Hotels UK (Marriott, Hilton, Accor) | **Gondola MCP** or hotel CLIs / Duffel `search_stays` |
 
 Full reliability notes: [docs/MCP_RELIABILITY.md](../docs/MCP_RELIABILITY.md).
