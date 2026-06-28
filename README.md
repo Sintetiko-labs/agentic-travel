@@ -291,6 +291,16 @@ go build -o melia ./cmd/melia
 ./melia search --json Madrid
 ```
 
+## Fast parallel search
+
+Sub-15s multi-source Madrid–London (and similar) queries: run the wave orchestrator — parallel MCP + airline/hotel CLIs, merged JSON output. Details: [docs/FAST_SEARCH.md](docs/FAST_SEARCH.md), [orchestrator/README.md](orchestrator/README.md).
+
+```bash
+./scripts/wave-search-madrid-london.sh
+```
+
+Optional env: `WAVE_FROM`, `WAVE_DEPART`, `WAVE_CHECK_IN`, `WAVE_CHECK_OUT`, `WAVE_OUT`, `DUFFEL_ACCESS_TOKEN` (enables async Duffel MCP leg).
+
 ## Verificación
 
 ```bash
