@@ -179,8 +179,9 @@ func (c *Client) DoJSON(req *http.Request, out any) error {
 	}
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return &HTTPError{Status: resp.StatusCode, Body: Truncate(string(body), 300)}
+	body, status := c.maybeChromeFallback(req, resp.StatusCode, body)
+	if status < 200 || status >= 300 {
+		return &HTTPError{Status: status, Body: Truncate(string(body), 300)}
 	}
 	if out != nil && len(body) > 0 {
 		if err := json.Unmarshal(body, out); err != nil {
@@ -206,10 +207,58 @@ func (c *Client) FetchHTML(url string) (string, error) {
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
 	text := string(body)
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return "", &HTTPError{Status: resp.StatusCode, Body: Truncate(text, 300)}
+	textBody, status := c.maybeChromeFallback(req, resp.StatusCode, body)
+	text = string(textBody)
+	if status < 200 || status >= 300 {
+		return "", &HTTPError{Status: status, Body: Truncate(text, 300)}
 	}
 	return text, nil
+}
+
+
+
+// ChromePort returns the CDP debugging port for this client.
+func (c *Client) ChromePort() int {
+	port := transport.CDPPortFromEnv()
+	if p := strings.TrimSpace(os.Getenv(c.EnvPrefix + "_CHROME_PORT")); p != "" {
+		var n int
+		if _, err := fmt.Sscanf(p, "%d", &n); err == nil && n > 0 {
+			port = n
+		}
+	}
+	return port
+}
+
+// ChromeFetchEnabled reports whether CDP fetch fallback can run.
+func (c *Client) ChromeFetchEnabled() bool {
+	if c.Cookie == "" {
+		return false
+	}
+	return transport.CDPAvailable(c.ChromePort())
+}
+
+// FetchViaChromeReq runs fetch() in Chrome using headers and body from req.
+func (c *Client) FetchViaChromeReq(req *http.Request) (*http.Response, error) {
+	if !c.ChromeFetchEnabled() {
+		return nil, fmt.Errorf("chrome fetch unavailable — start Chrome with --remote-debugging-port=%d", c.ChromePort())
+	}
+	c.ApplyCookie(req)
+	return transport.FetchViaChrome(c.ChromePort(), req, c.HTTP.Transport)
+}
+
+
+
+func (c *Client) maybeChromeFallback(req *http.Request, status int, body []byte) ([]byte, int) {
+	if status != http.StatusForbidden || !c.ChromeFetchEnabled() {
+		return body, status
+	}
+	resp, err := c.FetchViaChromeReq(req)
+	if err != nil || resp == nil {
+		return body, status
+	}
+	defer resp.Body.Close()
+	b, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
+	return b, resp.StatusCode
 }
 
 // HTTPError is a non-2xx response.
