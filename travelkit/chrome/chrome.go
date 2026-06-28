@@ -84,7 +84,7 @@ func Capture(opts Options) (Result, error) {
 				return Result{
 					Cookie: cookieHeader, Ready: false,
 					HasAbck: report.HasAbck, HasBmSz: report.HasBmSz,
-				}, fmt.Errorf("timeout (%s) waiting for WAF cookies (_abck+bm_sz, cf_clearance, or Incapsula) on %s — browse the site in headed Chrome",
+				}, fmt.Errorf("timeout (%s) waiting for session cookies on %s — browse the site in headed Chrome",
 					opts.WaitTimeout, opts.BaseURL)
 			}
 			return Result{}, fmt.Errorf("timeout (%s) waiting for cookies on %s", opts.WaitTimeout, opts.BaseURL)
@@ -100,7 +100,11 @@ func captureReady(opts Options, cookie string) bool {
 	if opts.SyncOnly || !opts.Wait {
 		return true
 	}
-	return akamai.SessionReady(cookie)
+	if akamai.SessionReady(cookie) {
+		return true
+	}
+	slug := strings.ToLower(strings.ReplaceAll(opts.EnvPrefix, "_", "-"))
+	return !akamai.NeedsAkamaiWAF(slug) && akamai.HasSessionMaterial(cookie)
 }
 
 func cookieURLs(opts Options) []string {

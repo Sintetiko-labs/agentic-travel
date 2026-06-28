@@ -18,7 +18,7 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 	}
 	query = strings.TrimSpace(query)
 	payload := map[string]any{
-		"query": `query Search($q:String!,$page:Int!,$size:Int!){searchHotels(query:$q,page:$page,size:$size){total hasNext hotels{id name brand city country stars minPrice currency url image}}}`,
+		"query": `query SearchHotels($q:String!,$page:Int!,$size:Int!){searchHotels(query:$q,page:$page,size:$size){total hasNext hotels{id name brand city country stars minPrice currency url image}}}`,
 		"variables": map[string]any{
 			"q": query, "page": page, "size": pageSize,
 		},
@@ -49,7 +49,7 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 			Message string `json:"message"`
 		} `json:"errors"`
 	}
-	if err := c.PostJSON(c.BaseURL+"/api/graphql", payload, &resp); err != nil {
+	if err := c.postGraphQL(payload, &resp); err != nil {
 		if he, ok := err.(*tkbase.HTTPError); ok && akamai.IsDenied(he.Status, he.Body) {
 			return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("iberostar"))
 		}

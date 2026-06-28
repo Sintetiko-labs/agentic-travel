@@ -37,21 +37,21 @@ Use `--brand` to select a sub-brand when searching.
 
 ## Session chrome
 
-Capture Akamai/WAF cookies from Chrome (headed browser required):
+Capture site cookies from headed Chrome (`_session_id` and market cookies; no Akamai pair on Iberostar):
 
 ```bash
-iberostar session chrome          # open Chrome, wait for cookies, save to ~/.iberostar/cookies.json
-iberostar session sync            # sync cookies from an already-running Chrome on :9222
-iberostar session chrome --no-wait  # immediate capture
+iberostar session chrome --wait --timeout 3m
+iberostar session sync
+iberostar session doctor --json    # POST GraphQL probe
 ```
 
-Manual Chrome launch (if not using `--replace`):
+Manual Chrome launch:
 
 ```bash
 /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
   --remote-debugging-port=9222 \
   --user-data-dir=$HOME/.iberostar/chrome-profile \
-  https://example.com
+  https://www.iberostar.com/es/hoteles
 ```
 
 Cookies load automatically on `search` / `read` / `availability`. Override with `IBEROSTAR_COOKIE`.
@@ -64,6 +64,6 @@ Use `IBEROSTAR_REQUEST_DELAY=60s` for airlines (~1 req/min). Hotels: `2s` defaul
 
 | Feature | Status |
 |---------|--------|
-| `search` | **partial** — GraphQL `/api/graphql`; needs `IBEROSTAR_COOKIE` |
+| `search` | **partial** — GraphQL `/api/graphql` (`searchHotels`); needs `IBEROSTAR_COOKIE` |
 | `read` / `availability` | implemented |
 | Rate limit | `IBEROSTAR_REQUEST_DELAY` (~2s) |

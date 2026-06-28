@@ -42,13 +42,13 @@ func runSessionChrome(args []string, syncOnly bool) error {
 	}
 
 	cl := client.New("")
-	startURL := "https://www.nh-hotels.com/es"
+	startURL := "https://www.nh-hotels.com/es/hoteles"
 	if !syncOnly {
 		fmt.Fprintln(os.Stderr, "Capturing session from headed Chrome…")
 		fmt.Fprintf(os.Stderr, "  Save to: %s\n", cl.CookiesFilePath())
 		fmt.Fprintf(os.Stderr, "  URL: %s\n", startURL)
 		if doWait {
-			fmt.Fprintln(os.Stderr, "  Waiting for _abck+bm_sz (or WAF equivalent) — browse the site if needed")
+			fmt.Fprintln(os.Stderr, "  Waiting for _abck+bm_sz — browse nh-hotels.com until doctor passes")
 		}
 	}
 
@@ -101,8 +101,9 @@ func runSessionDoctor(args []string) error {
 		EnvPrefix:   cl.EnvPrefix,
 		BaseURL:     client.BaseURL,
 		Cookie:      cl.Cookie,
-		ProbeURL:    "https://www.nh-hotels.com/nh/es/api/v1/hotels/search?query=Madrid&page=1&size=1",
-		ProbeMethod: "GET",
+		ProbeURL:     "https://www.nh-hotels.com/nh/es/api/v1/hotels/search?query=Madrid&locale=es&page=1&size=1",
+		ProbeMethod:  "GET",
+		ProbeReferer: client.BaseURL + "/es/",
 	})
 	if cf.jsonOut {
 		return emitJSON(res)
@@ -112,8 +113,8 @@ func runSessionDoctor(args []string) error {
 	if res.SessionAge != "" {
 		fmt.Fprintf(os.Stderr, "age:    %s\n", res.SessionAge)
 	}
-	fmt.Fprintf(os.Stderr, "cookies: abck=%v bm_sz=%v cf=%v incap=%v\n",
-		res.Cookies.HasAbck, res.Cookies.HasBmSz, res.Cookies.HasCF, res.Cookies.HasIncapsula)
+	fmt.Fprintf(os.Stderr, "cookies: abck=%v bm_sz=%v cf=%v incap=%v material=%v\n",
+		res.Cookies.HasAbck, res.Cookies.HasBmSz, res.Cookies.HasCF, res.Cookies.HasIncapsula, res.Cookies.HasMaterial)
 	if res.ProbeHTTPStatus > 0 {
 		fmt.Fprintf(os.Stderr, "probe:  HTTP %d\n", res.ProbeHTTPStatus)
 	}

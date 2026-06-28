@@ -18,7 +18,7 @@ func (c *Client) Availability(hotelID, checkIn, checkOut string, guests, rooms i
 			} `json:"hotelAvailability"`
 		} `json:"data"`
 	}
-	if err := c.PostJSON(c.BaseURL+"/api/graphql", payload, &resp); err != nil {
+	if err := c.postGraphQL(payload, &resp); err != nil {
 		return nil, fmt.Errorf("availability: %w — try IBEROSTAR_COOKIE", err)
 	}
 	a := resp.Data.HotelAvailability

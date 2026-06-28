@@ -85,9 +85,19 @@ func Doctor(opts DoctorOptions) DoctorResult {
 			}
 		}
 	} else if !akamai.SessionReady(cookie) {
-		res.Status = DoctorIncomplete
-		res.Message = "WAF cookies incomplete — need _abck+bm_sz (Akamai), cf_clearance (Cloudflare), or Incapsula pair"
-		res.NextStep = slug + " session chrome --wait --timeout 3m"
+		if akamai.NeedsAkamaiWAF(slug) {
+			res.Status = DoctorIncomplete
+			res.Message = "Akamai cookies incomplete — need _abck+bm_sz; browse nh-hotels.com in headed Chrome"
+			res.NextStep = slug + " session chrome --wait --timeout 3m"
+		} else if report.HasMaterial {
+			res.Status = DoctorIncomplete
+			res.Message = "site cookies captured — run doctor after chrome --wait to verify API probe"
+			res.NextStep = slug + " session doctor"
+		} else {
+			res.Status = DoctorIncomplete
+			res.Message = "WAF cookies incomplete — need _abck+bm_sz (Akamai), cf_clearance (Cloudflare), or Incapsula pair"
+			res.NextStep = slug + " session chrome --wait --timeout 3m"
+		}
 		if opts.ProbeURL == "" {
 			return res
 		}
@@ -105,7 +115,7 @@ func Doctor(opts DoctorOptions) DoctorResult {
 	if method == "" {
 		method = http.MethodGet
 	}
-	status, err := probeHTTP(probeRequest{
+	status, probeBody, err := probeHTTP(probeRequest{
 		method: method, url: opts.ProbeURL, cookie: cookie,
 		body: opts.ProbeBody, contentType: opts.ProbeContentType,
 		origin: opts.ProbeOrigin, referer: opts.ProbeReferer, baseURL: opts.BaseURL,
@@ -121,11 +131,25 @@ func Doctor(opts DoctorOptions) DoctorResult {
 	}
 	switch {
 	case status >= 200 && status < 300:
+		if !probeResponseOK(probeBody) {
+			res.Status = DoctorAPIError
+			res.Message = fmt.Sprintf("probe HTTP %d but response is not valid JSON — check API path/payload", status)
+			res.NextStep = slug + " session chrome --wait --timeout 3m"
+			break
+		}
 		res.Status = DoctorOK
 		if cookieOK {
 			res.Message = fmt.Sprintf("session OK — cookies present, probe HTTP %d", status)
-		} else if opts.SessionOptional {
-			res.Message = fmt.Sprintf("API OK (HTTP %d) — session optional for this brand", status)
+		} else if opts.SessionOptional || !akamai.NeedsAkamaiWAF(slug) {
+			if report.HasMaterial {
+				res.Message = fmt.Sprintf("session OK (HTTP %d) — site cookies present", status)
+			} else {
+				res.Message = fmt.Sprintf("API OK (HTTP %d) — session optional for this brand", status)
+			}
+		} else if report.HasMaterial {
+			res.Status = DoctorIncomplete
+			res.Message = fmt.Sprintf("probe HTTP %d but Akamai cookies (_abck+bm_sz) missing or stale", status)
+			res.NextStep = slug + " session chrome --wait --timeout 3m"
 		} else {
 			res.Message = fmt.Sprintf("probe HTTP %d but WAF cookies missing", status)
 			res.Status = DoctorMissing
@@ -156,14 +180,14 @@ type probeRequest struct {
 	method, url, cookie, body, contentType, origin, referer, baseURL string
 }
 
-func probeHTTP(p probeRequest) (int, error) {
+func probeHTTP(p probeRequest) (int, string, error) {
 	var body io.Reader
 	if p.body != "" {
 		body = strings.NewReader(p.body)
 	}
 	req, err := http.NewRequest(p.method, p.url, body)
 	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
 	if p.cookie != "" {
 		req.Header.Set("cookie", p.cookie)
@@ -182,18 +206,33 @@ func probeHTTP(p probeRequest) (int, error) {
 	}
 	referer := p.referer
 	if referer == "" && p.baseURL != "" {
-		referer = strings.TrimRight(p.baseURL, "/") + "/"
+		referer = strings.TrimRight(p.baseURL, "/") + "/es/"
 	}
 	if referer != "" {
 		req.Header.Set("referer", referer)
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
 	defer resp.Body.Close()
-	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 4096))
-	return resp.StatusCode, nil
+	raw, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+	return resp.StatusCode, string(raw), nil
+}
+
+func probeResponseOK(body string) bool {
+	trim := strings.TrimSpace(body)
+	if trim == "" {
+		return true
+	}
+	low := strings.ToLower(trim)
+	if strings.HasPrefix(low, "<!doctype") || strings.HasPrefix(low, "<html") {
+		return false
+	}
+	if strings.Contains(low, "access denied") || strings.Contains(low, "edgesuite.net") {
+		return false
+	}
+	return strings.HasPrefix(trim, "{") || strings.HasPrefix(trim, "[")
 }
 
 func sessionFileInfo(path string) (bool, time.Duration) {

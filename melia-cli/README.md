@@ -43,13 +43,15 @@ Use `--brand` to select a sub-brand when searching.
 
 ## Session chrome
 
-Capture Akamai/WAF cookies from Chrome (headed browser required):
+Capture browser cookies from headed Chrome (required for live BFF search; directory fallback works with site cookies):
 
 ```bash
-melia session chrome          # open Chrome, wait for cookies, save to ~/.melia/cookies.json
-melia session sync            # sync cookies from an already-running Chrome on :9222
-melia session chrome --no-wait  # immediate capture
+melia session chrome --wait --timeout 3m   # open Chrome on hotel directory, wait for cookies
+melia session sync                         # sync from Chrome already on :9222
+melia session doctor --json                # POST probe to BFF + cookie validation
 ```
+
+`--wait` blocks until site cookies are captured (Meliá does not always set Akamai `_abck`/`bm_sz`). Browse the hotel directory if the wait times out.
 
 Manual Chrome launch (if not using `--replace`):
 
@@ -57,7 +59,7 @@ Manual Chrome launch (if not using `--replace`):
 /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
   --remote-debugging-port=9222 \
   --user-data-dir=$HOME/.melia/chrome-profile \
-  https://example.com
+  https://www.melia.com/es/hoteles
 ```
 
 Cookies load automatically on `search` / `read` / `availability`. Override with `MELIA_COOKIE`.
@@ -70,6 +72,6 @@ Use `MELIA_REQUEST_DELAY=60s` for airlines (~1 req/min). Hotels: `2s` default vi
 
 | Feature | Status |
 |---------|--------|
-| `search` | **partial** — BFF `/services/search/hotels/v2/search`; needs `MELIA_COOKIE` (Akamai) |
+| `search` | **partial** — BFF `/services/search/hotels/v2/search` with directory fallback `/es/hoteles`; needs `MELIA_COOKIE` for live BFF |
 | `read` / `availability` | implemented (cookie for live) |
 | Rate limit | `MELIA_REQUEST_DELAY` (~2s) |

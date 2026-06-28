@@ -38,21 +38,21 @@ Use `--brand` to select a sub-brand when searching.
 
 ## Session chrome
 
-Capture Akamai/WAF cookies from Chrome (headed browser required):
+Capture Akamai cookies from headed Chrome (`_abck` + `bm_sz` required):
 
 ```bash
-nh session chrome          # open Chrome, wait for cookies, save to ~/.nh/cookies.json
-nh session sync            # sync cookies from an already-running Chrome on :9222
-nh session chrome --no-wait  # immediate capture
+nh session chrome --wait --timeout 3m   # browse nh-hotels.com until doctor passes
+nh session sync
+nh session doctor --json                # GET probe with locale=es
 ```
 
-Manual Chrome launch (if not using `--replace`):
+Manual Chrome launch:
 
 ```bash
 /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
   --remote-debugging-port=9222 \
   --user-data-dir=$HOME/.nh/chrome-profile \
-  https://example.com
+  https://www.nh-hotels.com/es/hoteles
 ```
 
 Cookies load automatically on `search` / `read` / `availability`. Override with `NH_COOKIE`.
@@ -65,6 +65,6 @@ Use `NH_REQUEST_DELAY=60s` for airlines (~1 req/min). Hotels: `2s` default via `
 
 | Feature | Status |
 |---------|--------|
-| `search` | **partial** — `/nh/es/api/v1/hotels/search`; needs `NH_COOKIE` |
+| `search` | **partial** — REST `/nh/es/api/v1/hotels/search?locale=es`; needs `NH_COOKIE` (Akamai `_abck`+`bm_sz`) |
 | `read` / `availability` | implemented |
 | Rate limit | `NH_REQUEST_DELAY` (~2s) |

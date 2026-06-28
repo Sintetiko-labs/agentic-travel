@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parent.parent
 # Priority CLIs with custom probe URLs (others use base URL GET).
 PROBE_URLS: dict[str, str] = {
     "melia": "https://www.melia.com/services/search/hotels/v2/search",
-    "nh": "https://www.nh-hotels.com/nh/es/api/v1/hotels/search?query=Madrid&page=1&size=1",
+    "nh": "https://www.nh-hotels.com/nh/es/api/v1/hotels/search?query=Madrid&locale=es&page=1&size=1",
     "iberostar": "https://www.iberostar.com/api/graphql",
     "vueling": "https://tickets.vueling.com/ScheduleSelect.aspx?culture=es-ES",
     "easyjet": "https://www.easyjet.com/ejavailability/api/v5/availability/query?DepartureIata=MAD&ArrivalIata=BCN&MinDepartureDate=2026-07-01&MaxDepartureDate=2026-07-01&AdultSeats=1&LanguageCode=ES",

@@ -8,6 +8,7 @@ type CookieReport struct {
 	HasBmSz      bool `json:"has_bm_sz"`
 	HasCF        bool `json:"has_cf_clearance"`
 	HasIncapsula bool `json:"has_incapsula"`
+	HasMaterial  bool `json:"has_material"`
 }
 
 // AnalyzeCookies inspects a raw Cookie header for common WAF tokens.
@@ -18,7 +19,13 @@ func AnalyzeCookies(cookie string) CookieReport {
 		HasBmSz:      strings.Contains(lower, "bm_sz="),
 		HasCF:        strings.Contains(lower, "cf_clearance="),
 		HasIncapsula: strings.Contains(lower, "incap_ses") || strings.Contains(lower, "visid_incap"),
+		HasMaterial:  HasSessionMaterial(cookie),
 	}
+}
+
+// HasSessionMaterial reports whether any cookie pairs are present.
+func HasSessionMaterial(cookie string) bool {
+	return strings.TrimSpace(cookie) != "" && strings.Contains(cookie, "=")
 }
 
 // HasRequiredAkamaiCookies reports both Akamai bot-manager cookies are present.
@@ -40,4 +47,14 @@ func SessionReady(cookie string) bool {
 		return true
 	}
 	return r.HasIncapsula && strings.Contains(strings.ToLower(cookie), "visid_incap")
+}
+
+// NeedsAkamaiWAF reports whether a brand typically requires Akamai _abck+bm_sz.
+func NeedsAkamaiWAF(slug string) bool {
+	switch strings.ToLower(slug) {
+	case "nh", "vueling", "easyjet", "aireuropa", "iberiaexpress":
+		return true
+	default:
+		return false
+	}
 }
