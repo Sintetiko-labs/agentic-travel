@@ -38,3 +38,21 @@ curl -s https://ifconfig.me   # manual check from the same Mac
 ## Worktrees
 
 Only one worktree may have `main` checked out. Do not force-push.
+
+## Mac CLI cache (agents / parallel search)
+
+After `git pull`, warm the **live** CLI binaries once (18 priority slugs). Builds land in `~/.cache/agentic-travel/bin/` with quarantine cleared (`xattr`) and ad-hoc `codesign`. Per-slug lock files under `~/.cache/agentic-travel/locks/` prevent parallel agents from rebuilding the same CLI.
+
+```bash
+chmod +x scripts/mac-build-all.sh scripts/mac-search-fast.sh
+./scripts/mac-build-all.sh
+```
+
+Hot path (no `go build`):
+
+```bash
+./scripts/mac-search-fast.sh travelodge search --json London --limit 3
+./scripts/mac-search-fast.sh ryanair search --json --from MAD --to STN --depart 2026-07-05
+```
+
+Override cache: `AGENTIC_TRAVEL_BIN_CACHE=…` (locks: `AGENTIC_TRAVEL_LOCK_DIR=…`). Single slug: `./scripts/mac-build-cli.sh <slug> …`
