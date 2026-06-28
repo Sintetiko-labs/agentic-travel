@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/fbelchi/travelkit/destination"
 	"github.com/fbelchi/travelkit/parse"
 	tkbase "github.com/fbelchi/travelkit/base"
 )
@@ -66,12 +67,13 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 }
 
 func destinationPaths(query string) []string {
-	slug := strings.ToLower(strings.ReplaceAll(strings.TrimSpace(query), " ", "-"))
-	return []string{
-		"/es/hoteles-" + slug,
-		"/es/hoteles/espana",
-		"/es/hoteles-" + slug + "-hoteles",
+	var paths []string
+	for _, term := range destination.Expand(query) {
+		slug := strings.ToLower(strings.ReplaceAll(term, " ", "-"))
+		paths = append(paths, "/es/hoteles-"+slug, "/es/hoteles/"+slug)
 	}
+	paths = append(paths, "/es/hoteles/espana")
+	return paths
 }
 
 func dedupeH10(rows []parse.H10Hotel) []parse.H10Hotel {
