@@ -6,6 +6,8 @@ import (
 
 const BaseURL = "https://www.hotusa.com"
 
+const SessionStartURL = "https://www.grupohotusa.com/es"
+
 // Client talks to Hotusa public endpoints.
 type Client struct {
 	*tkbase.Client

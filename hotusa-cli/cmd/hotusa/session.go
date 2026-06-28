@@ -42,11 +42,12 @@ func runSessionChrome(args []string, syncOnly bool) error {
 	}
 
 	cl := client.New("")
-	startURL := "https://www.hotusa.com/es"
+	startURL := client.SessionStartURL
+	bookingURL := client.BaseURL + "/es"
 	if !syncOnly {
 		fmt.Fprintln(os.Stderr, "Capturing session from headed Chrome…")
 		fmt.Fprintf(os.Stderr, "  Save to: %s\n", cl.CookiesFilePath())
-		fmt.Fprintf(os.Stderr, "  URL: %s\n", startURL)
+		fmt.Fprintf(os.Stderr, "  URL: %s (then browse %s)\n", startURL, bookingURL)
 		if doWait {
 			fmt.Fprintln(os.Stderr, "  Waiting for _abck+bm_sz (or WAF equivalent) — browse the site if needed")
 		}
@@ -56,6 +57,7 @@ func runSessionChrome(args []string, syncOnly bool) error {
 		EnvPrefix:   cl.EnvPrefix,
 		BaseURL:     client.BaseURL,
 		StartURL:    startURL,
+		ExtraURLs:   []string{bookingURL, "https://www.grupohotusa.com"},
 		Port:        *port,
 		Wait:        doWait,
 		WaitTimeout: *timeout,

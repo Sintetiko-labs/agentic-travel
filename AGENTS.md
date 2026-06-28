@@ -33,7 +33,7 @@ BOOKING_PARTNER_ID=...      # opcional — Booking.com partner (cuando haya MCP 
 
 Kiwi (`https://mcp.kiwi.com`) y Gondola (`https://mcp.gondola.ai/mcp`) **no requieren clave**.
 
-Configuración Cursor: [`.cursor/mcp.json`](.cursor/mcp.json) · guía: [docs/MCP_SETUP.md](docs/MCP_SETUP.md).
+Configuración Cursor: [`.cursor/mcp.json`](.cursor/mcp.json) · guía: [docs/MCP_SETUP.md](docs/MCP_SETUP.md) · auditoría: [docs/MCP_LOCAL_AUDIT.md](docs/MCP_LOCAL_AUDIT.md).
 
 Sin claves Duffel → usar **Kiwi** para vuelos agregados y **Gondola** para hoteles de cadena; degradar a CLI donde exista implementación **live** o **partial**; no inventar ofertas.
 
@@ -65,6 +65,55 @@ browser_navigate → esperar (Akamai) → browser_snapshot → extraer JSON de r
 8. Devolver `booking_url` de la capa que respondió.
 
 Smoke MAD→London: `./scripts/mcp-smoke-madrid-london.sh`
+
+---
+
+## PARALLEL SEARCH PROTOCOL (loop 7)
+
+**Objetivo:** respuestas agregadas en **<15s** en Mac Mini M-series. Guía completa: **[docs/FAST_SEARCH.md](docs/FAST_SEARCH.md)**.
+
+### Reglas (obligatorias para agentes)
+
+| Regla | Detalle |
+|-------|---------|
+| **NUNCA** CLIs secuenciales en multi-marca | Un `for slug in …` suma latencias (4×30s = 2 min). Usa orquestadores. |
+| **Vuelos N marcas** | `./scripts/parallel-flights.sh --from ORIGIN --to DEST --depart DATE` |
+| **Hoteles N cadenas** | `./scripts/parallel-hotels.sh --city CITY` |
+| **MAD→LON vuelos + hotel** | `./scripts/wave-search-madrid-london.sh` → `wave-result.json` |
+| **MCP + CLI misma ola** | Duffel MCP en **background** mientras corren parallel CLIs — no esperar MCP antes de CLIs |
+| **Concurrencia** | Máx **8–10** procesos (Go orchestrator: `workers = NumCPU()`) |
+| **Timeout** | **30s por fuente**; devolver **resultados parciales** |
+| **1 marca nombrada** | Excepción: un solo CLI (`ryanair search --json …`) sin orquestador |
+
+### Árbol de decisión rápido
+
+```
+¿1 marca?     → CLI único
+¿N marcas?    → parallel-flights.sh / parallel-hotels.sh
+¿Agregado?    → MCP (Duffel) async + parallel CLI en la misma ola
+¿Confirmar?   → MCP top 3, luego CLI read solo en los 3 mejores
+```
+
+### Comandos clave
+
+```bash
+# Pre-build (una vez)
+./scripts/parallel-search/build-bins.sh
+
+# Multi-LCC
+./scripts/parallel-flights.sh --from MAD --to STN --depart 2026-07-05
+
+# Multi-cadena hoteles
+./scripts/parallel-hotels.sh --city London --limit 10
+
+# Híbrido: Madrid London flights + hotel July (<15s target)
+WAVE_DEPART=2026-07-05 WAVE_HOTELS=London ./scripts/wave-search-madrid-london.sh
+
+# MCP vuelos (background, misma ola que parallel CLIs)
+MCP_FROM=MAD MCP_TO=STN MCP_DEPART=2026-07-05 ./scripts/mcp-travel-search.sh &
+```
+
+Variables: `DUFFEL_ACCESS_TOKEN`, `WAVE_DEPART`, `WAVE_OUT`, `AGENTIC_TRAVEL_BINS`.
 
 ---
 
@@ -170,6 +219,6 @@ replace github.com/fbelchi/travelkit => ../travelkit
 ## Estado del proyecto (loop 6 → 7)
 
 - **18 live** + **7 partial** CLIs prioritarios (ver README)
-- MCP integrados: **Kiwi**, **Gondola**, **Duffel**, **cursor-ide-browser** — [docs/MCP_SETUP.md](docs/MCP_SETUP.md)
+- MCP integrados: **Kiwi**, **Gondola**, **Duffel**, **cursor-ide-browser** — [docs/MCP_SETUP.md](docs/MCP_SETUP.md) · auditoría: [docs/MCP_LOCAL_AUDIT.md](docs/MCP_LOCAL_AUDIT.md)
 - Arquitectura híbrida: [docs/MCP_VS_CLI.md](docs/MCP_VS_CLI.md) · inventario loop 7: [docs/MCP_TRAVEL_INVENTORY.md](docs/MCP_TRAVEL_INVENTORY.md)
 - Prioridad loop 7: router híbrido MCP+CLI+browser, registry `preferred_tool` en `groups.json`
