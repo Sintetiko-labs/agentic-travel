@@ -49,73 +49,18 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 	}
 	query = strings.TrimSpace(query)
 	if query == "" {
-<<<<<<< HEAD
 		return nil, fmt.Errorf("destination query required")
 	}
 
 	checkIn, checkOut := defaultStayDates()
-	rows, err := c.fetchAllHotels(query, checkIn, checkOut)
-=======
-		return nil, fmt.Errorf("destination required")
-	}
-	body, status, err := c.GetRaw(travelodgeSitemapURL)
->>>>>>> 0194d43 (fix(travelodge): reject empty queries and split compound destinations)
+	rows, err := c.fetchHotelsForQuery(query, checkIn, checkOut)
 	if err != nil {
 		return nil, err
 	}
 	if len(rows) == 0 {
 		return nil, fmt.Errorf("search %q: no hotels found", query)
 	}
-<<<<<<< HEAD
 
-=======
-	rows := travelodgeRowsForQuery(string(body), query)
-	return hotelsLDToResult(rows, query, page, pageSize, brandFor(c.Brand), c.BaseURL, "sitemap"), nil
-}
-
-func travelodgeRowsForQuery(xml, query string) []parse.HotelLD {
-	terms := splitDestinationTerms(query)
-	if len(terms) <= 1 {
-		return parse.HotelsFromTravelodgeSitemap(xml, query)
-	}
-	seen := map[string]bool{}
-	var rows []parse.HotelLD
-	for _, term := range terms {
-		for _, h := range parse.HotelsFromTravelodgeSitemap(xml, term) {
-			key := h.URL
-			if key == "" {
-				key = h.ID
-			}
-			if seen[key] {
-				continue
-			}
-			seen[key] = true
-			rows = append(rows, h)
-		}
-	}
-	return rows
-}
-
-func splitDestinationTerms(query string) []string {
-	for _, sep := range []string{"&", "|"} {
-		if !strings.Contains(query, sep) {
-			continue
-		}
-		var terms []string
-		for _, part := range strings.Split(query, sep) {
-			if t := strings.TrimSpace(part); t != "" {
-				terms = append(terms, t)
-			}
-		}
-		if len(terms) > 1 {
-			return terms
-		}
-	}
-	return []string{query}
-}
-
-func hotelsLDToResult(rows []parse.HotelLD, query string, page, pageSize int, brand, base, source string) *HotelSearchResult {
->>>>>>> 0194d43 (fix(travelodge): reject empty queries and split compound destinations)
 	total := len(rows)
 	start := (page - 1) * pageSize
 	if start > total {
@@ -141,6 +86,47 @@ func hotelsLDToResult(rows []parse.HotelLD, query string, page, pageSize int, br
 		Brand:    brandOrDefault(c.Brand),
 		Source:   "api/v2/hotel",
 	}, nil
+}
+
+func (c *Client) fetchHotelsForQuery(query, checkIn, checkOut string) ([]hotelRow, error) {
+	terms := splitDestinationTerms(query)
+	seen := map[int]bool{}
+	var rows []hotelRow
+	for _, term := range terms {
+		termRows, err := c.fetchAllHotels(term, checkIn, checkOut)
+		if err != nil {
+			if len(rows) > 0 {
+				continue
+			}
+			return nil, err
+		}
+		for _, h := range termRows {
+			if seen[h.ID] {
+				continue
+			}
+			seen[h.ID] = true
+			rows = append(rows, h)
+		}
+	}
+	return rows, nil
+}
+
+func splitDestinationTerms(query string) []string {
+	for _, sep := range []string{"&", "|"} {
+		if !strings.Contains(query, sep) {
+			continue
+		}
+		var terms []string
+		for _, part := range strings.Split(query, sep) {
+			if t := strings.TrimSpace(part); t != "" {
+				terms = append(terms, t)
+			}
+		}
+		if len(terms) > 1 {
+			return terms
+		}
+	}
+	return []string{query}
 }
 
 func (c *Client) fetchAllHotels(query, checkIn, checkOut string) ([]hotelRow, error) {
