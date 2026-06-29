@@ -51,13 +51,24 @@ Integration worktree: `git -C /private/tmp/agentic-travel-merge pull origin main
 | `accor` | hotel | **live** | chrome+sync+doctor | Accor parent search API |
 | `ihg` | hotel | **live** | chrome+sync+doctor | IHG property JSON + JSON-LD |
 | `lufthansagroup` | airline | **live** | optional session | Lufthansa Group lowestfares |
+| `airfranceklm` | airline | **live** | optional session | Air France / KLM parent search |
+| `britishairways` | airline | **live** | optional session | BA parent search |
+| `turkish` | airline | **live** | optional session | Turkish Airlines group |
+| `norwegian` | airline | **live** | optional session | Norwegian parent search |
+| `jet2` | airline | **live** | optional session | Jet2 parent search |
+| `tui` | airline | **live** | optional session | TUI fly group |
+| `emirates` | airline | **live** | optional session | Emirates availability |
+| `qatar` | airline | **live** | optional session | Qatar Airways |
+| `etihad` | airline | **live** | optional session | Etihad Airways |
+| `wizzair` | airline | **live** | optional session | Wizz Air (`be.wizzair.com`) |
+| `iberia` | airline | **live** | optional session | Iberia Group (Iberia, Iberia Express, Air Nostrum) |
 | `iberiaexpress` | airline | partial | chrome+sync+doctor | `/api/availability/v1/flights` (Incapsula; doctor detects challenge on HTTP 200) |
 
 **Session chrome (headed Chrome required):** `{slug} session chrome --wait --timeout 3m` polls until `_abck` **and** `bm_sz` (or `cf_clearance` / Incapsula pair). Saves to `~/.{slug}/cookies.json`. `{slug} session doctor` probes WAF cookies + brand API (POST bodies for BFF/GraphQL/dapi).
 
 **CLIs with session subcommands:** **194** / 194 (via `scripts/add-session-subcommands.py`; scaffold regen runs it automatically).
 
-**Smoke tests:** `./scripts/verify-clis.sh` (build + `help` only). Latest loop-6 integration run on `main` — see [docs/LOOP_STATUS.md](docs/LOOP_STATUS.md). Live API smoke needs headed Chrome + residential IP for Akamai brands.
+**Smoke tests:** `./scripts/verify-clis.sh` (build + `help` only). Airline parent APIs: `./scripts/smoke-mac-airlines-parent-apis.sh`. Latest loop-6 integration run on `main` — see [docs/LOOP_STATUS.md](docs/LOOP_STATUS.md). Live API smoke needs headed Chrome + residential IP for Akamai brands.
 
 ### Iteration 6 priorities
 
@@ -189,6 +200,7 @@ Integration worktree: `git -C /private/tmp/agentic-travel-merge pull origin main
 | Grupo / API | Directorio | Binario | Marcas | README |
 |-------------|------------|---------|--------|--------|
 | Iberia Express | [`iberiaexpress-cli/`](iberiaexpress-cli/) | `iberiaexpress` | Iberia Express | [README](iberiaexpress-cli/README.md) |
+| Iberia | [`iberia-cli/`](iberia-cli/) | `iberia` | Iberia, Iberia Express, Air Nostrum | [README](iberia-cli/README.md) |
 | Vueling | [`vueling-cli/`](vueling-cli/) | `vueling` | Vueling | [README](vueling-cli/README.md) |
 | Air Europa | [`aireuropa-cli/`](aireuropa-cli/) | `aireuropa` | Air Europa | [README](aireuropa-cli/README.md) |
 | Ryanair | [`ryanair-cli/`](ryanair-cli/) | `ryanair` | Ryanair | [README](ryanair-cli/README.md) |
