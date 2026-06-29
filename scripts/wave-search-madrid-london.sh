@@ -74,9 +74,9 @@ else
 fi
 
 if [[ -d "$ROOT/mcp/node_modules/@modelcontextprotocol/sdk" ]]; then
-  kiwi_args=$(python3 -c "import json;print(json.dumps({'origin':'$FROM','destination':'$TO','departureDate':'$DEPART','adults':1,'cabin':'economy'}))")
+  kiwi_args=$(DEPART="$DEPART" python3 -c "import json,os; d=os.environ['DEPART']; dd=f'{d[8:10]}/{d[5:7]}/{d[0:4]}'; print(json.dumps({'flyFrom':'$FROM','flyTo':'$TO','departureDate':dd,'passengers':{'adults':1},'cabinClass':'M'}))")
   ( meta=$(run_job kiwi node "$HTTP_MCP" --url https://mcp.kiwi.com --tool search-flight --args "$kiwi_args"); echo "$meta" >"$TMP/kiwi.meta.json" ) & pids+=($!)
-  gondola_args=$(python3 -c "import json;print(json.dumps({'location':'$CITY','check_in':'$CHECK_IN','check_out':'$CHECK_OUT','guests':int('$GUESTS')}))")
+  gondola_args=$(python3 -c "import json;print(json.dumps({'location':'$CITY','checkin':'$CHECK_IN','checkout':'$CHECK_OUT','num_adults':int('$GUESTS')}))")
   ( meta=$(run_job gondola node "$HTTP_MCP" --url https://mcp.gondola.ai/mcp --tool search_hotels --args "$gondola_args"); echo "$meta" >"$TMP/gondola.meta.json" ) & pids+=($!)
 else
   for id in kiwi gondola; do
