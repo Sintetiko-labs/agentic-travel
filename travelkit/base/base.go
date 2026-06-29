@@ -348,7 +348,6 @@ func (c *Client) FetchViaChromeReq(req *http.Request) ([]byte, int, error) {
 	return []byte(result.Body), result.Status, nil
 }
 
-
 // maybeChromeFallback retries the request via Chrome CDP when utls returns 403.
 func (c *Client) maybeChromeFallback(req *http.Request, status int, body []byte) ([]byte, int) {
 	if status != http.StatusForbidden || !c.ChromeFetchEnabled() {

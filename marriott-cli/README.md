@@ -30,7 +30,7 @@ marriott session doctor
 marriott search --json London
 ```
 
-Without session, `search` returns an Akamai error with `marriott session chrome` hint.
+Without session, `search` returns `akamai blocked — HILTON_COOKIE required` style error with `marriott session chrome` hint.
 
 ## Environment
 
