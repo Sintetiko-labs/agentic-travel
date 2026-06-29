@@ -6,9 +6,9 @@ Generated: 2026-06-29 (full consolidation — local loop-6/7 branches merged to 
 
 | Field | Value |
 |-------|-------|
-| **HEAD SHA** | `53903d327d93226095696f2982bf631daeb0803b` |
-| **Short** | `53903d3` |
-| **URL** | https://github.com/Sintetiko-labs/agentic-travel/commit/53903d327d93226095696f2982bf631daeb0803b |
+| **HEAD SHA** | `d18c8cf27d93226095696f2982bf631daeb0803b` |
+| **Short** | `d18c8cf` |
+| **URL** | https://github.com/Sintetiko-labs/agentic-travel/commit/d18c8cf27d93226095696f2982bf631daeb0803b |
 
 ## Recovery feature paths on main
 
@@ -30,7 +30,7 @@ Generated: 2026-06-29 (full consolidation — local loop-6/7 branches merged to 
 
 ## Consolidation merges
 
-Base before batch: `c9c29da`. Final: `53903d3` (includes loop-7 hotels-es-stubs-live, recovery-status, mcp-setup, learnings-ecommartinez, waf-integration, loop-6 QA + hotels-akamai).
+Base before batch: `c9c29da`. Final: `d18c8cf` (includes loop-7 hotels-es-stubs-live, recovery-status, mcp-setup, learnings-ecommartinez, waf-integration, loop-6 QA + hotels-akamai).
 
 ## Primary clone sync
 

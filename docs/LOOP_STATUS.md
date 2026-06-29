@@ -6,7 +6,7 @@ Last updated: 2026-06-29 (full consolidation onto origin/main)
 
 | Field | Value |
 |-------|-------|
-| **SHA** | `53903d3` (`53903d327d93226095696f2982bf631daeb0803b`) |
+| **SHA** | `d18c8cf` (`d18c8cf27d93226095696f2982bf631daeb0803b`) |
 | **Tip** | Loop 7 consolidation: parent APIs (accor/ihg/lufthansagroup), stub wiring, loop-6 QA merges |
 | **Remote** | https://github.com/Sintetiko-labs/agentic-travel (`origin/main`) |
 | **Worktree** | `/private/tmp/agentic-travel-merge` (integration); primary `/Users/fbelchi/github/agentic-travel` |
@@ -28,7 +28,7 @@ Last updated: 2026-06-29 (full consolidation onto origin/main)
 | lufthansagroup | **live** | LH lowestfares + Eurowings API |
 | mamashelter, 25hours | **live** | Bespoke homepage parsers |
 
-## Merged in consolidation batch (c9c29da → 53903d3)
+## Merged in consolidation batch (c9c29da → d18c8cf)
 
 | Branch | Status |
 |--------|--------|
