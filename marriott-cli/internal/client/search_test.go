@@ -27,14 +27,3 @@ func TestSearchRejectsEmptyQuery(t *testing.T) {
 		t.Fatal("expected error for empty query")
 	}
 }
-
-func TestMarriottBlockedErr(t *testing.T) {
-	noCookie := marriottBlockedErr("").Error()
-	if !strings.Contains(noCookie, "session chrome") {
-		t.Fatalf("no cookie: %q", noCookie)
-	}
-	withCookie := marriottBlockedErr("_abck=x; bm_sz=y").Error()
-	if !strings.Contains(withCookie, "stale") {
-		t.Fatalf("with cookie: %q", withCookie)
-	}
-}

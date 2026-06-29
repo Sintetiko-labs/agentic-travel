@@ -19,6 +19,9 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		pageSize = 24
 	}
 	query = strings.TrimSpace(query)
+	if query == "" {
+		return nil, fmt.Errorf("destination required")
+	}
 	path := marriottSearchURL(query)
 	html, err := c.FetchHTML(c.BaseURL + path)
 	if err != nil {
