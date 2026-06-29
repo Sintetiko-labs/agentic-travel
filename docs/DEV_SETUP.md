@@ -56,3 +56,11 @@ Hot path (no `go build`):
 ```
 
 Override cache: `AGENTIC_TRAVEL_BIN_CACHE=…` (locks: `AGENTIC_TRAVEL_LOCK_DIR=…`). Single slug: `./scripts/mac-build-cli.sh <slug> …`
+
+
+## Chrome CDP (FetchViaChrome)
+
+WAF-heavy partial CLIs (**nh**, **easyjet**, **marriott**, **melia**, **iberostar**) retry search through in-browser fetch when uTLS returns HTTP 403 but cookies are valid.
+
+Port **9222**: launch headed Chrome with `--remote-debugging-port=9222`, capture session cookies (`{brand} session chrome --wait`), then run search from Terminal.app. Override via `TRAVEL_CHROME_PORT` or `{PREFIX}_CHROME_PORT`. CDP must respond at `http://127.0.0.1:9222/json/version`.
+
