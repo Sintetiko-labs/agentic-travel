@@ -139,7 +139,7 @@ python3 scripts/wire-stub-to-parent.py --dry-run
 python3 scripts/wire-stub-to-parent.py --verify
 ```
 
-## Current counts (main @ 3a68475)
+## Current counts (main @ acb155d)
 
 | Metric | Value |
 |--------|------:|
