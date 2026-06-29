@@ -26,7 +26,8 @@ mac_cli_acquire_lock() {
 }
 mac_cli_release_lock() { rmdir "$1" 2>/dev/null || true; }
 mac_cli_build_cached() {
-  local slug="$1" root="$2" dir="$root/${slug}-cli" bin lockdir
+  local slug="$1" root="$2" bin lockdir
+  local dir="$root/${slug}-cli"
   bin="$(mac_cli_cached_bin "$slug")"
   [ -d "$dir" ] || { echo "unknown slug: $slug" >&2; return 1; }
   mkdir -p "$AGENTIC_TRAVEL_BIN_CACHE" "$AGENTIC_TRAVEL_LOCK_DIR"

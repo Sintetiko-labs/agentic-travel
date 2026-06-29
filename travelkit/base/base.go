@@ -18,6 +18,10 @@ import (
 
 const DefaultUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
+// DefaultHTTPTimeout is the per-request ceiling for travel CLIs.
+// Keep below WAVE_TIMEOUT (25s) so multi-path Spanish searches can try fallbacks.
+const DefaultHTTPTimeout = 12 * time.Second
+
 // Client is the shared HTTP transport used by scaffolded travel CLIs.
 type Client struct {
 	HTTP      *http.Client
@@ -33,7 +37,7 @@ type Client struct {
 func New(baseURL, envPrefix string) *Client {
 	jar := cookies.NewJar()
 	hc := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: DefaultHTTPTimeout,
 		Jar:     jar,
 	}
 	if tr, err := transport.NewChromeTransport(); err == nil {
@@ -179,9 +183,8 @@ func (c *Client) DoJSON(req *http.Request, out any) error {
 	}
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
-	body, status := c.maybeChromeFallback(req, resp.StatusCode, body)
-	if status < 200 || status >= 300 {
-		return &HTTPError{Status: status, Body: Truncate(string(body), 300)}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return &HTTPError{Status: resp.StatusCode, Body: Truncate(string(body), 300)}
 	}
 	if out != nil && len(body) > 0 {
 		if err := json.Unmarshal(body, out); err != nil {
@@ -207,10 +210,8 @@ func (c *Client) FetchHTML(url string) (string, error) {
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
 	text := string(body)
-	textBody, status := c.maybeChromeFallback(req, resp.StatusCode, body)
-	text = string(textBody)
-	if status < 200 || status >= 300 {
-		return "", &HTTPError{Status: status, Body: Truncate(text, 300)}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return "", &HTTPError{Status: resp.StatusCode, Body: Truncate(text, 300)}
 	}
 	return text, nil
 }
@@ -247,19 +248,6 @@ func (c *Client) FetchViaChromeReq(req *http.Request) (*http.Response, error) {
 }
 
 
-
-func (c *Client) maybeChromeFallback(req *http.Request, status int, body []byte) ([]byte, int) {
-	if status != http.StatusForbidden || !c.ChromeFetchEnabled() {
-		return body, status
-	}
-	resp, err := c.FetchViaChromeReq(req)
-	if err != nil || resp == nil {
-		return body, status
-	}
-	defer resp.Body.Close()
-	b, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
-	return b, resp.StatusCode
-}
 
 // HTTPError is a non-2xx response.
 type HTTPError struct {

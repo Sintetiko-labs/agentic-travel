@@ -120,7 +120,7 @@ func FetchViaChrome(port int, req *http.Request, fallback http.RoundTripper) (*h
 })()`, string(headersJSON), req.Method, string(bodyJSON), req.URL.String())
 	actions = append(actions, chromedp.Evaluate(script, &result))
 
-	runCtx, runCancel := context.WithTimeout(ctx, 45*time.Second)
+	runCtx, runCancel := context.WithTimeout(ctx, 25*time.Second)
 	defer runCancel()
 	if err := chromedp.Run(runCtx, actions...); err != nil {
 		if fallback != nil {

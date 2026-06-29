@@ -2,24 +2,36 @@ package transport
 
 import (
 	"testing"
+
 	utls "github.com/refraction-networking/utls"
 )
 
-func TestChromeSpecALPN(t *testing.T) {
-	spec, err := chromeSpec()
-	if err != nil { t.Fatal(err) }
+func TestChromeSpecHTTP1ALPN(t *testing.T) {
+	spec, err := chromeSpecHTTP1()
+	if err != nil {
+		t.Fatal(err)
+	}
 	var alpn []string
 	for _, ext := range spec.Extensions {
-		if a, ok := ext.(*utls.ALPNExtension); ok { alpn = a.AlpnProtocols }
+		if a, ok := ext.(*utls.ALPNExtension); ok {
+			alpn = a.AlpnProtocols
+		}
 	}
-	want := []string{"h2", "http/1.1"}
-	if len(alpn) != len(want) || alpn[0] != want[0] || alpn[1] != want[1] {
+	want := []string{"http/1.1"}
+	if len(alpn) != len(want) || alpn[0] != want[0] {
 		t.Fatalf("ALPN = %v, want %v", alpn, want)
 	}
 }
 
-func TestSharedRoundTripperSingleton(t *testing.T) {
-	a, err := SharedRoundTripper(); if err != nil { t.Fatal(err) }
-	b, err := SharedRoundTripper(); if err != nil { t.Fatal(err) }
-	if a != b { t.Fatal("expected singleton") }
+func TestNewChromeTransport(t *testing.T) {
+	tr, err := NewChromeTransport()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tr == nil || tr.DialTLSContext == nil {
+		t.Fatal("expected non-nil transport with DialTLSContext")
+	}
+	if tr.ForceAttemptHTTP2 {
+		t.Fatal("HTTP/2 must be disabled")
+	}
 }

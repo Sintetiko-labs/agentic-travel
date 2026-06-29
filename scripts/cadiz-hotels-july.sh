@@ -57,7 +57,7 @@ wave_wait_all
 wall_ms=$(( $(wave_now_ms) - WAVE_WALL_START ))
 
 manifest="$(wave_build_manifest "$(
-  node -e "console.log(JSON.stringify({city:process.argv[1],check_in:process.argv[2],check_out:process.argv[3],limit:+process.argv[4]}))" \
+  node -e 'console.log(JSON.stringify({city:process.argv[1],check_in:process.argv[2],check_out:process.argv[3],limit:+process.argv[4]}))' \
     "$CITY" "$CHECK_IN" "$CHECK_OUT" "$LIMIT"
 )")"
 

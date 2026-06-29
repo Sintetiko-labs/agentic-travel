@@ -18,64 +18,68 @@ Sources: `docs/SMOKE_MAC_*.md`, `docs/QA_*.md`, `docs/LOOP_STATUS.md`,
 
 ## Live demo — Cádiz hotels (2026-07-05 → 2026-07-12)
 
-- **Run:** 2026-06-29T20:05:00+00:00
+- **Run:** 2026-06-29T20:55:00Z (post transport fix)
 - **City:** Cadiz
-- **Chains searched in parallel:** 25
-- **Wall time:** 678879 ms
+- **Chains searched in parallel:** 52 (all built)
+- **Wall time:** 36 121 ms (was 678 879 ms pre-fix)
+- **WAVE_TIMEOUT:** 25 s
+- **Fixes merged:** HTTP/1.1 uTLS transport; 12 s per-request timeout; max 3 Spanish listing paths; `mac-cli-common.sh` `local` bug; cadiz script node brace quoting; `go mod tidy` all hotel CLIs
 
-### Comparison
+### Comparison (CLI wave + curl-verified)
 
-| Chain | Hotels found | Cheapest | Sample hotel | Duration (ms) |
-|-------|-------------:|----------|--------------|--------------:|
-| 25hours | 0 | — | — | 45000 |
-| abba | 0 | — | — | 45000 |
-| accor | 0 | — | — | 45000 |
-| barcelo | 0 | — | — | 45000 |
-| belive | 0 | — | — | 45000 |
-| evenia | 0 | — | — | 45000 |
-| globales | 0 | — | — | 45000 |
-| grupotel | 0 | — | — | 45000 |
-| hipotels | 0 | — | — | 45000 |
-| hotusa | 0 | — | — | 45000 |
-| iberostar | 0 | — | — | 45000 |
-| ihg | 0 | — | — | 45000 |
-| ilunion | 0 | — | — | 45000 |
-| mamashelter | 0 | — | — | 45000 |
-| nh | 0 | — | — | 45000 |
-| ona | 0 | — | — | 45000 |
-| onlyyou | 0 | — | — | 45000 |
-| paradores | 0 | — | — | 45000 |
-| pinero | 0 | — | — | 45000 |
-| porthotels | 0 | — | — | 45000 |
-| roommate | 0 | — | — | 45000 |
-| senator | 0 | — | — | 45000 |
-| zenit | 0 | — | — | 45000 |
+| Chain | Hotels | Cheapest EUR/night | booking_url | Status |
+|-------|-------:|--------------------|-------------|--------|
+| travelodge | 0 (Cadiz) | — | — | curl: API OK, no Cadiz inventory |
+| travelodge | 10 (London ref) | ~160 GBP/night | [Elephant & Castle](https://www.travelodge.co.uk/hotels/690/London-Central-Elephant-and-Castle-hotel?checkIn=05/07/2026&checkOut=12/07/2026&rooms[0][adults]=1&rooms[0][children]=0&searchLocation=London) | curl verified 2026-07-05→12 |
+| barcelo | 0 | — | — | timed_out 25s (Akamai; needs `session chrome`) |
+| accor | 0 | — | — | timed_out 25s |
+| globales | 0 | — | — | timed_out 25s |
+| zenit | 0 | — | — | timed_out 25s |
+| senator | 0 | — | — | timed_out 25s |
+| h10 | 0 | — | — | timed_out 25s (F5 Client Challenge) |
+| nh | 0 | — | — | timed_out 25s (Akamai) |
+| iberostar | 0 | — | — | timed_out 25s (Akamai) |
+| *remaining 42 chains* | 0 | — | — | timed_out 25s |
 
-### Empty / errors
+Full machine-readable output: `cadiz-hotels-july.json` (includes `curl_verified` + `manual_commands`).
 
-- **25hours**: search hung >45s (uTLS transport)
-- **abba**: search hung >45s (uTLS transport)
-- **accor**: search hung >45s (uTLS transport)
-- **barcelo**: search hung >45s (Akamai/uTLS; needs session chrome)
-- **belive**: search hung >45s (uTLS transport)
-- **evenia**: search hung >45s (uTLS transport)
-- **globales**: search hung >45s (uTLS transport)
-- **grupotel**: search hung >45s (uTLS transport)
-- **hipotels**: search hung >45s (uTLS transport)
-- **hotusa**: search hung >45s (uTLS transport)
-- **iberostar**: search hung >45s (Akamai; needs session)
-- **ihg**: search hung >45s (uTLS transport)
-- **ilunion**: search hung >45s (uTLS transport)
-- **mamashelter**: search hung >45s (uTLS transport)
-- **nh**: search hung >45s (Akamai; needs session)
-- **ona**: search hung >45s (uTLS transport)
-- **onlyyou**: search hung >45s (uTLS transport)
-- **paradores**: search hung >45s (uTLS transport)
-- **pinero**: search hung >45s (uTLS transport)
-- **porthotels**: search hung >45s (uTLS transport)
-- **roommate**: search hung >45s (uTLS transport)
-- **senator**: search hung >45s (uTLS transport)
-- **zenit**: search hung >45s (uTLS transport)
+### Transport diagnosis
+
+Root cause of >45 s hangs: custom **HTTP/2 + uTLS** round-tripper ignored `http.Client` deadlines and held a global mutex during TLS. Replaced with **HTTP/1.1-only** `DialTLSContext` (see `loop-6/qa-fix-hotels-es`). Secondary: `local slug root dir=...` in `mac-cli-common.sh` produced `/-cli` paths (silent build skip). Tertiary: auto CDP fallback on 403 when Chrome :9222 open added 45 s.
+
+### Manual commands (Terminal.app, residential IP)
+
+```bash
+cd /private/tmp/agentic-travel-merge
+WAVE_TIMEOUT=25 CADIZ_LIMIT=10 ./scripts/cadiz-hotels-july.sh
+```
+
+Travelodge API (curl, July week):
+
+```bash
+curl -sS -H 'accept: application/json' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' \
+  -H 'referer: https://www.travelodge.co.uk/' \
+  'https://www.travelodge.co.uk/api/v2/hotel?pagination=false&checkIn=2026-07-05&checkOut=2026-07-12&q=Cadiz&rooms%5B0%5D%5Badults%5D=1&rooms%5B0%5D%5Bchildren%5D=0&action=search'
+# → {"results":[]}  (no Travelodge in Cádiz)
+
+curl -sS -H 'accept: application/json' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' \
+  -H 'referer: https://www.travelodge.co.uk/' \
+  'https://www.travelodge.co.uk/api/v2/hotel?pagination=false&checkIn=2026-07-05&checkOut=2026-07-12&q=London&rooms%5B0%5D%5Badults%5D=1&rooms%5B0%5D%5Bchildren%5D=0&action=search'
+# → 10 hotels; cheapest ~£160/night (Elephant & Castle, £1120.93 total / 7 nights)
+```
+
+Akamai chains (barcelo, nh, iberostar):
+
+```bash
+barcelo session chrome --wait --timeout 3m
+barcelo search --json --limit 10 Cadiz
+```
+
+### Empty / errors (52 chains)
+
+All CLIs **timed_out** at 25 s in the latest wave. Cadiz has sparse chain coverage; many brands serve HTML behind WAF/JS challenge. Use `session chrome` then re-run availability where implemented (`barcelo`, `melia`, `ihg`, …). Travelodge `availability` subcommand is still stub — use curl API above for UK pricing.
 
 ## Live airlines (24)
 

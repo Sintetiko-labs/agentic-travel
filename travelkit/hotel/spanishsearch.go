@@ -3,11 +3,16 @@ package hotel
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/fbelchi/travelkit/destination"
 	"github.com/fbelchi/travelkit/parse"
 	tktypes "github.com/fbelchi/travelkit/types"
 )
+
+// maxSpanishPathAttempts caps sequential listing fetches so parallel wave jobs
+// finish within WAVE_TIMEOUT (default 25s) when the first paths miss.
+const maxSpanishPathAttempts = 3
 
 // EsHotelPaths returns common Spanish hotel listing paths for a destination query.
 func EsHotelPaths(query string) []string {
@@ -75,7 +80,11 @@ func SpanishHTMLSearch(
 	var rows []parse.HotelLD
 	seen := map[string]bool{}
 	var lastErr error
-	for _, p := range paths {
+	deadline := time.Now().Add(20 * time.Second)
+	for i, p := range paths {
+		if i >= maxSpanishPathAttempts || time.Now().After(deadline) {
+			break
+		}
 		html, err := fetch(p)
 		if err != nil {
 			lastErr = err
