@@ -66,20 +66,24 @@ Smoke MAD→London: `./scripts/mcp-smoke-madrid-london.sh`
 
 ## PARALLEL SEARCH PROTOCOL (loop 7)
 
-**Objetivo:** respuestas agregadas en **<15s** en Mac Mini M-series. Guía completa: **[docs/FAST_SEARCH.md](docs/FAST_SEARCH.md)**.
+**Objetivo:** respuestas agregadas en **<15s** en Mac Mini M-series. Guía completa: **[docs/FAST_SEARCH.md](docs/FAST_SEARCH.md)** · patrones ecommartinez: **[docs/LEARNINGS_ECOMMARTINEZ.md](docs/LEARNINGS_ECOMMARTINEZ.md)**.
 
 ### Reglas (obligatorias para agentes)
 
 | Regla | Detalle |
 |-------|---------|
+| **SIEMPRE wave-search en multi-fuente** | Vuelos + hoteles, MCP + CLI, o ≥2 marcas → `./scripts/wave-search-full.sh` (o `wave-search-madrid-london.sh` para MAD→LON). **Nunca** MCP y CLIs secuenciales. |
 | **NUNCA** CLIs secuenciales en multi-marca | Un `for slug in …` suma latencias (4×30s = 2 min). Usa orquestadores. |
 | **Vuelos N marcas** | `./scripts/parallel-flights.sh --from ORIGIN --to DEST --depart DATE` |
 | **Hoteles N cadenas** | `./scripts/parallel-hotels.sh --city CITY` |
+| **Cualquier ruta multi-fuente** | `./scripts/wave-search-full.sh --from ORIGIN --to DEST --city CITY --depart DATE` → `wave-result.json` |
 | **MAD→LON vuelos + hotel** | `./scripts/wave-search-madrid-london.sh` → `wave-result.json` |
-| **MCP + CLI misma ola** | Duffel MCP en **background** mientras corren parallel CLIs — no esperar MCP antes de CLIs |
-| **Concurrencia** | Máx **8–10** procesos (Go orchestrator: `workers = NumCPU()`) |
-| **Timeout** | **30s por fuente**; devolver **resultados parciales** |
+| **MCP paralelo (solo agregadores)** | `./scripts/mcp-travel-search-parallel.sh` — Duffel + Kiwi + Gondola en la misma ola |
+| **MCP + CLI misma ola** | `wave-search-full.sh` lanza **Duffel + Kiwi + Gondola + CLIs** en paralelo; no esperar MCP antes de CLIs |
+| **Concurrencia** | Máx **8–10** procesos (Mac Mini: `NumCPU()`, típicamente 8–10) |
+| **Timeout** | **30s por fuente**; devolver **resultados parciales**; revisar `timed_out[]` y `sources[].duration_ms` en `wave-result.json` |
 | **1 marca nombrada** | Excepción: un solo CLI (`ryanair search --json …`) sin orquestador |
+| **Mac residencial** | Ejecutar wave desde Terminal.app en Mac Mini — no CI/datacenter (WAF + IP residencial) |
 
 ### Árbol de decisión rápido
 
@@ -96,20 +100,25 @@ Smoke MAD→London: `./scripts/mcp-smoke-madrid-london.sh`
 # Pre-build (una vez)
 ./scripts/parallel-search/build-bins.sh
 
-# Multi-LCC
+# Multi-fuente genérico (MCP + CLI paralelo) → wave-result.json
+./scripts/wave-search-full.sh --from MAD --to STN --city London --depart 2026-07-05
+
+# Multi-LCC solo
 ./scripts/parallel-flights.sh --from MAD --to STN --depart 2026-07-05
 
-# Multi-cadena hoteles
+# Multi-cadena hoteles solo
 ./scripts/parallel-hotels.sh --city London --limit 10
 
 # Híbrido: Madrid London flights + hotel July (<15s target)
 WAVE_DEPART=2026-07-05 WAVE_HOTELS=London ./scripts/wave-search-madrid-london.sh
 
-# MCP vuelos (background, misma ola que parallel CLIs)
-MCP_FROM=MAD MCP_TO=STN MCP_DEPART=2026-07-05 ./scripts/mcp-travel-search.sh &
+# MCP agregadores en paralelo (Duffel si hay token + Kiwi + Gondola HTTP)
+MCP_FROM=MAD MCP_TO=STN MCP_DEPART=2026-07-05 ./scripts/mcp-travel-search-parallel.sh
 ```
 
-Variables: `DUFFEL_ACCESS_TOKEN`, `WAVE_DEPART`, `WAVE_OUT`, `AGENTIC_TRAVEL_BINS`.
+Salida `wave-result.json`: `flights[]`, `hotels[]`, `sources[].duration_ms`, `timed_out[]`, y opcional `mcp_agent_fallback[]` si HTTP MCP falla (usar CallMcpTool).
+
+Variables: `DUFFEL_ACCESS_TOKEN`, `WAVE_DEPART`, `WAVE_OUT`, `AGENTIC_TRAVEL_BINS`, `WAVE_TIMEOUT` (default 30).
 
 ---
 

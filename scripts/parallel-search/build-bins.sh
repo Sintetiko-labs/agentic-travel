@@ -1,39 +1,20 @@
 #!/usr/bin/env bash
-# Build airline + hotel CLIs into /tmp/agentic-travel-bins/ (ad-hoc signed).
+# Pre-build signed CLIs for parallel fan-out (avoid go run cold start).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-BIN_DIR="${AGENTIC_TRAVEL_BINS:-/tmp/agentic-travel-bins}"
-ORCH_DIR="$ROOT/orchestrator"
+# shellcheck source=../mac-cli-common.sh
+source "$ROOT/scripts/mac-cli-common.sh"
 
-DEFAULT_SLUGS=(
-  ryanair vueling volotea aireuropa binter
-  travelodge hilton barcelo marriott melia nh
-)
+export AGENTIC_TRAVEL_BIN_CACHE="${AGENTIC_TRAVEL_BINS:-${AGENTIC_TRAVEL_BIN_CACHE}}"
 
-SLUGS=("${@:-${DEFAULT_SLUGS[@]}}")
-mkdir -p "$BIN_DIR"
+SLUGS=(ryanair vueling volotea binter travelodge hilton)
 
-build_slug() {
-  local slug="$1"
-  local dir="$ROOT/${slug}-cli"
-  local out="$BIN_DIR/$slug"
-  if [ ! -d "$dir" ]; then
-    echo "skip $slug (no ${slug}-cli/)" >&2
-    return 0
-  fi
-  echo "build $slug → $out" >&2
-  (cd "$dir" && go mod tidy >/dev/null 2>&1 && go build -o "$out" "./cmd/$slug")
-  command -v codesign >/dev/null && codesign -s - -f "$out" 2>/dev/null || true
-}
+echo "Building CLIs → $AGENTIC_TRAVEL_BIN_CACHE" >&2
+mkdir -p "$AGENTIC_TRAVEL_BIN_CACHE"
 
 for slug in "${SLUGS[@]}"; do
-  build_slug "$slug"
+  mac_cli_build_cached "$slug" "$ROOT" || echo "warn: build failed for $slug" >&2
 done
 
-echo "build orchestrator binaries" >&2
-(cd "$ORCH_DIR" && go mod tidy && go build -o "$BIN_DIR/parallel-flights" ./cmd/parallel-flights)
-(cd "$ORCH_DIR" && go build -o "$BIN_DIR/parallel-hotels" ./cmd/parallel-hotels)
-command -v codesign >/dev/null && codesign -s - -f "$BIN_DIR/parallel-flights" "$BIN_DIR/parallel-hotels" 2>/dev/null || true
-
-echo "bins ready: $BIN_DIR" >&2
+echo "Done. export AGENTIC_TRAVEL_BINS=$AGENTIC_TRAVEL_BIN_CACHE" >&2
