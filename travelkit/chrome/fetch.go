@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/chromedp/chromedp"
@@ -31,7 +32,7 @@ type FetchResult struct {
 // CDPPortFromEnv returns the default Chrome debugging port.
 func CDPPortFromEnv() int {
 	for _, key := range []string{"CHROME_DEBUG_PORT", "CHROME_PORT", "CHROMEDP_PORT"} {
-		if p := os.Getenv(key); p != "" {
+		if p := strings.TrimSpace(os.Getenv(key)); p != "" {
 			if n, err := strconv.Atoi(p); err == nil && n > 0 {
 				return n
 			}
@@ -58,6 +59,9 @@ func CDPAvailable(port int) bool {
 func Fetch(ctx context.Context, opts FetchOpts) (FetchResult, error) {
 	if opts.Port <= 0 {
 		opts.Port = CDPPortFromEnv()
+	}
+	if !CDPAvailable(opts.Port) {
+		return FetchResult{}, fmt.Errorf("Chrome not listening on port %d", opts.Port)
 	}
 	if opts.Method == "" {
 		opts.Method = http.MethodGet
