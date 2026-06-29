@@ -1,47 +1,44 @@
 package parse
-
 import (
+	"encoding/json"
 	"regexp"
 	"strings"
 )
 
-var (
-	accorHotelLinkRE = regexp.MustCompile(`href="((?:https?://[^"]*all\.accor\.com)?/[^"]*?/hotels/[^"?#]+)"`)
-	accorHotelJSONRE = regexp.MustCompile(`"hotelCode"\s*:\s*"([A-Z0-9]{3,8})"[\s\S]{0,600}?"name"\s*:\s*"([^"\\]+)"`)
-)
+var accorHotelCodeRE = regexp.MustCompile(`accorhotels/([a-z]{3}_[a-z]_[0-9]+)`)
 
-// HotelsFromAccorSearch extracts hotel rows from Accor destination or SSR search HTML.
+// HotelsFromAccorSearch parses Accor search JSON or falls back to destination HTML/JSON-LD.
 func HotelsFromAccorSearch(html, baseURL string) []HotelLD {
-	seen := map[string]bool{}
-	var out []HotelLD
-	for _, m := range accorHotelJSONRE.FindAllStringSubmatch(html, -1) {
-		id, name := m[1], strings.TrimSpace(m[2])
-		if seen[id] || name == "" {
-			continue
+	html = strings.TrimSpace(html)
+	if strings.HasPrefix(html, "{") {
+		var row struct {
+			HotelCode string `json:"hotelCode"`
+			Name      string `json:"name"`
 		}
-		seen[id] = true
-		out = append(out, HotelLD{
-			ID:   strings.ToLower(id),
-			Name: name,
-			URL:  absolutize(baseURL, "/hotels/"+strings.ToLower(id)+".html"),
-		})
+		if json.Unmarshal([]byte(html), &row) == nil && row.HotelCode != "" {
+			return []HotelLD{{
+				ID:   row.HotelCode,
+				Name: row.Name,
+				URL:  absolutize(baseURL, "/hotels/"+row.HotelCode),
+			}}
+		}
 	}
-	for _, m := range accorHotelLinkRE.FindAllStringSubmatch(html, -1) {
-		u := absolutize(baseURL, m[1])
-		low := strings.ToLower(u)
-		if strings.Contains(low, "/ssr/") || strings.Contains(low, "/login") {
-			continue
-		}
-		id := pathID(u)
-		if id == "" || seen[id] {
-			continue
-		}
-		seen[id] = true
-		out = append(out, HotelLD{
-			ID:   id,
-			Name: titleFromSlug(id),
-			URL:  u,
-		})
+	if out := HotelsFromJSONLD(html, baseURL); len(out) > 0 {
+		return out
 	}
-	return out
+	return HotelsFromAccorDestination(html, baseURL)
+}
+
+func HotelsFromAccorSSR(html, baseURL string) []HotelLD {
+ seen := map[string]bool{}; var out []HotelLD
+ for _, m := range accorHotelCodeRE.FindAllStringSubmatch(html, -1) {
+  code := m[1]; if seen[code] { continue }; seen[code]=true
+  out = append(out, HotelLD{ID: code, Name: titleFromSlug(strings.ReplaceAll(code,"_"," ")), URL: absolutize(baseURL,"/hotels/"+code)})
+ }
+ return out
+}
+func HotelsFromAccorDestination(html, baseURL string) []HotelLD {
+ if out := HotelsFromJSONLD(html, baseURL); len(out)>0 { return out }
+ if out := HotelsFromAccorSSR(html, baseURL); len(out)>0 { return out }
+ return HotelsFromBrandHomeLinks(html, baseURL, "all.accor.com")
 }
