@@ -138,11 +138,25 @@ func Doctor(opts DoctorOptions) DoctorResult {
 		}
 		res.NextStep = slug + " session chrome --wait --timeout 3m"
 	case status >= 200 && status < 300:
+		if !probeResponseOK(probeBody) {
+			res.Status = DoctorAPIError
+			res.Message = fmt.Sprintf("probe HTTP %d but response is not valid JSON — check API path/payload", status)
+			res.NextStep = slug + " session chrome --wait --timeout 3m"
+			break
+		}
 		res.Status = DoctorOK
 		if cookieOK || siteCookieOK {
 			res.Message = fmt.Sprintf("session OK — cookies present, probe HTTP %d", status)
-		} else if opts.SessionOptional {
-			res.Message = fmt.Sprintf("API OK (HTTP %d) — session optional for this brand", status)
+		} else if opts.SessionOptional || !akamai.NeedsAkamaiWAF(slug) {
+			if report.HasMaterial {
+				res.Message = fmt.Sprintf("session OK (HTTP %d) — site cookies present", status)
+			} else {
+				res.Message = fmt.Sprintf("API OK (HTTP %d) — session optional for this brand", status)
+			}
+		} else if report.HasMaterial {
+			res.Status = DoctorIncomplete
+			res.Message = fmt.Sprintf("probe HTTP %d but Akamai cookies (_abck+bm_sz) missing or stale", status)
+			res.NextStep = slug + " session chrome --wait --timeout 3m"
 		} else {
 			res.Message = fmt.Sprintf("probe HTTP %d but WAF cookies missing", status)
 			res.Status = DoctorMissing
@@ -210,7 +224,7 @@ func probeHTTP(p probeRequest) (int, string, error) {
 	}
 	referer := p.referer
 	if referer == "" && p.baseURL != "" {
-		referer = strings.TrimRight(p.baseURL, "/") + "/"
+		referer = strings.TrimRight(p.baseURL, "/") + "/es/"
 	}
 	if referer != "" {
 		req.Header.Set("referer", referer)
