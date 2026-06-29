@@ -14,13 +14,14 @@ func cmdSearch(args []string) error {
 	to := fs.String("to", "", "destination airport/city (IATA)")
 	depart := fs.String("depart", "", "departure date (YYYY-MM-DD)")
 	ret := fs.String("return", "", "return date (YYYY-MM-DD, optional)")
+	brand := fs.String("brand", "", "brand (Iberia, Iberia Express, Air Nostrum)")
 	limit := fs.Int("limit", 24, "max results")
 	page := fs.Int("page", 1, "page number")
 	_ = fs.Parse(reorderArgs(fs, args))
 	if *from == "" || *to == "" || *depart == "" {
 		return fmt.Errorf("usage: iberia search [flags] (requires --from --to --depart)")
 	}
-	cl := client.New("")
+	cl := client.New(*brand)
 	res, err := cl.Search(*from, *to, *depart, *ret, *page, *limit)
 	if err != nil {
 		return err
