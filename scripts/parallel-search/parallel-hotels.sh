@@ -1,14 +1,49 @@
 #!/usr/bin/env bash
-# Fan-out hotel search across brand CLIs (Mac residential IP only).
+# Parallel hotel chain CLIs — 30s/source timeout, partial results.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-BIN_DIR="${AGENTIC_TRAVEL_BINS:-/tmp/agentic-travel-bins}"
-ORCH="$BIN_DIR/parallel-hotels"
+# shellcheck source=../mac-cli-common.sh
+source "$ROOT/scripts/mac-cli-common.sh"
+# shellcheck source=../wave-search-common.sh
+source "$ROOT/scripts/wave-search-common.sh"
 
-if [ ! -x "$ORCH" ]; then
-  echo "orchestrator missing; building bins…" >&2
-  "$ROOT/scripts/parallel-search/build-bins.sh" travelodge hilton barcelo marriott melia nh
-fi
+CITY="" LIMIT=10
+SLUGS=(travelodge hilton)
 
-exec "$ORCH" "$@"
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --city) CITY="$2"; shift 2 ;;
+    --limit) LIMIT="$2"; shift 2 ;;
+    --slugs) IFS=',' read -r -a SLUGS <<< "$2"; shift 2 ;;
+    *) echo "unknown arg: $1" >&2; exit 2 ;;
+  esac
+done
+
+[ -n "$CITY" ] || {
+  echo "usage: parallel-hotels.sh --city CITY [--limit N]" >&2
+  exit 2
+}
+
+wave_init_tmp
+WAVE_WALL_START="$(wave_now_ms)"
+
+for slug in "${SLUGS[@]}"; do
+  mac_cli_build_cached "$slug" "$ROOT" || true
+  bin="$(mac_cli_cached_bin "$slug")"
+  if [ ! -x "$bin" ]; then
+    wave_register_skipped "$slug" "binary missing — run build-bins.sh"
+    continue
+  fi
+  wave_run_bg "$slug" "$bin" search --json --limit "$LIMIT" "$CITY"
+done
+
+wave_wait_all
+
+manifest="$(wave_build_manifest "$(
+  cat <<EOF
+{"city":"$CITY","limit":$LIMIT}
+EOF
+)")"
+
+node "$ROOT/mcp/merge-wave-result.mjs" <<<"$manifest"

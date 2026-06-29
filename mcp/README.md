@@ -50,6 +50,10 @@ mcp/
 ├── install.sh             # clone + build duffel-mcp into vendor/
 ├── package.json           # deps for call-search-flights.mjs
 ├── call-search-flights.mjs
+├── call-mcp-http.mjs       # Streamable HTTP client (Kiwi, Gondola)
+├── call-kiwi-search.mjs
+├── call-gondola-search.mjs
+├── merge-wave-result.mjs   # CombinedSearchResult merge
 └── vendor/duffel-mcp/     # gitignored — created by install.sh
 ```
 
