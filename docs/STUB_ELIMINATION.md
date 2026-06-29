@@ -108,15 +108,19 @@ Symlinks are not committed (portability); `copy-client` is the file-level equiva
 3. After parent API merges, run `python3 scripts/wire-stub-to-parent.py --verify`.
 4. Update counts in this doc.
 
+## Status (loop-7/hotels-parent-apis-1)
+
+Merged `origin/loop-7/hotels-parent-apis-1` into main (conflicts resolved favoring parent API implementations). Eight hotel parent slugs implement live search; 73 sub-brands filter via `--brand` on the parent binary.
+
 ## Status (loop-7/stub-wire-parent)
 
 | Metric | Value |
 |--------|------:|
-| **Stubs before wire** | 117 |
-| **Stubs after wire** | 117 |
+| **Stubs before wire** | 118 |
+| **Stubs after wire** | 118 |
 | **Wired slugs** | `designhotels`, `leonardo`, `iberojet` |
 | **Brands delegated** | 6 — Design Hotels; Leonardo Hotels, NYX Hotels, Leonardo Royal, Leonardo Boutique; Iberojet |
-| **Parent APIs live** | `accor` (11 brands), `ihg` (9 brands), `lufthansagroup` (7 brands) — no child stubs to wire |
+| **Parent APIs live** | Hotels: `accor` (11), `ihg` (9), `hyatt` (11), `marriott` (20), `hilton` (8), `wyndham` (5), `bestwestern` (4), `radisson` (5) = **73 brands**; airlines: `lufthansagroup` (7). `wire-stub-to-parent.py --verify`: **wired_count=0** (only `parent_overrides` child slugs wire; hotel brands use parent CLI `--brand`) |
 
 Parent mappings in `parent_overrides`:
 
@@ -135,12 +139,12 @@ python3 scripts/wire-stub-to-parent.py --dry-run
 python3 scripts/wire-stub-to-parent.py --verify
 ```
 
-## Current counts (main @ a7d50f9)
+## Current counts (main @ 3a68475)
 
 | Metric | Value |
 |--------|------:|
 | Total CLIs | 194 |
-| Stub (search not yet implemented) | **117** |
+| Stub (search not yet implemented) | **118** |
 | Live / implemented Search | **77** |
 | Priority README live + partial | 35 + 4 |
 
