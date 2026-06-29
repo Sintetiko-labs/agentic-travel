@@ -4,7 +4,7 @@ import (
 	tkbase "github.com/fbelchi/travelkit/base"
 )
 
-const BaseURL = "https://www.iberia.es"
+const BaseURL = "https://www.iberia.com"
 
 type Client struct {
 	*tkbase.Client
@@ -12,7 +12,9 @@ type Client struct {
 }
 
 var Brands = []string{
-		"Iberia",
+	"Iberia",
+	"Iberia Express",
+	"Air Nostrum",
 }
 
 func New(brand string) *Client {

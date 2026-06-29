@@ -23,11 +23,16 @@ func (c *Client) Search(origin, dest, depart, ret string, page, pageSize int) (*
 	origin = strings.ToUpper(strings.TrimSpace(origin))
 	dest = strings.ToUpper(strings.TrimSpace(dest))
 	depart, ret = strings.TrimSpace(depart), strings.TrimSpace(ret)
+	route := c.resolveBrand()
 
 	if _, err := c.FetchHTML("https://www.iberia.com/es/"); err != nil {
 		return nil, fmt.Errorf("bootstrap: %w", err)
 	}
-	q := fmt.Sprintf("?market=ES&language=es&origin=%s&destination=%s&departureDate=%s&adults=1&operatingCarrier=IB", origin, dest, depart)
+	q := fmt.Sprintf("?market=ES&language=es&origin=%s&destination=%s&departureDate=%s&adults=1&operatingCarrier=%s",
+		origin, dest, depart, route.carrier)
+	if ret != "" {
+		q += "&returnDate=" + ret
+	}
 	c.Throttle()
 	req, _ := http.NewRequest(http.MethodGet, iberiaAvail+q, nil)
 	c.SetAPIHeaders(req)
@@ -42,7 +47,7 @@ func (c *Client) Search(origin, dest, depart, ret string, page, pageSize int) (*
 	defer resp.Body.Close()
 	raw, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
 	if akamai.IsWAFBlocked(resp.StatusCode, string(raw)) {
-		return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("iberia"))
+		return nil, fmt.Errorf("incapsula blocked — %s", akamai.NeedsSessionHint("iberia"))
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return nil, fmt.Errorf("search %s→%s: HTTP %d", origin, dest, resp.StatusCode)
@@ -62,7 +67,13 @@ func (c *Client) Search(origin, dest, depart, ret string, page, pageSize int) (*
 	}
 	flights := make([]FlightHit, 0, len(items))
 	for _, f := range items {
-		flights = append(flights, FlightHit{ID: f.ID, Airline: "Iberia", FlightNumber: f.FlightNumber, Origin: f.Origin, Destination: f.Destination, Depart: f.Departure, Arrive: f.Arrival, Price: fmt.Sprintf("%.2f", f.Price), Currency: tkbase.FirstNonEmpty(f.Currency, "EUR"), BookingURL: "https://www.iberia.com/es/vuelos/"})
+		flights = append(flights, FlightHit{
+			ID: f.ID, Airline: route.name, FlightNumber: f.FlightNumber,
+			Origin: f.Origin, Destination: f.Destination,
+			Depart: f.Departure, Arrive: f.Arrival,
+			Price: fmt.Sprintf("%.2f", f.Price), Currency: tkbase.FirstNonEmpty(f.Currency, "EUR"),
+			BookingURL: "https://www.iberia.com/es/vuelos/",
+		})
 	}
 	total := len(flights)
 	start := (page - 1) * pageSize
@@ -77,5 +88,13 @@ func (c *Client) Search(origin, dest, depart, ret string, page, pageSize int) (*
 	if pf == nil {
 		pf = []FlightHit{}
 	}
-	return &FlightSearchResult{Query: origin + "-" + dest + " " + depart, Origin: origin, Dest: dest, Depart: depart, Return: ret, Total: total, Page: page, PageSize: pageSize, Flights: pf, Brand: c.Brand, Source: "iberia-availability-yw"}, nil
+	brand := c.Brand
+	if brand == "" {
+		brand = route.name
+	}
+	return &FlightSearchResult{
+		Query: origin + "-" + dest + " " + depart, Origin: origin, Dest: dest,
+		Depart: depart, Return: ret, Total: total, Page: page, PageSize: pageSize,
+		Flights: pf, Brand: brand, Source: "availability",
+	}, nil
 }

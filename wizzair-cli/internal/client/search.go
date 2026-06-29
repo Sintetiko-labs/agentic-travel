@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-
+	"github.com/fbelchi/travelkit/akamai"
+	tkbase "github.com/fbelchi/travelkit/base"
 )
 
 const wizzCulture = "es-es"
@@ -41,6 +42,9 @@ func (c *Client) Search(origin, dest, depart, ret string, page, pageSize int) (*
 
 	ref := c.BaseURL + "/" + wizzCulture
 	if _, err := c.FetchHTML(ref); err != nil {
+		if he, ok := err.(*tkbase.HTTPError); ok && akamai.IsDenied(he.Status, he.Body) {
+			return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("wizzair"))
+		}
 		return nil, fmt.Errorf("bootstrap: %w", err)
 	}
 
@@ -66,9 +70,15 @@ func (c *Client) Search(origin, dest, depart, ret string, page, pageSize int) (*
 			DepartureDate:    wizzDepartDate(ret),
 		})
 	}
+	retSeg := "null"
+	if ret != "" {
+		retSeg = ret
+	}
 	payload, _ := json.Marshal(reqBody)
-	apiURL := fmt.Sprintf("%s/%s/Api/search/search", c.BaseURL, version)
-	body, status, err := c.wizzPOST(apiURL, ref, payload)
+	apiURL := fmt.Sprintf("https://be.wizzair.com/%s/Api/search/search", version)
+	bookRef := fmt.Sprintf("%s/#/booking/select-flight/%s/%s/%s/%s/1/0/0/null",
+		c.BaseURL, origin, dest, depart, retSeg)
+	body, status, err := c.wizzPOST(apiURL, bookRef, payload)
 	if err != nil {
 		return nil, fmt.Errorf("search %s→%s: %w", origin, dest, err)
 	}

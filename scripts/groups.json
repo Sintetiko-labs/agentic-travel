@@ -998,6 +998,16 @@
     ]
   },
   {
+    "slug": "iberia",
+    "name": "Iberia Group",
+    "cat": "airline",
+    "brands": [
+      "Iberia",
+      "Iberia Express",
+      "Air Nostrum"
+    ]
+  },
+  {
     "slug": "iberiaexpress",
     "name": "Iberia Express",
     "cat": "airline",
