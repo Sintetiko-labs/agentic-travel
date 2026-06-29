@@ -10,7 +10,6 @@ import (
 
 const hotelsHomePath = "/es"
 
-// Search finds hotels via homepage hotel links (apiweb.cataloniahotels.com for prices).
 func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, error) {
 	if page < 1 {
 		page = 1
