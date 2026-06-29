@@ -6,7 +6,7 @@ Last updated: 2026-06-29 (airlines-parent-apis merge onto origin/main)
 
 | Field | Value |
 |-------|-------|
-| **SHA** | `adf8fcd` (`adf8fcd8c353d678cec7941e2b85ead485fbe8a2`) |
+| **SHA** | `99532ba` (`99532ba98739240ed0aaf778003d88d069c4b4a6`) |
 | **Tip** | Loop 7: **12 airline parent APIs** (incl. new `iberia`), hotels parent/stub wiring, loop-6 QA |
 | **Remote** | https://github.com/Sintetiko-labs/agentic-travel (`origin/main`) |
 | **Worktree** | `/private/tmp/agentic-travel-merge` (integration); primary `/Users/fbelchi/github/agentic-travel` |
