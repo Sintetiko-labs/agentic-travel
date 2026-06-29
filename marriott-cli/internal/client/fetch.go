@@ -38,9 +38,11 @@ func (c *Client) fetchSearchHTML(path string) (string, error) {
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
 	text := string(body)
 	if resp.StatusCode == 403 && c.ChromeFetchEnabled() {
-		chromeBody, status, ferr := c.FetchViaChromeReq(req)
-		if ferr == nil {
+		if chromeResp, ferr := c.FetchViaChromeReq(req); ferr == nil && chromeResp != nil {
+			defer chromeResp.Body.Close()
+			chromeBody, _ := io.ReadAll(io.LimitReader(chromeResp.Body, 32<<20))
 			text = string(chromeBody)
+			status := chromeResp.StatusCode
 			if status >= 200 && status < 300 {
 				return text, nil
 			}

@@ -2,8 +2,6 @@
 package base
 
 import (
-	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,67 +10,47 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fbelchi/travelkit/chrome"
 	"github.com/fbelchi/travelkit/cookies"
-	"github.com/fbelchi/travelkit/network"
 	"github.com/fbelchi/travelkit/ratelimit"
 	"github.com/fbelchi/travelkit/session"
 	"github.com/fbelchi/travelkit/transport"
 )
 
-const (
-	DefaultUA             = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-	defaultRequestTimeout = 25 * time.Second
-	requestTimeoutEnvKey  = "TRAVELKIT_REQUEST_TIMEOUT"
-)
-
-func RequestTimeout() time.Duration {
-	if v := strings.TrimSpace(os.Getenv(requestTimeoutEnvKey)); v != "" {
-		if d, err := time.ParseDuration(v); err == nil && d > 0 {
-			return d
-		}
-	}
-	return defaultRequestTimeout
-}
-
+const DefaultUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
 // Client is the shared HTTP transport used by scaffolded travel CLIs.
 type Client struct {
-	HTTP       *http.Client
-	stdlibHTTP *http.Client
-	Jar        cookies.Jar
-	BaseURL    string
-	UserAgent  string
-	Cookie     string
-	Pacer      *ratelimit.Pacer
-	EnvPrefix  string
+	HTTP      *http.Client
+	Jar       cookies.Jar
+	BaseURL   string
+	UserAgent string
+	Cookie    string
+	Pacer     *ratelimit.Pacer
+	EnvPrefix string
 }
 
 // New builds a client with Chrome-like TLS and optional env-based rate limiting.
 func New(baseURL, envPrefix string) *Client {
-	network.EnsureResidential()
 	jar := cookies.NewJar()
+	hc := &http.Client{
+		Timeout: 30 * time.Second,
+		Jar:     jar,
+	}
+	if tr, err := transport.NewChromeTransport(); err == nil {
+		hc.Transport = tr
+	}
 	prefix := strings.ToUpper(strings.ReplaceAll(envPrefix, "-", "_"))
 	if prefix == "" {
 		prefix = "TRAVEL"
 	}
-	timeout := RequestTimeout()
-	stdlib := &http.Client{Timeout: timeout, Jar: jar, Transport: network.DirectTransport()}
-	hc := stdlib
-	if os.Getenv(prefix+"_STD_HTTP") != "1" {
-		if tr, err := transport.SharedRoundTripper(); err == nil {
-			hc = &http.Client{Timeout: timeout, Jar: jar, Transport: tr}
-		}
-	}
 	c := &Client{
-		HTTP:       hc,
-		stdlibHTTP: stdlib,
-		Jar:        jar,
-		BaseURL:    strings.TrimRight(baseURL, "/"),
-		UserAgent:  DefaultUA,
-		Cookie:     strings.TrimSpace(os.Getenv(prefix + "_COOKIE")),
-		Pacer:      ratelimit.NewPacerFromEnv(prefix),
-		EnvPrefix:  prefix,
+		HTTP:      hc,
+		Jar:       jar,
+		BaseURL:   strings.TrimRight(baseURL, "/"),
+		UserAgent: DefaultUA,
+		Cookie:    strings.TrimSpace(os.Getenv(prefix + "_COOKIE")),
+		Pacer:     ratelimit.NewPacerFromEnv(prefix),
+		EnvPrefix: prefix,
 	}
 	c.LoadPersistedCookies()
 	return c
@@ -150,14 +128,6 @@ func (c *Client) GetJSON(path string, out any) error {
 
 // GetRaw performs GET and returns the response body.
 func (c *Client) GetRaw(url string) ([]byte, int, error) {
-	body, status, err := c.getRawWith(c.HTTP, url)
-	if err == nil || c.stdlibHTTP == nil || c.stdlibHTTP == c.HTTP {
-		return body, status, err
-	}
-	return c.getRawWith(c.stdlibHTTP, url)
-}
-
-func (c *Client) getRawWith(hc *http.Client, url string) ([]byte, int, error) {
 	c.Throttle()
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -165,14 +135,13 @@ func (c *Client) getRawWith(hc *http.Client, url string) ([]byte, int, error) {
 	}
 	c.SetAPIHeaders(req)
 	c.ApplyCookie(req)
-	resp, err := hc.Do(req)
+	resp, err := c.HTTP.Do(req)
 	if err != nil {
 		return nil, 0, err
 	}
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
-	body, status := c.maybeChromeFallback(req, resp.StatusCode, body)
-	return body, status, nil
+	return body, resp.StatusCode, nil
 }
 
 // PostJSON performs POST with a JSON body and decodes the response.
@@ -224,17 +193,6 @@ func (c *Client) DoJSON(req *http.Request, out any) error {
 
 // FetchHTML GETs a document URL.
 func (c *Client) FetchHTML(url string) (string, error) {
-	text, err := c.fetchHTMLWith(c.HTTP, url)
-	if err == nil {
-		return text, nil
-	}
-	if c.stdlibHTTP == nil || c.stdlibHTTP == c.HTTP {
-		return "", err
-	}
-	return c.fetchHTMLWith(c.stdlibHTTP, url)
-}
-
-func (c *Client) fetchHTMLWith(hc *http.Client, url string) (string, error) {
 	c.Throttle()
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -242,7 +200,7 @@ func (c *Client) fetchHTMLWith(hc *http.Client, url string) (string, error) {
 	}
 	c.SetDocumentHeaders(req)
 	c.ApplyCookie(req)
-	resp, err := hc.Do(req)
+	resp, err := c.HTTP.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -257,24 +215,18 @@ func (c *Client) fetchHTMLWith(hc *http.Client, url string) (string, error) {
 	return text, nil
 }
 
+
+
 // ChromePort returns the CDP debugging port for this client.
 func (c *Client) ChromePort() int {
-	port := chrome.CDPPortFromEnv()
+	port := transport.CDPPortFromEnv()
 	if p := strings.TrimSpace(os.Getenv(c.EnvPrefix + "_CHROME_PORT")); p != "" {
-		if n, err := parsePort(p); err == nil {
+		var n int
+		if _, err := fmt.Sscanf(p, "%d", &n); err == nil && n > 0 {
 			port = n
 		}
 	}
 	return port
-}
-
-func parsePort(s string) (int, error) {
-	var n int
-	_, err := fmt.Sscanf(s, "%d", &n)
-	if err != nil || n <= 0 {
-		return 0, fmt.Errorf("invalid port %q", s)
-	}
-	return n, nil
 }
 
 // ChromeFetchEnabled reports whether CDP fetch fallback can run.
@@ -282,82 +234,31 @@ func (c *Client) ChromeFetchEnabled() bool {
 	if c.Cookie == "" {
 		return false
 	}
-	return chrome.CDPAvailable(c.ChromePort())
-}
-
-// FetchViaChrome executes fetch() in headed Chrome with saved cookies.
-func (c *Client) FetchViaChrome(url, method string, body []byte) ([]byte, int, error) {
-	req, err := http.NewRequest(method, url, nil)
-	if err != nil {
-		return nil, 0, err
-	}
-	if len(body) > 0 {
-		req.Body = io.NopCloser(bytes.NewReader(body))
-		req.ContentLength = int64(len(body))
-	}
-	c.SetAPIHeaders(req)
-	if len(body) > 0 {
-		req.Header.Set("content-type", "application/json")
-	}
-	if c.BaseURL != "" {
-		req.Header.Set("origin", c.BaseURL)
-	}
-	return c.FetchViaChromeReq(req)
+	return transport.CDPAvailable(c.ChromePort())
 }
 
 // FetchViaChromeReq runs fetch() in Chrome using headers and body from req.
-func (c *Client) FetchViaChromeReq(req *http.Request) ([]byte, int, error) {
+func (c *Client) FetchViaChromeReq(req *http.Request) (*http.Response, error) {
 	if !c.ChromeFetchEnabled() {
-		return nil, 0, fmt.Errorf("chrome fetch unavailable — start Chrome with --remote-debugging-port=%d", c.ChromePort())
+		return nil, fmt.Errorf("chrome fetch unavailable — start Chrome with --remote-debugging-port=%d", c.ChromePort())
 	}
 	c.ApplyCookie(req)
-
-	var bodyArg string
-	if req.Body != nil {
-		b, err := io.ReadAll(req.Body)
-		if err != nil {
-			return nil, 0, err
-		}
-		req.Body = io.NopCloser(bytes.NewReader(b))
-		bodyArg = string(b)
-	}
-
-	headerMap := map[string]string{}
-	for k, vals := range req.Header {
-		if len(vals) == 0 {
-			continue
-		}
-		lower := strings.ToLower(k)
-		if lower == "cookie" || lower == "host" || lower == "content-length" {
-			continue
-		}
-		headerMap[k] = vals[0]
-	}
-
-	result, err := chrome.Fetch(context.Background(), chrome.FetchOpts{
-		Port:    c.ChromePort(),
-		URL:     req.URL.String(),
-		Method:  req.Method,
-		Body:    bodyArg,
-		Headers: headerMap,
-		Cookie:  c.Cookie,
-	})
-	if err != nil {
-		return nil, 0, err
-	}
-	return []byte(result.Body), result.Status, nil
+	return transport.FetchViaChrome(c.ChromePort(), req, c.HTTP.Transport)
 }
 
-// maybeChromeFallback retries the request via Chrome CDP when utls returns 403.
+
+
 func (c *Client) maybeChromeFallback(req *http.Request, status int, body []byte) ([]byte, int) {
 	if status != http.StatusForbidden || !c.ChromeFetchEnabled() {
 		return body, status
 	}
-	chromeBody, chromeStatus, err := c.FetchViaChromeReq(req)
-	if err != nil {
+	resp, err := c.FetchViaChromeReq(req)
+	if err != nil || resp == nil {
 		return body, status
 	}
-	return chromeBody, chromeStatus
+	defer resp.Body.Close()
+	b, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
+	return b, resp.StatusCode
 }
 
 // HTTPError is a non-2xx response.
