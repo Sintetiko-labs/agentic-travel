@@ -1,6 +1,7 @@
 package session
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,6 +12,20 @@ import (
 	"github.com/fbelchi/travelkit/akamai"
 	"github.com/fbelchi/travelkit/network"
 )
+
+// probeResponseOK returns true when a 2xx probe body looks like JSON (object or array).
+func probeResponseOK(body string) bool {
+	trim := strings.TrimSpace(body)
+	if trim == "" {
+		return false
+	}
+	switch trim[0] {
+	case '{', '[':
+		return json.Valid([]byte(body))
+	default:
+		return false
+	}
+}
 
 // DoctorStatus classifies persisted session health.
 type DoctorStatus string
