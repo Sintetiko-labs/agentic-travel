@@ -8,6 +8,7 @@ import (
 	"github.com/fbelchi/travelkit/akamai"
 	"github.com/fbelchi/travelkit/parse"
 	tkbase "github.com/fbelchi/travelkit/base"
+	tkhotel "github.com/fbelchi/travelkit/hotel"
 )
 
 // Search queries Marriott findHotels (Akamai session required from residential IP).
@@ -38,15 +39,29 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		return nil, fmt.Errorf("search %q: no hotels parsed — run: marriott session chrome --wait", query)
 	}
 	filtered := filterByBrand(rows, c.Brand)
-	return hotelsLDToResult(filtered, query, page, pageSize, brandFor(c.Brand), c.BaseURL, "findHotels"), nil
+	return hotelsLDToResult(filtered, query, page, pageSize, brandFor(c.Brand), "marriott", c.BaseURL, "findHotels"), nil
 }
 
 func marriottSearchURL(query string) string {
 	city := strings.TrimSpace(query)
+	country := marriottCountryCode(query)
 	from := time.Now().AddDate(0, 0, 14).Format("01/02/2006")
 	to := time.Now().AddDate(0, 0, 15).Format("01/02/2006")
-	return fmt.Sprintf("/search/findHotels.mi?destinationAddress.city=%s&destinationAddress.country=GB&roomCount=1&numAdultsPerRoom=2&lengthOfStay=1&fromDate=%s&toDate=%s&deviceType=desktop-web&view=list",
-		strings.ReplaceAll(city, " ", "+"), from, to)
+	return fmt.Sprintf("/search/findHotels.mi?destinationAddress.city=%s&destinationAddress.country=%s&roomCount=1&numAdultsPerRoom=2&lengthOfStay=1&fromDate=%s&toDate=%s&deviceType=desktop-web&view=list",
+		strings.ReplaceAll(city, " ", "+"), country, from, to)
+}
+
+func marriottCountryCode(query string) string {
+	switch strings.ToLower(strings.TrimSpace(query)) {
+	case "madrid", "barcelona", "valencia", "seville", "sevilla", "malaga", "bilbao":
+		return "ES"
+	case "paris", "lyon", "marseille":
+		return "FR"
+	case "berlin", "munich", "münchen", "frankfurt":
+		return "DE"
+	default:
+		return "GB"
+	}
 }
 
 func filterByBrand(rows []parse.HotelLD, brand string) []parse.HotelLD {
@@ -64,7 +79,7 @@ func filterByBrand(rows []parse.HotelLD, brand string) []parse.HotelLD {
 	return out
 }
 
-func hotelsLDToResult(rows []parse.HotelLD, query string, page, pageSize int, brand, base, source string) *HotelSearchResult {
+func hotelsLDToResult(rows []parse.HotelLD, query string, page, pageSize int, brand, parent, base, source string) *HotelSearchResult {
 	total := len(rows)
 	start := (page - 1) * pageSize
 	if start > total {
@@ -77,11 +92,14 @@ func hotelsLDToResult(rows []parse.HotelLD, query string, page, pageSize int, br
 	hits := make([]HotelHit, 0, end-start)
 	for _, h := range rows[start:end] {
 		b := brand
+		if b == "" && parent != "" {
+			b = tkhotel.InferBrand(parent, h.Name)
+		}
 		if b == "" {
 			b = "Marriott"
 		}
 		hits = append(hits, HotelHit{
-			ID: h.ID, Name: h.Name, Brand: b, City: query, Country: "GB",
+			ID: h.ID, Name: h.Name, Brand: b, City: query,
 			Stars: h.Stars, HotelURL: tkbase.Absolutize(base, h.URL), ImageURL: h.ImageURL,
 		})
 	}

@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	"net/url"
 	"strings"
 
 	"github.com/fbelchi/travelkit/akamai"
@@ -22,7 +21,7 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 	if query == "" {
 		return nil, fmt.Errorf("destination required")
 	}
-	path := "/hotels/gb/en/find-hotels/hotel/list?qDest=" + url.QueryEscape(tkhotel.IHGQDest(query))
+	path := tkhotel.IHGSearchPath(query)
 	html, err := c.FetchHTML(c.BaseURL + path)
 	if err != nil {
 		if he, ok := err.(*tkbase.HTTPError); ok && akamai.IsDenied(he.Status, he.Body) {
@@ -42,9 +41,5 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 	if len(rows) == 0 {
 		return nil, fmt.Errorf("search %q: no hotels parsed", query)
 	}
-	b := c.Brand
-	if b == "" {
-		b = "IHG"
-	}
-	return tkhotel.LDToResult(rows, query, page, pageSize, b, c.BaseURL, "hotel-list"), nil
+	return tkhotel.LDToResultParent(rows, query, page, pageSize, c.Brand, "ihg", c.BaseURL, "hotel-list"), nil
 }
