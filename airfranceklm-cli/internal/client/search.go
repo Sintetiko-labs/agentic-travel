@@ -10,7 +10,12 @@ import (
 	tkbase "github.com/fbelchi/travelkit/base"
 )
 
-(origin, dest, depart, ret string, page, pageSize int) (*FlightSearchResult, error) {
+const (
+	klmBase       = "https://www.klm.com"
+	transaviaBase = "https://www.transavia.com"
+)
+
+func (c *Client) Search(origin, dest, depart, ret string, page, pageSize int) (*FlightSearchResult, error) {
 	if page < 1 {
 		page = 1
 	}
