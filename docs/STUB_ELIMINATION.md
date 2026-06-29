@@ -134,3 +134,21 @@ Re-run after more parent APIs land:
 python3 scripts/wire-stub-to-parent.py --dry-run
 python3 scripts/wire-stub-to-parent.py --verify
 ```
+
+## Current counts (main @ af95548)
+
+| Metric | Value |
+|--------|------:|
+| Total CLIs | 194 |
+| Stub (search not yet implemented) | **117** |
+| Live / implemented Search | **77** |
+| Priority README live + partial | 35 + 4 |
+
+## Wire a stub to its parent
+
+```bash
+python3 scripts/wire-stub-to-parent.py --slug designhotels --parent marriott
+python3 scripts/wire-stub-to-parent.py --slug designhotels --parent marriott --write
+```
+
+Never run `python3 scripts/scaffold-clis.py` on a dirty tree — it overwrites live search.go files.

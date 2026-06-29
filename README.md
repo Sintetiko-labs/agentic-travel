@@ -4,6 +4,16 @@ Monorepo de **CLIs agent-friendly** para hoteles y aerolíneas (cadenas español
 
 > **No oficial.** APIs reverse-engineered. Ejecutar **solo en local** (IP residencial). Respeta rate limits.
 
+## Sync main with GitHub
+
+```bash
+git fetch origin
+git checkout main
+git pull origin main
+```
+
+Integration worktree: `git -C /private/tmp/agentic-travel-merge pull origin main`.
+
 ## Resumen
 
 - **111** CLIs de hoteles, **83** CLIs de aerolíneas
@@ -38,6 +48,9 @@ Monorepo de **CLIs agent-friendly** para hoteles y aerolíneas (cadenas español
 | `marriott` | hotel | partial | chrome+sync+doctor | `findHotels.mi` (Akamai; session required) |
 | `easyjet` | airline | partial | chrome+sync+doctor | `ejavailability/api/v5` (Akamai; session chrome --wait) |
 | `aireuropa` | airline | partial | chrome+sync+doctor | `dapi` redirect POST + flightinfo fallback |
+| `accor` | hotel | **live** | chrome+sync+doctor | Accor parent search API |
+| `ihg` | hotel | **live** | chrome+sync+doctor | IHG property JSON + JSON-LD |
+| `lufthansagroup` | airline | **live** | optional session | Lufthansa Group lowestfares |
 | `iberiaexpress` | airline | partial | chrome+sync+doctor | `/api/availability/v1/flights` (Incapsula; doctor detects challenge on HTTP 200) |
 
 **Session chrome (headed Chrome required):** `{slug} session chrome --wait --timeout 3m` polls until `_abck` **and** `bm_sz` (or `cf_clearance` / Incapsula pair). Saves to `~/.{slug}/cookies.json`. `{slug} session doctor` probes WAF cookies + brand API (POST bodies for BFF/GraphQL/dapi).

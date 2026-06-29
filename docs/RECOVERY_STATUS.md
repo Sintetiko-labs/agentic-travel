@@ -1,36 +1,44 @@
 # Recovery status (loop-7)
 
-Generated: 2026-06-29 (post-merge of last 5 unmerged loop-7 branches).
+Generated: 2026-06-29 (full consolidation — local loop-6/7 branches merged to main).
 
-## Main (`origin/main`)
+## Main (origin/main)
 
 | Field | Value |
 |-------|-------|
-| **HEAD SHA** | `36e20d7d3156130e54cb0188b320044f4fb30594` |
-| **Tip commit** | Merge loop-7/wave-mcp-cli into main |
+| **HEAD SHA** | `af9554827d93226095696f2982bf631daeb0803b` |
+| **Short** | `af95548` |
+| **URL** | https://github.com/Sintetiko-labs/agentic-travel/commit/af9554827d93226095696f2982bf631daeb0803b |
 
-## Recovery feature paths on `main`
+## Recovery feature paths on main
 
-| Path | On main |
+| Path | Present |
 |------|---------|
-| `orchestrator/` | yes |
-| `scripts/parallel-search/` | yes |
-| `scripts/mac-build-all.sh` | yes |
-| `travelkit/network/` | yes |
-| `bridge/browser-mcp/` | yes |
-| `mcp/` | yes |
-| `docs/FAST_SEARCH.md` | yes |
+| orchestrator/ | yes |
+| scripts/parallel-search/ | yes |
+| scripts/wave-search-madrid-london.sh | yes |
+| scripts/mac-build-all.sh | yes |
+| travelkit/network/ | yes |
+| travelkit/chrome/ | yes |
+| bridge/browser-mcp/ | yes |
+| mcp/ | yes |
+| docs/FAST_SEARCH.md | yes |
+| docs/MCP_SETUP.md | yes |
+| docs/STUB_ELIMINATION.md | yes |
 
-**Merged recovery features (checklist):** **yes** — all listed paths present.
+**Local-only commits on main after push:** target ZERO (origin/main matches worktree).
 
-## `origin/loop-7/*` merged in this batch
+## Consolidation merges
 
-| Branch | Status |
-|--------|--------|
-| `fix-marriott-waf` | merged |
-| `hotels-intl-batch-5` | merged |
-| `mcp-architecture` | merged |
-| `mcp-setup` | merged |
-| `wave-mcp-cli` | merged |
+Base before batch: `c9c29da`. Final: `af95548` (includes loop-7 hotels-es-stubs-live, recovery-status, mcp-setup, learnings-ecommartinez, waf-integration, loop-6 QA + hotels-akamai).
 
-Previously on main: `orchestrator`, `parallel-search`, `mac-build-all`, `network`, `browser-mcp`, `mcp`, `FAST_SEARCH`.
+## Primary clone sync
+
+```bash
+cd /Users/fbelchi/github/agentic-travel
+git fetch origin
+git checkout main
+git pull origin main
+```
+
+Integration worktree: `/private/tmp/agentic-travel-merge`.
