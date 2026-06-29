@@ -8,7 +8,6 @@ import (
 	"github.com/fbelchi/travelkit/hotel"
 )
 
-// Read returns hotel detail by id or URL.
 func (c *Client) Read(idOrURL string) (*HotelView, error) {
 	id := strings.TrimSpace(idOrURL)
 	if id == "" {
