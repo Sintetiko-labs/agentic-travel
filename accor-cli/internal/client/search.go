@@ -48,6 +48,9 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("accor"))
 	}
 	rows := parse.HotelsFromJSONLD(html, c.BaseURL)
+	if len(rows) == 0 {
+		rows = parse.HotelsFromAccorSearch(html, c.BaseURL)
+	}
 	rows = tkhotel.FilterHotelLD(rows, query)
 	rows = tkhotel.FilterByBrand(rows, c.Brand)
 	if len(rows) == 0 {

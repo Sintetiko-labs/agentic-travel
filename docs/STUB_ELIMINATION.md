@@ -112,10 +112,11 @@ Symlinks are not committed (portability); `copy-client` is the file-level equiva
 
 | Metric | Value |
 |--------|------:|
-| **Stubs before wire** | 120 |
-| **Stubs after wire** | 116 |
+| **Stubs before wire** | 117 |
+| **Stubs after wire** | 117 |
 | **Wired slugs** | `designhotels`, `leonardo`, `iberojet` |
 | **Brands delegated** | 6 — Design Hotels; Leonardo Hotels, NYX Hotels, Leonardo Royal, Leonardo Boutique; Iberojet |
+| **Parent APIs live** | `accor` (11 brands), `ihg` (9 brands), `lufthansagroup` (7 brands) — no child stubs to wire |
 
 Parent mappings in `parent_overrides`:
 

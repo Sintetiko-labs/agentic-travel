@@ -34,7 +34,7 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 	}
 	rows := parse.HotelsFromJSONLD(html, c.BaseURL)
 	if len(rows) == 0 {
-		rows = parse.HotelsFromMarriottSearch(html, c.BaseURL)
+		rows = parse.HotelsFromIHGSearch(html, c.BaseURL)
 	}
 	rows = tkhotel.FilterHotelLD(rows, query)
 	rows = tkhotel.FilterByBrand(rows, c.Brand)

@@ -1,14 +1,32 @@
 # Loop status (parallel workstreams)
 
-Last updated: 2026-06-29 (loop-7 hotels-es-stubs-live)
+Last updated: 2026-06-29 (loop-7 parent APIs: accor, ihg, lufthansagroup)
 
 ## Main branch
 
 | Field | Value |
 |-------|-------|
-| **SHA** | `396e6bd4a93043d99717d707d464032e371cffb6` |
-| **Tip** | loop-6 catch-up: QA fixes on `05d1485` + volotea `flights:[]` + branch merge records |
+| **SHA** | `c9c29da` (+ parent API hardening commits) |
+| **Tip** | loop-7: live parent search for Accor (11 brands), IHG (9 brands), Lufthansa Group (7 brands) |
 | **Remote** | `Sintetiko-labs/agentic-travel` |
+
+## Loop 7 stub elimination (parent APIs)
+
+| Metric | Value |
+|--------|------:|
+| **Scaffold stubs before** | 117 |
+| **Scaffold stubs after wire** | 117 |
+| **Parents implemented** | `accor`, `ihg`, `lufthansagroup` |
+| **Brands covered (parents)** | 27 (Accor 11 + IHG 9 + LH Group 7) |
+| **Child stubs wired** | 0 — `mamashelter` / `25hours` keep bespoke homepage parsers per `STUB_ELIMINATION.md` |
+
+Parent APIs:
+
+| Parent | API | Child delegates |
+|--------|-----|-----------------|
+| `accor` | JSON-LD + destination HTML + SSR fallback (`AccorDestinationPath` / `AccorSearchFallbackPath`) | — (mamashelter, 25hours: own search) |
+| `ihg` | JSON-LD + IHG property JSON (`IHGSearchPath`) | — |
+| `lufthansagroup` | LH `api-shop/lowestfares` + Eurowings `search.api.json` | — |
 
 ## Merge status
 

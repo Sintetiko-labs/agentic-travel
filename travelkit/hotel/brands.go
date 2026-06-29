@@ -49,6 +49,10 @@ func inferAccorBrand(low string) string {
 		return "Ibis Styles"
 	case strings.Contains(low, "ibis"):
 		return "Ibis"
+	case strings.Contains(low, "mama shelter"):
+		return "Mama Shelter"
+	case strings.Contains(low, "25hours"), strings.Contains(low, "25 hours"):
+		return "25hours Hotels"
 	default:
 		return "Accor"
 	}
