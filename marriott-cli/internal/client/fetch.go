@@ -37,6 +37,16 @@ func (c *Client) fetchSearchHTML(path string) (string, error) {
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
 	text := string(body)
+	if resp.StatusCode == 403 && c.ChromeFetchEnabled() {
+		chromeBody, status, ferr := c.FetchViaChromeReq(req)
+		if ferr == nil {
+			text = string(chromeBody)
+			if status >= 200 && status < 300 {
+				return text, nil
+			}
+			return "", &tkbase.HTTPError{Status: status, Body: tkbase.Truncate(text, 300)}
+		}
+	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return "", &tkbase.HTTPError{Status: resp.StatusCode, Body: tkbase.Truncate(text, 300)}
 	}

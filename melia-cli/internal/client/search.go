@@ -192,6 +192,9 @@ func (c *Client) postMelia(path string, payload any) ([]byte, int, error) {
 	}
 	defer resp.Body.Close()
 	body, _ := ioReadAll(resp.Body)
+	if resp.StatusCode == 403 && c.ChromeFetchEnabled() {
+		return c.FetchViaChromeReq(req)
+	}
 	return body, resp.StatusCode, nil
 }
 

@@ -81,6 +81,9 @@ func (c *Client) getAvailability(fullURL string) ([]byte, int, error) {
 	}
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
+	if resp.StatusCode == 403 && c.ChromeFetchEnabled() {
+		return c.FetchViaChromeReq(req)
+	}
 	return body, resp.StatusCode, nil
 }
 

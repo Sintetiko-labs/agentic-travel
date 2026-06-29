@@ -171,7 +171,8 @@ func (c *Client) getRawWith(hc *http.Client, url string) ([]byte, int, error) {
 	}
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
-	return body, resp.StatusCode, nil
+	body, status := c.maybeChromeFallback(req, resp.StatusCode, body)
+	return body, status, nil
 }
 
 // PostJSON performs POST with a JSON body and decodes the response.
@@ -209,8 +210,9 @@ func (c *Client) DoJSON(req *http.Request, out any) error {
 	}
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return &HTTPError{Status: resp.StatusCode, Body: Truncate(string(body), 300)}
+	body, status := c.maybeChromeFallback(req, resp.StatusCode, body)
+	if status < 200 || status >= 300 {
+		return &HTTPError{Status: status, Body: Truncate(string(body), 300)}
 	}
 	if out != nil && len(body) > 0 {
 		if err := json.Unmarshal(body, out); err != nil {
@@ -247,8 +249,10 @@ func (c *Client) fetchHTMLWith(hc *http.Client, url string) (string, error) {
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
 	text := string(body)
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return "", &HTTPError{Status: resp.StatusCode, Body: Truncate(text, 300)}
+	textBody, status := c.maybeChromeFallback(req, resp.StatusCode, body)
+	text = string(textBody)
+	if status < 200 || status >= 300 {
+		return "", &HTTPError{Status: status, Body: Truncate(text, 300)}
 	}
 	return text, nil
 }
@@ -342,6 +346,19 @@ func (c *Client) FetchViaChromeReq(req *http.Request) ([]byte, int, error) {
 		return nil, 0, err
 	}
 	return []byte(result.Body), result.Status, nil
+}
+
+
+// maybeChromeFallback retries the request via Chrome CDP when utls returns 403.
+func (c *Client) maybeChromeFallback(req *http.Request, status int, body []byte) ([]byte, int) {
+	if status != http.StatusForbidden || !c.ChromeFetchEnabled() {
+		return body, status
+	}
+	chromeBody, chromeStatus, err := c.FetchViaChromeReq(req)
+	if err != nil {
+		return body, status
+	}
+	return chromeBody, chromeStatus
 }
 
 // HTTPError is a non-2xx response.
