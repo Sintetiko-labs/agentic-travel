@@ -7,9 +7,9 @@ import (
 	"github.com/fbelchi/travelkit/akamai"
 	"github.com/fbelchi/travelkit/parse"
 	tkbase "github.com/fbelchi/travelkit/base"
+	tkhotel "github.com/fbelchi/travelkit/hotel"
 )
 
-// Search finds hotels via Hilton destination listing pages (UK: /en/locations/united-kingdom/{city}/).
 func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, error) {
 	if page < 1 {
 		page = 1
@@ -37,9 +37,10 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		if akamai.IsDenied(403, html) {
 			return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("hilton"))
 		}
+		return nil, fmt.Errorf("search %q: no hotels parsed", query)
 	}
 	filtered := filterByBrand(rows, c.Brand)
-	return hotelsLDToResult(filtered, query, page, pageSize, brandFor(c.Brand), c.BaseURL, "locations"), nil
+	return hotelsLDToResult(filtered, query, page, pageSize, c.Brand, "hilton", c.BaseURL, "locations"), nil
 }
 
 func hiltonLocationPath(query string) string {
@@ -52,6 +53,12 @@ func hiltonLocationPath(query string) string {
 	switch slug {
 	case "uk", "united-kingdom", "england":
 		return "/en/locations/united-kingdom/"
+	case "london":
+		return "/en/locations/united-kingdom/london/"
+	case "madrid":
+		return "/en/locations/spain/madrid/"
+	case "spain", "espana", "españa":
+		return "/en/locations/spain/"
 	}
 	return "/en/locations/united-kingdom/" + slug + "/"
 }
@@ -71,7 +78,7 @@ func filterByBrand(rows []parse.HotelLD, brand string) []parse.HotelLD {
 	return out
 }
 
-func hotelsLDToResult(rows []parse.HotelLD, query string, page, pageSize int, brand, base, source string) *HotelSearchResult {
+func hotelsLDToResult(rows []parse.HotelLD, query string, page, pageSize int, brand, parent, base, source string) *HotelSearchResult {
 	total := len(rows)
 	start := (page - 1) * pageSize
 	if start > total {
@@ -84,11 +91,14 @@ func hotelsLDToResult(rows []parse.HotelLD, query string, page, pageSize int, br
 	hits := make([]HotelHit, 0, end-start)
 	for _, h := range rows[start:end] {
 		b := brand
+		if b == "" && parent != "" {
+			b = tkhotel.InferBrand(parent, h.Name)
+		}
 		if b == "" {
 			b = "Hilton"
 		}
 		hits = append(hits, HotelHit{
-			ID: h.ID, Name: h.Name, Brand: b, City: query, Country: "GB",
+			ID: h.ID, Name: h.Name, Brand: b, City: query,
 			Stars: h.Stars, HotelURL: tkbase.Absolutize(base, h.URL), ImageURL: h.ImageURL,
 		})
 	}
@@ -96,11 +106,4 @@ func hotelsLDToResult(rows []parse.HotelLD, query string, page, pageSize int, br
 		Query: query, Total: total, Page: page, PageSize: pageSize,
 		HasNext: total > page*pageSize, Hotels: hits, Brand: brand, Source: source,
 	}
-}
-
-func brandFor(selected string) string {
-	if selected != "" {
-		return selected
-	}
-	return "Hilton"
 }

@@ -21,6 +21,8 @@ func WyndhamDestinationSlug(query string) string {
 	switch normCity(query) {
 	case "london":
 		return "london-england-united-kingdom"
+	case "madrid":
+		return "madrid-community-of-madrid-spain"
 	case "paris":
 		return "paris-ile-de-france-france"
 	case "berlin":
@@ -34,6 +36,8 @@ func RadissonDestinationSlug(query string) string {
 	switch normCity(query) {
 	case "london":
 		return "london-uk"
+	case "madrid":
+		return "madrid-spain"
 	case "paris":
 		return "paris-france"
 	case "berlin":
@@ -47,6 +51,8 @@ func HyattSearchSlug(query string) string {
 	switch normCity(query) {
 	case "london":
 		return "london-uk"
+	case "madrid":
+		return "madrid-spain"
 	case "paris":
 		return "paris-france"
 	case "berlin":
@@ -60,20 +66,31 @@ func IHGQDest(query string) string {
 	return strings.TrimSpace(query)
 }
 
+func IHGSearchPath(query string) string {
+	locale := "gb"
+	switch normCity(query) {
+	case "madrid", "barcelona", "valencia", "seville", "sevilla", "malaga", "bilbao":
+		locale = "es"
+	case "paris", "lyon", "marseille":
+		locale = "fr"
+	case "berlin", "munich", "münchen", "frankfurt":
+		locale = "de"
+	}
+	return "/hotels/" + locale + "/en/find-hotels/hotel/list?qDest=" + url.QueryEscape(IHGQDest(query))
+}
+
 func AccorDestinationPath(query string) string {
 	switch normCity(query) {
 	case "london":
-		return "/gb/united-kingdom/london.hotels.html"
+		return "/a/en/destination/city/hotels-london-v2352.html"
+	case "madrid":
+		return "/ssr/app/accor/rates/index.en.shtml?destination=Madrid"
 	case "paris":
-		return "/fr/france/paris.hotels.html"
+		return "/a/en/destination/city/hotels-paris-v2240.html"
 	case "berlin":
 		return "/de/germany/berlin.hotels.html"
 	default:
-		s := slugify(query)
-		if s == "" {
-			return ""
-		}
-		return "/hotels/" + s + ".hotels.html"
+		return "/ssr/app/accor/rates/index.en.shtml?destination=" + url.QueryEscape(strings.TrimSpace(query))
 	}
 }
 
@@ -89,6 +106,8 @@ func BestWesternPlace(query string) string {
 	switch normCity(query) {
 	case "london":
 		return "London, United Kingdom"
+	case "madrid":
+		return "Madrid, Spain"
 	case "paris":
 		return "Paris, France"
 	case "berlin":
