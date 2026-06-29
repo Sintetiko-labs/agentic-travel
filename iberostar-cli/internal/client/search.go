@@ -6,9 +6,11 @@ import (
 
 	"github.com/fbelchi/travelkit/akamai"
 	tkbase "github.com/fbelchi/travelkit/base"
+	tkhotel "github.com/fbelchi/travelkit/hotel"
+	"github.com/fbelchi/travelkit/parse"
 )
 
-// Search queries Iberostar hotel search GraphQL BFF.
+// Search queries Iberostar hotel search GraphQL BFF, falling back to directory HTML.
 func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, error) {
 	if page < 1 {
 		page = 1
@@ -17,6 +19,26 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		pageSize = 24
 	}
 	query = strings.TrimSpace(query)
+	if res, err := c.searchGraphQL(query, page, pageSize); err == nil && len(res.Hotels) > 0 {
+		return res, nil
+	} else if err != nil && !shouldFallbackIberostar(err) {
+		return nil, err
+	}
+	return c.searchDirectory(query, page, pageSize)
+}
+
+func shouldFallbackIberostar(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "akamai blocked") ||
+		strings.Contains(msg, "graphql") ||
+		strings.Contains(msg, "http 404") ||
+		strings.Contains(msg, "http 403")
+}
+
+func (c *Client) searchGraphQL(query string, page, pageSize int) (*HotelSearchResult, error) {
 	payload := map[string]any{
 		"query": `query SearchHotels($q:String!,$page:Int!,$size:Int!){searchHotels(query:$q,page:$page,size:$size){total hasNext hotels{id name brand city country stars minPrice currency url image}}}`,
 		"variables": map[string]any{
@@ -84,4 +106,26 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		Query: query, Total: sh.Total, Page: page, PageSize: pageSize,
 		HasNext: sh.HasNext, Hotels: hits, Brand: c.Brand, Source: "graphql",
 	}, nil
+}
+
+func (c *Client) searchDirectory(query string, page, pageSize int) (*HotelSearchResult, error) {
+	parseFn := func(html, base string) []parse.HotelLD {
+		return parse.HotelsFromIberostarDirectory(html, base, query)
+	}
+	rows, err := tkhotel.SpanishHTMLSearch(c.FetchHTML, c.BaseURL, tkhotel.IberostarDirectoryPaths(query), parseFn, query)
+	if err != nil {
+		if he, ok := err.(*tkbase.HTTPError); ok && akamai.IsDenied(he.Status, he.Body) {
+			return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("iberostar"))
+		}
+		return nil, fmt.Errorf("search %q: %w", query, err)
+	}
+	filtered := tkhotel.FilterSpanishQuery(rows, query)
+	if len(filtered) == 0 {
+		return nil, fmt.Errorf("search %q: no hotels in directory — %s", query, akamai.NeedsSessionHint("iberostar"))
+	}
+	brand := c.Brand
+	if brand == "" {
+		brand = "Iberostar"
+	}
+	return tkhotel.LDToResult(filtered, query, page, pageSize, brand, c.BaseURL, "directory"), nil
 }

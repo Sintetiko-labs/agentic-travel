@@ -2,7 +2,7 @@
 _mac_cli_cache_root="${HOME}/.cache/agentic-travel"
 AGENTIC_TRAVEL_BIN_CACHE="${AGENTIC_TRAVEL_BIN_CACHE:-${_mac_cli_cache_root}/bin}"
 AGENTIC_TRAVEL_LOCK_DIR="${AGENTIC_TRAVEL_LOCK_DIR:-${_mac_cli_cache_root}/locks}"
-LIVE_CLI_SLUGS=(ryanair vueling volotea binter barcelo riu catalonia h10 palladium lopesan princess eurostars hotusa vincci silken sercotel travelodge hilton)
+LIVE_CLI_SLUGS=(ryanair vueling volotea binter barcelo riu catalonia h10 palladium lopesan princess eurostars hotusa vincci silken sercotel travelodge hilton globales grupotel hipotels senator medplaya zenit abba porthotels ona belive evenia ilunion petitpalace paradores roommate onlyyou pinero melia nh iberostar)
 mac_cli_cached_bin() { printf '%s/%s\n' "$AGENTIC_TRAVEL_BIN_CACHE" "$1"; }
 mac_cli_sign() {
   local bin="$1"
