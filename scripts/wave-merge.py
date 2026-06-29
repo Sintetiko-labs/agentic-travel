@@ -1,74 +1,78 @@
 #!/usr/bin/env python3
+"""Merge parallel wave search JSON fragments into wave-result.json."""
 from __future__ import annotations
-import argparse, json, sys
+
+import argparse
+import json
+import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-def load_payload(path: Path) -> Any:
-    text = path.read_text(encoding="utf-8").strip()
-    if not text: return None
-    try: return json.loads(text)
-    except json.JSONDecodeError: return {"raw": text}
 
-def classify(name: str, payload: Any) -> str:
-    if name in ("travelodge", "hilton"): return "hotels"
-    if name == "vueling" and isinstance(payload, dict) and payload.get("legs"): return "flights_connect"
-    return "flights"
+def load_json(path: Path) -> Any:
+    if not path.is_file():
+        return None
+    try:
+        return json.loads(path.read_text())
+    except json.JSONDecodeError:
+        return {"_parse_error": True, "raw": path.read_text()[:8000]}
 
-def count_totals(payload: Any, kind: str) -> int:
-    if not isinstance(payload, dict): return 0
-    if kind == "flights_connect": return int(payload.get("total") or 0)
-    return int(payload.get("total") or len(payload.get("flights") or payload.get("hotels") or []) or 0)
-
-def merge_vueling_legs(leg_a: Any, leg_b: Any, ms: int) -> dict[str, Any]:
-    total = 0
-    if isinstance(leg_a, dict): total += int(leg_a.get("total") or 0)
-    if isinstance(leg_b, dict): total += int(leg_b.get("total") or 0)
-    return {"mode": "connect", "legs": [{"route": "MAD-BCN", "data": leg_a}, {"route": "BCN-LGW", "data": leg_b}], "total": total, "ms": ms}
 
 def main() -> int:
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(description="Merge wave search source files")
+    ap.add_argument("--meta-dir", required=True)
     ap.add_argument("--out", required=True)
-    ap.add_argument("--wall-ms", type=int, required=True)
-    ap.add_argument("--meta", default="{}")
-    ap.add_argument("sources", nargs="+")
+    ap.add_argument("--wall-ms", type=int, default=0)
+    ap.add_argument("--query", default="{}")
     args = ap.parse_args()
-    try: meta = json.loads(args.meta)
-    except json.JSONDecodeError as exc:
-        print(f"invalid --meta JSON: {exc}", file=sys.stderr); return 2
-    sources_out, flights_total, hotels_total = [], 0, 0
-    pending_vueling = None
-    for spec in args.sources:
-        parts = spec.split(":")
-        if len(parts) < 3: print(f"bad source spec: {spec}", file=sys.stderr); return 2
-        name, path, ms = parts[0], Path(parts[1]), int(parts[2])
-        ok = parts[3] not in ("0", "false", "fail") if len(parts) >= 4 else True
-        payload, err = None, None
-        if path.is_file():
-            try: payload = load_payload(path)
-            except OSError as exc: ok, err = False, str(exc)
-        else: ok, err = False, "missing output file"
-        if name == "vueling_leg1":
-            pending_vueling = {"leg1": payload, "ms": ms, "ok": ok}; continue
-        if name == "vueling_leg2":
-            if pending_vueling is None: pending_vueling = {"leg1": None, "ms": ms, "ok": ok}
-            payload = merge_vueling_legs(pending_vueling.get("leg1"), payload, pending_vueling.get("ms", ms) + ms)
-            name, ok = "vueling", ok and pending_vueling.get("ok", True)
-            pending_vueling = None
-        kind = classify(name, payload)
-        total = count_totals(payload, kind)
-        if kind == "hotels": hotels_total += total
-        else: flights_total += total
-        entry = {"name": name, "kind": kind, "ms": ms, "ok": ok, "total": total}
-        if err: entry["error"] = err
-        if payload is not None: entry["data"] = payload
-        sources_out.append(entry)
-    if pending_vueling is not None:
-        sources_out.append({"name": "vueling", "kind": "flights", "ms": pending_vueling.get("ms", 0), "ok": False, "total": 0, "error": "incomplete connect legs", "data": pending_vueling.get("leg1")})
-    result = {**meta, "wall_ms": args.wall_ms, "sources": sources_out, "flights_total": flights_total, "hotels_total": hotels_total}
-    Path(args.out).write_text(json.dumps(result, indent=2) + "\n")
-    print(json.dumps({"out": args.out, "wall_ms": args.wall_ms, "flights_total": flights_total, "hotels_total": hotels_total}))
+    meta_dir = Path(args.meta_dir)
+    try:
+        query = json.loads(args.query)
+    except json.JSONDecodeError:
+        print("invalid --query JSON", file=sys.stderr)
+        return 2
+
+    sources: list[dict[str, Any]] = []
+    flights: list[Any] = []
+    hotels: list[Any] = []
+
+    for meta_path in sorted(meta_dir.glob("*.meta.json")):
+        meta = json.loads(meta_path.read_text())
+        sid = meta.get("id") or meta_path.name.replace(".meta.json", "")
+        body = load_json(meta_dir / f"{sid}.json")
+        entry = {
+            "id": sid,
+            "ok": bool(meta.get("ok")),
+            "ms": int(meta.get("ms") or 0),
+            "skipped": bool(meta.get("skipped")),
+            "exit_code": meta.get("exit_code"),
+            "error": meta.get("error"),
+        }
+        if body is not None:
+            entry["data"] = body
+        sources.append(entry)
+        if not entry["ok"] or entry["skipped"] or body is None or not isinstance(body, dict):
+            continue
+        if isinstance(body.get("flights"), list):
+            flights.extend(body["flights"])
+        if isinstance(body.get("hotels"), list):
+            hotels.extend(body["hotels"])
+        if isinstance(body.get("offers"), list) and sid in ("ryanair", "vueling"):
+            flights.extend(body["offers"])
+
+    out = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "query": query,
+        "wall_ms": args.wall_ms,
+        "sources": sources,
+        "flights": flights,
+        "hotels": hotels,
+    }
+    Path(args.out).write_text(json.dumps(out, indent=2) + "\n")
+    print(args.out)
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
