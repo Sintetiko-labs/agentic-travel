@@ -12,9 +12,11 @@ import textwrap
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+GROUPS_JSON = ROOT / "scripts" / "groups.json"
 
 # Each group: slug, display name, category (hotel|airline), base_url, brands[]
-GROUPS: list[dict] = [
+# Canonical brand→parent map is written to scripts/groups.json (see groups_lib.py).
+GROUPS_BUILTIN: list[dict] = [
     # --- Hotels (Spanish & international) ---
     {"slug": "melia", "name": "Meliá", "cat": "hotel", "url": "https://www.melia.com",
      "brands": ["Meliá Hotels International", "Meliá", "Gran Meliá", "ME by Meliá", "The Meliá Collection", "Paradisus", "INNSiDE by Meliá", "Sol by Meliá", "ZEL"]},
@@ -243,6 +245,38 @@ GROUPS: list[dict] = [
     {"slug": "neos", "name": "Neos", "cat": "airline", "url": "https://www.neosair.it", "brands": ["Neos"]},
     {"slug": "wamos", "name": "Wamos Air", "cat": "airline", "url": "https://www.wamosair.com", "brands": ["Wamos Air"]},
 ]
+
+
+def load_groups() -> list[dict]:
+    """Prefer scripts/groups.json; fall back to built-in list."""
+    builtin = groups_builtin_by_slug()
+    if GROUPS_JSON.is_file():
+        sys.path.insert(0, str(ROOT / "scripts"))
+        from groups_lib import groups_list, load_groups_doc, parent_for_slug
+
+        doc = load_groups_doc(GROUPS_JSON)
+        out: list[dict] = []
+        for g in groups_list(doc):
+            slug = g["slug"]
+            base = builtin.get(slug, {})
+            entry = {
+                "slug": slug,
+                "name": g["name"],
+                "cat": g["cat"],
+                "brands": g["brands"],
+                "parent": parent_for_slug(slug, doc),
+                "url": g.get("url") or base.get("url", f"https://www.{slug}.com"),
+            }
+            out.append(entry)
+        return out
+    return [{**g, "parent": g["slug"]} for g in GROUPS_BUILTIN]
+
+
+def groups_builtin_by_slug() -> dict[str, dict]:
+    return {g["slug"]: g for g in GROUPS_BUILTIN}
+
+
+GROUPS: list[dict] = load_groups()
 
 
 def env_prefix(slug: str) -> str:
@@ -1077,15 +1111,30 @@ Ver cada subproyecto. Uso bajo tu propia responsabilidad.
 
 
 def main() -> None:
+    by_slug = groups_builtin_by_slug()
     for g in GROUPS:
+        if "url" not in g and g["slug"] in by_slug:
+            g = {**g, "url": by_slug[g["slug"]]["url"]}
         if g["cat"] == "hotel":
             gen_hotel_cli(g)
         else:
             gen_airline_cli(g)
         print(f"scaffolded {g['slug']}-cli ({g['cat']})")
     gen_readme(GROUPS)
-    manifest = [{"slug": g["slug"], "name": g["name"], "cat": g["cat"], "brands": g["brands"]} for g in GROUPS]
-    write(ROOT / "scripts/groups.json", json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from groups_lib import enrich_groups, save_groups_doc
+
+    manifest_groups = [
+        {
+            "slug": g["slug"],
+            "parent": g.get("parent", g["slug"]),
+            "name": g["name"],
+            "cat": g["cat"],
+            "brands": g["brands"],
+        }
+        for g in GROUPS
+    ]
+    save_groups_doc(enrich_groups({"version": 1, "groups": manifest_groups}))
     session_script = ROOT / "scripts/add-session-subcommands.py"
     if session_script.exists():
         subprocess.run([sys.executable, str(session_script)], check=True)

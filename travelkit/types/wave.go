@@ -28,9 +28,9 @@ type MCPAgentFallback struct {
 	Note   string         `json:"note,omitempty"`
 }
 
-// CombinedSearchResult is the merged output of MCP + CLI parallel wave search.
+// WaveSearchResult is the merged output of MCP + CLI parallel wave search.
 // flights[] and hotels[] are never null.
-type CombinedSearchResult struct {
+type WaveSearchResult struct {
 	Query            WaveQuery            `json:"query"`
 	Flights          []FlightHit          `json:"flights"`
 	Hotels           []HotelHit           `json:"hotels"`

@@ -37,9 +37,5 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 	if len(rows) == 0 {
 		return nil, fmt.Errorf("search %q: no hotels parsed", query)
 	}
-	b := c.Brand
-	if b == "" {
-		b = "Best Western"
-	}
-	return tkhotel.LDToResult(rows, query, page, pageSize, b, c.BaseURL, "hotel-search"), nil
+	return tkhotel.LDToResultParent(rows, query, page, pageSize, c.Brand, "bestwestern", c.BaseURL, "hotel-search"), nil
 }
