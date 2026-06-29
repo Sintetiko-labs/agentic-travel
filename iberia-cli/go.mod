@@ -1,4 +1,4 @@
-module github.com/fbelchi/wizzair-cli
+module github.com/fbelchi/iberia-cli
 
 go 1.26
 
