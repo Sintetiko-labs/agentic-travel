@@ -40,17 +40,7 @@ run_job() {
   elif command -v timeout >/dev/null 2>&1; then
     timeout "$PER_SOURCE_TIMEOUT" "$@" >"$TMP/$id.json" 2>"$TMP/$id.err" || rc=$?
   else
-    python3 - "$PER_SOURCE_TIMEOUT" "$TMP/$id.json" "$TMP/$id.err" "$@" <<'PY'
-import subprocess, sys
-timeout = int(sys.argv[1]); out, err = sys.argv[2], sys.argv[3]; cmd = sys.argv[4:]
-try:
-    with open(out, "w") as fo, open(err, "w") as fe:
-        r = subprocess.run(cmd, stdout=fo, stderr=fe, timeout=timeout)
-    raise SystemExit(r.returncode)
-except subprocess.TimeoutExpired:
-    raise SystemExit(124)
-PY
-    rc=$?
+    python3 "$ROOT/scripts/wave-run-with-timeout.py" "$PER_SOURCE_TIMEOUT" "$TMP/$id.json" "$TMP/$id.err" -- "$@" || rc=$?
   fi
   end="$(now_ms)"; ms=$((end - start))
   local ok=false; [[ $rc -eq 0 ]] && ok=true
