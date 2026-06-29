@@ -320,6 +320,8 @@ go build -o melia ./cmd/melia
 
 Sub-15s multi-source Madrid–London (and similar) queries: run the wave orchestrator — parallel MCP + airline/hotel CLIs, merged JSON output. Details: [docs/FAST_SEARCH.md](docs/FAST_SEARCH.md), [orchestrator/README.md](orchestrator/README.md).
 
+Parallel search is **~3× faster** than running the same sources sequentially (see [docs/PERF_BENCHMARK.md](docs/PERF_BENCHMARK.md)).
+
 ```bash
 ./scripts/wave-search-madrid-london.sh
 ```
