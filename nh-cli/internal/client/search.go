@@ -7,9 +7,11 @@ import (
 
 	"github.com/fbelchi/travelkit/akamai"
 	tkbase "github.com/fbelchi/travelkit/base"
+	tkhotel "github.com/fbelchi/travelkit/hotel"
+	"github.com/fbelchi/travelkit/parse"
 )
 
-// Search queries NH Hotel Group search API.
+// Search queries NH Hotel Group search API, falling back to directory HTML.
 func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, error) {
 	if page < 1 {
 		page = 1
@@ -18,6 +20,25 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 		pageSize = 24
 	}
 	query = strings.TrimSpace(query)
+	if res, err := c.searchAPI(query, page, pageSize); err == nil && len(res.Hotels) > 0 {
+		return res, nil
+	} else if err != nil && !shouldFallbackNH(err) {
+		return nil, err
+	}
+	return c.searchDirectory(query, page, pageSize)
+}
+
+func shouldFallbackNH(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "akamai blocked") ||
+		strings.Contains(msg, "http 403") ||
+		strings.Contains(msg, "http 404")
+}
+
+func (c *Client) searchAPI(query string, page, pageSize int) (*HotelSearchResult, error) {
 	path := fmt.Sprintf("/nh/es/api/v1/hotels/search?query=%s&locale=es&page=%d&size=%d",
 		url.QueryEscape(query), page, pageSize)
 	var resp nhSearchResponse
@@ -29,6 +50,28 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 	}
 	resp.normalize()
 	return resp.toResult(query, page, pageSize, c.Brand, c.BaseURL), nil
+}
+
+func (c *Client) searchDirectory(query string, page, pageSize int) (*HotelSearchResult, error) {
+	parseFn := func(html, base string) []parse.HotelLD {
+		return parse.HotelsFromNHDirectory(html, base, query)
+	}
+	rows, err := tkhotel.SpanishHTMLSearch(c.FetchHTML, c.BaseURL, tkhotel.NHDirectoryPaths(query), parseFn, query)
+	if err != nil {
+		if he, ok := err.(*tkbase.HTTPError); ok && akamai.IsDenied(he.Status, he.Body) {
+			return nil, fmt.Errorf("akamai blocked — %s", akamai.NeedsSessionHint("nh"))
+		}
+		return nil, fmt.Errorf("search %q: %w", query, err)
+	}
+	filtered := tkhotel.FilterSpanishQuery(rows, query)
+	if len(filtered) == 0 {
+		return nil, fmt.Errorf("search %q: no hotels in directory — %s", query, akamai.NeedsSessionHint("nh"))
+	}
+	brand := c.Brand
+	if brand == "" {
+		brand = "NH Hotels"
+	}
+	return tkhotel.LDToResult(filtered, query, page, pageSize, brand, c.BaseURL, "directory"), nil
 }
 
 type nhHotelRow struct {

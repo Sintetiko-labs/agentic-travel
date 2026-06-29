@@ -32,9 +32,9 @@ Monorepo de **CLIs agent-friendly** para hoteles y aerolíneas (cadenas español
 | `sercotel` | hotel | **live** | chrome+sync+doctor | search results HTML |
 | `travelodge` | hotel | **live** | optional cookie | `/api/v2/hotel` JSON search (UK) |
 | `hilton` | hotel | **live** | chrome+sync+doctor | `/en/locations/united-kingdom/{city}/` HTML cards |
-| `melia` | hotel | partial | chrome+sync+doctor | BFF `/services/search/hotels/v2/search` (Akamai; needs `--wait`) |
-| `nh` | hotel | partial | chrome+sync+doctor | REST `/nh/es/api/v1/hotels/search` (Akamai) |
-| `iberostar` | hotel | partial | chrome+sync+doctor | GraphQL `/api/graphql` (Akamai) |
+| `melia` | hotel | **live** | chrome+sync+doctor | BFF `/services/search/hotels/v2/search` + directory HTML fallback |
+| `nh` | hotel | **live** | chrome+sync+doctor | REST `/nh/es/api/v1/hotels/search` + directory HTML fallback |
+| `iberostar` | hotel | **live** | chrome+sync+doctor | GraphQL `/api/graphql` + directory HTML fallback |
 | `marriott` | hotel | partial | chrome+sync+doctor | `findHotels.mi` (Akamai; session required) |
 | `easyjet` | airline | partial | chrome+sync+doctor | `ejavailability/api/v5` (Akamai; session chrome --wait) |
 | `aireuropa` | airline | partial | chrome+sync+doctor | `dapi` redirect POST + flightinfo fallback |

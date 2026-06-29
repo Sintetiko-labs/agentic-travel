@@ -48,3 +48,35 @@ func TestHotelsFromSercotelRSC(t *testing.T) {
 		t.Fatalf("name=%q", rows[0].Name)
 	}
 }
+
+func TestHotelsFromEsCityHotelLinks(t *testing.T) {
+	html := `<a href="/es/hoteles/madrid/petit-palace-mayfair/">Mayfair</a>`
+	rows := HotelsFromEsCityHotelLinks(html, "https://www.petitpalace.com")
+	if len(rows) != 1 || rows[0].ID != "petit-palace-mayfair" {
+		t.Fatalf("got %+v", rows)
+	}
+}
+
+func TestHotelsFromParadoresLinks(t *testing.T) {
+	html := `<a href="/es/parador/segovia">Segovia</a>`
+	rows := HotelsFromParadoresLinks(html, "https://www.parador.es")
+	if len(rows) != 1 || rows[0].ID != "segovia" {
+		t.Fatalf("got %+v", rows)
+	}
+}
+
+func TestHotelsFromIberostarDirectory(t *testing.T) {
+	html := `<a href="/es/hoteles/madrid/iberostar-las-letras">Iberostar Las Letras</a>`
+	rows := HotelsFromIberostarDirectory(html, "https://www.iberostar.com", "Madrid")
+	if len(rows) != 1 || rows[0].Name != "Iberostar Las Letras" {
+		t.Fatalf("got %+v", rows)
+	}
+}
+
+func TestHotelsFromNHDirectory(t *testing.T) {
+	html := `<a href="/es/hotel/nh-collection-madrid-suecia">NH</a>`
+	rows := HotelsFromNHDirectory(html, "https://www.nh-hotels.com", "Madrid")
+	if len(rows) != 1 || rows[0].ID != "nh-collection-madrid-suecia" {
+		t.Fatalf("got %+v", rows)
+	}
+}

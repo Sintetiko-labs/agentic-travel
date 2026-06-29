@@ -14,12 +14,22 @@ import (
 	utls "github.com/refraction-networking/utls"
 )
 
-const hotusaTLSServerName = "www.hotusa.com"
+const (
+	hotusaTLSServerName  = "booking-channel.com"
+	hotusaListingBaseURL = "https://www.grupohotusa.com"
+)
 
 func (c *Client) fetchHotusaHTML(path string) (string, error) {
 	if path == "" {
 		path = "/"
 	}
+	if text, err := c.fetchHotusaBookingHTML(path); err == nil {
+		return text, nil
+	}
+	return c.fetchHotusaListingHTML(path)
+}
+
+func (c *Client) fetchHotusaBookingHTML(path string) (string, error) {
 	dialer := &net.Dialer{Timeout: 15 * time.Second}
 	tr := &http.Transport{
 		DialTLSContext: func(ctx context.Context, networkName, addr string) (net.Conn, error) {
@@ -58,6 +68,27 @@ func (c *Client) fetchHotusaHTML(path string) (string, error) {
 	return text, nil
 }
 
+func (c *Client) fetchHotusaListingHTML(path string) (string, error) {
+	url := hotusaListingBaseURL + path
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	c.SetDocumentHeaders(req)
+	c.ApplyCookie(req)
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
+	text := string(body)
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return "", &tkbase.HTTPError{Status: resp.StatusCode, Body: tkbase.Truncate(text, 300)}
+	}
+	return text, nil
+}
+
 func hotusaPaths(query string) []string {
 	slug := strings.ToLower(strings.ReplaceAll(strings.TrimSpace(query), " ", "-"))
 	paths := []string{"/es/", "/es/hoteles/", "/"}
@@ -73,7 +104,7 @@ func hotusaSearchErr(err error) error {
 	}
 	msg := err.Error()
 	if strings.Contains(msg, "certificate") || strings.Contains(msg, "tls") {
-		return fmt.Errorf("hotusa TLS mismatch (cert is %s) — run: hotusa session chrome --wait", hotusaTLSServerName)
+		return fmt.Errorf("hotusa TLS mismatch (SNI %s) — run: hotusa session chrome --wait", hotusaTLSServerName)
 	}
 	if he, ok := err.(*tkbase.HTTPError); ok && he.Status == 400 {
 		return fmt.Errorf("hotusa blocked request — run: hotusa session chrome --wait (HTTP %d)", he.Status)

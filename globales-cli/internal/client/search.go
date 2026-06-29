@@ -1,8 +1,12 @@
 package client
 
-import "fmt"
+import (
+	"strings"
 
-// Search runs hotel search (TODO: implement for Globales).
+	tkhotel "github.com/fbelchi/travelkit/hotel"
+	"github.com/fbelchi/travelkit/parse"
+)
+
 func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, error) {
 	if page < 1 {
 		page = 1
@@ -10,6 +14,10 @@ func (c *Client) Search(query string, page, pageSize int) (*HotelSearchResult, e
 	if pageSize < 1 {
 		pageSize = 24
 	}
-	_ = c
-	return nil, fmt.Errorf("search not yet implemented for Globales — see README and internal/client/search.go TODO")
+	query = strings.TrimSpace(query)
+	return tkhotel.SearchSpanishHTML(c.FetchHTML, tkhotel.SpanishSearchOpts{
+		Query: query, Brand: c.Brand, BaseURL: c.BaseURL, Source: "html-links",
+		DefaultBrand: "Globales Hotels", Paths: tkhotel.EsHotelPaths(query),
+		Parse: parse.HotelsFromGlobalesLinks, Page: page, PageSize: pageSize,
+	})
 }

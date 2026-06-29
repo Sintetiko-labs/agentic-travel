@@ -1,6 +1,6 @@
 # Loop status (parallel workstreams)
 
-Last updated: 2026-06-28 (Worker F — integration)
+Last updated: 2026-06-29 (loop-7 hotels-es-stubs-live)
 
 ## Main branch
 
@@ -40,8 +40,8 @@ Counts reflect **documented priority** CLIs in root README (not all 194 scaffold
 
 | Status | Count | Slugs |
 |--------|------:|-------|
-| **live** | 18 | ryanair, vueling, volotea, binter, barcelo, riu, catalonia, h10, palladium, lopesan, princess, eurostars, hotusa, vincci, silken, sercotel, travelodge, hilton |
-| **partial** | 7 | melia, nh, iberostar, marriott, easyjet, aireuropa, iberiaexpress |
+| **live** | 35 | ryanair, vueling, volotea, binter, barcelo, riu, catalonia, h10, palladium, lopesan, princess, eurostars, hotusa, vincci, silken, sercotel, travelodge, hilton, globales, grupotel, hipotels, senator, medplaya, zenit, abba, porthotels, ona, belive, evenia, ilunion, petitpalace, paradores, roommate, onlyyou, pinero, melia, nh, iberostar |
+| **partial** | 4 | marriott, easyjet, aireuropa, iberiaexpress |
 | **stub** (priority-adjacent) | 0 | — |
 
 **All CLIs (scaffold):** 194 hotel + airline modules — most non-priority slugs remain **stub** (`search not yet implemented`).

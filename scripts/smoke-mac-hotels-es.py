@@ -11,7 +11,21 @@ ROOT = Path(__file__).resolve().parent.parent
 CLIS = [
     "barcelo", "riu", "catalonia", "h10", "palladium", "lopesan",
     "princess", "eurostars", "vincci", "sercotel", "silken",
+    "globales", "grupotel", "hipotels", "senator", "medplaya", "zenit",
+    "abba", "porthotels", "ona", "belive", "evenia", "ilunion",
+    "petitpalace", "paradores", "roommate", "onlyyou", "pinero",
+    "hotusa", "melia", "nh", "iberostar",
 ]
+CITY_OVERRIDES = {
+    "silken": "Barcelona",
+    "grupotel": "Barcelona",
+    "hipotels": "Barcelona",
+    "medplaya": "Barcelona",
+    "evenia": "Barcelona",
+    "belive": "Barcelona",
+    "pinero": "Barcelona",
+    "paradores": "Segovia",
+}
 TIMEOUT = 120
 
 
@@ -33,7 +47,7 @@ def smoke_cli(name: str) -> dict:
         return r
     r["build"] = "PASS"
 
-    city = "Barcelona" if name == "silken" else "Madrid"
+    city = CITY_OVERRIDES.get(name, "Madrid")
     code, out, err = run([str(bin_path), "search", "--json", city, "--limit", "3"], cli_dir)
     combined = out + err
     if code == -1:
