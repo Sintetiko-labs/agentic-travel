@@ -6,7 +6,7 @@ Last updated: 2026-06-29 (full consolidation onto origin/main)
 
 | Field | Value |
 |-------|-------|
-| **SHA** | `3a68475` (hotels-parent-apis-1 merge) |
+| **SHA** | `9f446b0` (`9f446b079c7f2a5101e780659ca50a2f32b7d3d7`) |
 | **Tip** | Loop 7: 8 international hotel parent APIs (73 brands), stub wiring, loop-6 QA merges |
 | **Remote** | https://github.com/Sintetiko-labs/agentic-travel (`origin/main`) |
 | **Worktree** | `/private/tmp/agentic-travel-merge` (integration); primary `/Users/fbelchi/github/agentic-travel` |
